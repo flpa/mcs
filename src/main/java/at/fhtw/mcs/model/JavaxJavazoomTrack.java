@@ -1,5 +1,15 @@
 package at.fhtw.mcs.model;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
 import at.fhtw.mcs.model.TrackFactory.UnsupportedFormatException;
 import at.fhtw.mcs.util.FormatDetection;
 import javazoom.jl.converter.Converter;
@@ -44,8 +54,28 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void play() {
-		// TODO Auto-generated method stub
+		try {
+			URL url = new File(path).toURI().toURL();
 
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
+
+			// Get a sound clip resource.
+			Clip clip = AudioSystem.getClip();
+
+			// Open audio clip and load samples from the audio input stream.
+			clip.open(audioIn);
+			clip.start();
+
+		} catch (UnsupportedAudioFileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (LineUnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
