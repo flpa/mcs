@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.8
-version = '0.0.1'
+version = '0.1.0'
 
 mainClassName = "at.fhtw.mcs.Main"
 
@@ -12,5 +12,26 @@ repositories {
 }
 
 dependencies {
+	compile 'javazoom:jlayer:1.0.1'
+	compile 'commons-io:commons-io:2.4'
 	testCompile group: 'junit', name: 'junit', version: '4.+'
+}
+
+//
+// Sonarqube plugin for static code analysis.
+// Requires a running local instance of Sonarqube. Download:
+//   http://www.sonarqube.org/downloads/
+// Extract, run (e.g. bin/linux-x86-64/sonar.sh start)
+//
+apply plugin: "org.sonarqube"
+
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "org.sonarqube.gradle:gradle-sonarqube-plugin:1.1"
+  }
 }
