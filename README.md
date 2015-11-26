@@ -1,7 +1,7 @@
 # MCS
 Mixdown Comparison Software is a project to help musicians compare different mixdowns of a recording.
 
-[![Build Status](https://travis-ci.org/flpa/mcs.svg?branch=ap44)](https://travis-ci.org/flpa/mcs)
+[![Build Status](https://travis-ci.org/flpa/mcs.svg?branch=develop)](https://travis-ci.org/flpa/mcs)
 
 # Development
 ## Prerequesits
