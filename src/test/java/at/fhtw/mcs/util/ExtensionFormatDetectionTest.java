@@ -11,7 +11,7 @@ public class ExtensionFormatDetectionTest {
 
 	@Test
 	public void testWavLowercase() {
-		Assert.assertEquals(Format.MP3, impl.detectFormat("/home/joe/rock.wav"));
+		Assert.assertEquals(Format.WAV, impl.detectFormat("/home/joe/rock.wav"));
 	}
 
 }
