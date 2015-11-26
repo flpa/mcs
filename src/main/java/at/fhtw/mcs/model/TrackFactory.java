@@ -1,5 +1,7 @@
 package at.fhtw.mcs.model;
 
+import at.fhtw.mcs.util.ExtensionFormatDetection;
+
 /**
  * Helper class to instatiate {@link Track}s.
  */
@@ -15,19 +17,24 @@ public class TrackFactory {
 	 *             In case the format of the track is not supported.
 	 */
 	public static Track loadTrack(String path) throws UnsupportedFormatException {
-		return null;
+		return new JavaxJavazoomTrack(new ExtensionFormatDetection(), path);
 	}
 
-	public static class UnsupportedFormatException extends Exception {
+	public static class UnsupportedFormatException extends IllegalArgumentException {
 		private static final long serialVersionUID = -1933962444432614242L;
 
-		private String format;
+		private Format format;
 
-		public UnsupportedFormatException(String format) {
+		public UnsupportedFormatException(Format format) {
 			this.format = format;
 		}
 
-		public String getFormat() {
+		public UnsupportedFormatException(Format format, String message) {
+			super(message);
+			this.format = format;
+		}
+
+		public Format getFormat() {
 			return format;
 		}
 	}

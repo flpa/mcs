@@ -3,6 +3,9 @@ package at.fhtw.mcs;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import at.fhtw.mcs.model.Track;
+import at.fhtw.mcs.model.TrackFactory;
+
 class Main {
 
 	public static void main(String[] args) {
@@ -18,6 +21,8 @@ class Main {
 					  .collect(Collectors.joining(" und ")) 
 				+ ".");
 		//@formatter:on
+
+		Track loadTrack = TrackFactory.loadTrack("");
 	}
 
 	public int testedMethod(int n) {
