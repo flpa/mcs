@@ -8,6 +8,10 @@ import at.fhtw.mcs.model.TrackFactory;
 class Main {
 
 	public static void main(String[] args) throws InterruptedException {
+		if (args.length != 1) {
+			System.err.println("Usage: ./mcs AUDIO_FILE");
+		}
+
 		String filename = args[0];
 		System.out.println("Loading " + filename);
 		Track track = TrackFactory.loadTrack(filename);
