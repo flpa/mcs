@@ -17,7 +17,14 @@ import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
 	private String path;
+	private Clip clip;
 
+	/**
+	 * Creates the track using the given {@link FormatDetection}.
+	 * 
+	 * @throws UnsupportedFormatException
+	 *             In case the format of the track is not supported.
+	 */
 	public JavaxJavazoomTrack(FormatDetection formatDetection, String path) {
 		Format format = formatDetection.detectFormat(path);
 
@@ -32,6 +39,8 @@ public class JavaxJavazoomTrack implements Track {
 			default:
 				throw new UnsupportedFormatException(format);
 		}
+
+		clip = openClip();
 	}
 
 	private String convertMp3ToWav(String path) {
@@ -46,7 +55,7 @@ public class JavaxJavazoomTrack implements Track {
 			converter.convert(path, newPath);
 		} catch (JavaLayerException e) {
 			throw new UnsupportedFormatException(Format.MP3,
-					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.");
+					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
 		}
 
 		return newPath;
@@ -54,34 +63,24 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void play() {
+		clip.start();
+	}
+
+	private Clip openClip() throws RuntimeException {
 		try {
 			URL url = new File(path).toURI().toURL();
-
 			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
-
-			// Get a sound clip resource.
 			Clip clip = AudioSystem.getClip();
-
-			// Open audio clip and load samples from the audio input stream.
 			clip.open(audioIn);
-			clip.start();
-
-		} catch (UnsupportedAudioFileException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return clip;
+		} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+			throw new RuntimeException("Error while opening clip", e);
 		}
 	}
 
 	@Override
 	public void pause() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
