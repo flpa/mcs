@@ -18,6 +18,7 @@ import javazoom.jl.decoder.JavaLayerException;
 public class JavaxJavazoomTrack implements Track {
 	private String path;
 	private Clip clip;
+	private int framePosition = 0;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -61,11 +62,6 @@ public class JavaxJavazoomTrack implements Track {
 		return newPath;
 	}
 
-	@Override
-	public void play() {
-		clip.start();
-	}
-
 	private Clip openClip() throws RuntimeException {
 		try {
 			URL url = new File(path).toURI().toURL();
@@ -79,20 +75,29 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	@Override
+	public void play() {
+		clip.setFramePosition(framePosition);
+		clip.start();
+	}
+
+	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
+		framePosition = clip.getFramePosition();
+		clip.stop();
 	}
 
 	@Override
 	public void togglePlayPause() {
-		// TODO Auto-generated method stub
-
+		if (clip.isRunning()) {
+			pause();
+		} else {
+			play();
+		}
 	}
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-
+		clip.stop();
+		framePosition = 0;
 	}
-
 }
