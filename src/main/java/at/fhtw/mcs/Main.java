@@ -6,6 +6,9 @@ import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
 
 class Main {
+	private Main() {
+		// no instances allowed (and necessary)
+	}
 
 	public static void main(String[] args) throws InterruptedException {
 		if (args.length != 1) {
