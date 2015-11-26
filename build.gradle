@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.8
-version = '0.1.0'
+version = 'v0.1.1'
 
 mainClassName = "at.fhtw.mcs.Main"
 
