@@ -17,6 +17,12 @@ dependencies {
 	testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
+test {
+    testLogging {
+        exceptionFormat "full" // default is "short"
+    }
+}
+
 //
 // Sonarqube plugin for static code analysis.
 // Requires a running local instance of Sonarqube. Download:
