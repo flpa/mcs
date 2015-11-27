@@ -71,6 +71,6 @@ public class ExtensionFormatDetectionTest {
 
 	@Test
 	public void testMp3WithWavInName() {
-		Assert.assertEquals(Format.WAV, impl.detectFormat("/home/joe/rock.wav.mp3"));
+		Assert.assertEquals(Format.MP3, impl.detectFormat("/home/joe/rock.wav.mp3"));
 	}
 }
