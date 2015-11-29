@@ -73,4 +73,34 @@ public class ExtensionFormatDetectionTest {
 	public void testMp3WithWavInName() {
 		Assert.assertEquals(Format.MP3, impl.detectFormat("/home/joe/rock.wav.mp3"));
 	}
+
+	@Test
+	public void testOggIsUnknown() {
+		Assert.assertEquals(Format.UNKNOWN, impl.detectFormat("/home/joe/rock.ogg"));
+	}
+
+	@Test
+	public void testExeIsUnknown() {
+		Assert.assertEquals(Format.UNKNOWN, impl.detectFormat("/home/joe/rock.exe"));
+	}
+
+	@Test
+	public void testNoExtensionIsUnknown() {
+		Assert.assertEquals(Format.UNKNOWN, impl.detectFormat("/home/joe/rock"));
+	}
+
+	@Test
+	public void testMp3WavInPath() {
+		Assert.assertEquals(Format.MP3, impl.detectFormat("/home/joe.wav/rock.mp3"));
+	}
+
+	@Test
+	public void testDirectoryIsUnknown() {
+		Assert.assertEquals(Format.UNKNOWN, impl.detectFormat("/home/joe/"));
+	}
+
+	@Test
+	public void testDotFileIsUnknown() {
+		Assert.assertEquals(Format.UNKNOWN, impl.detectFormat("/home/joe/.gitignore"));
+	}
 }
