@@ -1,38 +1,65 @@
 package at.fhtw.mcs;
 
-import java.util.Scanner;
+import java.io.IOException;
 
-import at.fhtw.mcs.model.Track;
-import at.fhtw.mcs.model.TrackFactory;
+import at.fhtw.mcs.controller.RootController;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
-class Main {
-	private Main() {
-		// no instances allowed (and necessary)
+public class Main extends Application {
+
+	private Stage primaryStage;
+	private BorderPane rootLayout;
+	private RootController rootController;
+
+	@Override
+	public void start(Stage primaryStage) {
+		this.primaryStage = primaryStage;
+		this.primaryStage.setTitle("MCS");
+
+		initRootLayout();
+		addTrack();
 	}
 
-	public static void main(String[] args) throws InterruptedException {
-		if (args.length != 1) {
-			System.err.println("Usage: ./mcs AUDIO_FILE");
-		}
+	/**
+	 * Initialize Root Layout
+	 */
+	public void initRootLayout() {
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			loader.setLocation(Main.class.getResource("../../../views/Root.fxml"));
+			rootLayout = (BorderPane) loader.load();
+			rootController = (RootController) loader.getController();
 
-		String filename = args[0];
-		System.out.println("Loading " + filename);
-		Track track = TrackFactory.loadTrack(filename);
-		track.play();
-
-		try (Scanner scanner = new Scanner(System.in)) {
-			while (true) {
-				switch (scanner.nextLine()) {
-					case "p":
-						track.togglePlayPause();
-						break;
-					case "s":
-						track.stop();
-						break;
-					case "q":
-						return;
-				}
-			}
+			Scene scene = new Scene(rootLayout);
+			primaryStage.setScene(scene);
+			primaryStage.setMinWidth(800);
+			primaryStage.setMinHeight(550);
+			primaryStage.show();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Add Track to Container in Root-Layout
+	 */
+	public void addTrack() {
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			loader.setLocation(Main.class.getResource("../../../views/Track.fxml"));
+			Node track = loader.load();
+			rootController.addTrack(track);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) {
+		launch(args);
 	}
 }
