@@ -3,6 +3,7 @@ package at.fhtw.mcs;
 import java.io.IOException;
 
 import at.fhtw.mcs.controller.RootController;
+import at.fhtw.mcs.controller.TrackController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -22,7 +23,6 @@ public class Main extends Application {
 		this.primaryStage.setTitle("MCS");
 
 		initRootLayout();
-		addTrack();
 	}
 
 	/**
@@ -41,20 +41,6 @@ public class Main extends Application {
 			primaryStage.setMinWidth(800);
 			primaryStage.setMinHeight(550);
 			primaryStage.show();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Add Track to Container in Root-Layout
-	 */
-	public void addTrack() {
-		try {
-			FXMLLoader loader = new FXMLLoader();
-			loader.setLocation(Main.class.getResource("../../../views/Track.fxml"));
-			Node track = loader.load();
-			rootController.addTrack(track);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -1,17 +1,20 @@
 package at.fhtw.mcs.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import at.fhtw.mcs.Main;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -55,10 +58,6 @@ public class RootController implements Initializable {
 		this.stage = stage;
 	}
 
-	public void addTrack(Node track) {
-		vboxTracks.getChildren().add(track);
-	}
-
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		this.bundle = arg1;
@@ -85,7 +84,7 @@ public class RootController implements Initializable {
 		textCurrentTime.setText(formatTimeString(track.getCurrentMicroseconds()));
 	}
 
-	private void handleAddTrack(ActionEvent e) {
+	private void handleAddTrack(ActionEvent event) {
 		FileChooser chooser = new FileChooser();
 
 		chooser.setTitle("Track wählen");
@@ -104,13 +103,22 @@ public class RootController implements Initializable {
 			}
 			// TODO: config parameter
 		}, 0, 500);
+
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			loader.setController(new TrackController(track));
+			loader.setLocation(Main.class.getResource("../../../views/Track.fxml"));
+			Node track = loader.load();
+			vboxTracks.getChildren().add(track);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private String formatTimeString(long totalMicroseconds) {
 		long minutes = TimeUnit.MICROSECONDS.toMinutes(totalMicroseconds);
 		long seconds = TimeUnit.MICROSECONDS.toSeconds(totalMicroseconds) % 60;
 
-		String timeString = String.format("%d:%02d", minutes, seconds);
-		return timeString;
+		return String.format("%d:%02d", minutes, seconds);
 	}
 }
