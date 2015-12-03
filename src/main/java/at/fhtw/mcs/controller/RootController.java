@@ -3,7 +3,6 @@ package at.fhtw.mcs.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -87,8 +86,11 @@ public class RootController implements Initializable {
 	private void handleAddTrack(ActionEvent event) {
 		FileChooser chooser = new FileChooser();
 
-		chooser.setTitle("Track wählen");
+		chooser.setTitle("TRANSLATE ME");
 		File file = chooser.showOpenDialog(stage);
+		if (file == null) {
+			return;
+		}
 
 		track = TrackFactory.loadTrack(file.getAbsolutePath());
 		long totalMicroseconds = track.getTotalMicroseconds();
