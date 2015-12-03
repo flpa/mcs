@@ -3,10 +3,8 @@ package at.fhtw.mcs;
 import java.io.IOException;
 
 import at.fhtw.mcs.controller.RootController;
-import at.fhtw.mcs.controller.TrackController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -32,7 +30,7 @@ public class Main extends Application {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new RootController(primaryStage));
-			loader.setLocation(Main.class.getResource("../../../views/Root.fxml"));
+			loader.setLocation(getClass().getResource("../../../views/Root.fxml"));
 			rootLayout = (BorderPane) loader.load();
 			rootController = (RootController) loader.getController();
 

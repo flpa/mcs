@@ -8,7 +8,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import at.fhtw.mcs.Main;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
 import javafx.application.Platform;
@@ -95,7 +94,7 @@ public class RootController implements Initializable {
 		String timeString = formatTimeString(totalMicroseconds);
 		textTotalTime.setText(timeString);
 
-		Timer timer = new Timer();
+		Timer timer = new Timer(true);
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -107,7 +106,7 @@ public class RootController implements Initializable {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new TrackController(track));
-			loader.setLocation(Main.class.getResource("../../../views/Track.fxml"));
+			loader.setLocation(getClass().getResource("../../../views/Track.fxml"));
 			Node track = loader.load();
 			vboxTracks.getChildren().add(track);
 		} catch (IOException e) {
