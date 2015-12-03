@@ -1,7 +1,6 @@
 package at.fhtw.mcs;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import at.fhtw.mcs.controller.RootController;
