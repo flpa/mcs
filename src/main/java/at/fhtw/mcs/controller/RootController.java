@@ -117,7 +117,7 @@ public class RootController implements Initializable {
 			 * TODO: proper way of loading without depending on package
 			 * structure?
 			 */
-			loader.setLocation(getClass().getResource("../../../../views/Track.fxml"));
+			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
 			loader.setResources(bundle);
 			Node track = loader.load();
 			vboxTracks.getChildren().add(track);

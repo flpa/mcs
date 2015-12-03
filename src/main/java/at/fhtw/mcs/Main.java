@@ -29,7 +29,7 @@ public class Main extends Application {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new RootController(primaryStage));
-			loader.setLocation(getClass().getResource("../../../views/Root.fxml"));
+			loader.setLocation(getClass().getClassLoader().getResource("views/Root.fxml"));
 			ResourceBundle bundle = ResourceBundle.getBundle("bundles.mcs");
 			loader.setResources(bundle);
 			rootLayout = (BorderPane) loader.load();
