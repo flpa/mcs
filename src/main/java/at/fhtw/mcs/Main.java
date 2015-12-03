@@ -1,6 +1,8 @@
 package at.fhtw.mcs;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import at.fhtw.mcs.controller.RootController;
 import javafx.application.Application;
@@ -18,8 +20,6 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		this.primaryStage = primaryStage;
-		this.primaryStage.setTitle("MCS");
-
 		initRootLayout();
 	}
 
@@ -31,10 +31,13 @@ public class Main extends Application {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new RootController(primaryStage));
 			loader.setLocation(getClass().getResource("../../../views/Root.fxml"));
+			ResourceBundle bundle = ResourceBundle.getBundle("bundles.mcs");
+			loader.setResources(bundle);
 			rootLayout = (BorderPane) loader.load();
 			rootController = (RootController) loader.getController();
 
 			Scene scene = new Scene(rootLayout);
+			primaryStage.setTitle(bundle.getString("app.title"));
 			primaryStage.setScene(scene);
 			primaryStage.setMinWidth(800);
 			primaryStage.setMinHeight(550);

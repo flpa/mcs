@@ -3,6 +3,7 @@ package at.fhtw.mcs.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -111,6 +112,7 @@ public class RootController implements Initializable {
 			 * structure?
 			 */
 			loader.setLocation(getClass().getResource("../../../../views/Track.fxml"));
+			loader.setResources(bundle);
 			Node track = loader.load();
 			vboxTracks.getChildren().add(track);
 		} catch (IOException e) {

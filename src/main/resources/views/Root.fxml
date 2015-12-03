@@ -14,33 +14,33 @@
          <children>
             <MenuBar>
               <menus>
-                <Menu mnemonicParsing="false" text="Datei">
+                <Menu mnemonicParsing="false" text="%menuItem.file">
                   <items>
-                    <MenuItem disable="true" mnemonicParsing="false" text="Neues Projekt" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="Öffnen..." />
+                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.newProject" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.openProject" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="Schließen" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.closeProject" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="Speichern" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="Speichern unter..." />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProject" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProjectAs" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="Beenden" />
+                        <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="%menuItem.quit" />
                   </items>
                 </Menu>
-                <Menu disable="true" mnemonicParsing="false" text="Bearbeiten">
+                <Menu disable="true" mnemonicParsing="false" text="%menuItem.edit">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="Audiogeräte" />
+                    <MenuItem mnemonicParsing="false" text="%menuItem.outputDevices" />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Tracks">
+                <Menu mnemonicParsing="false" text="%menuItem.tracks">
                   <items>
-                    <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="Track hinzufügen..." />
+                    <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="%menuItem.addTrack" />
                   </items>
                 </Menu>
-                <Menu disable="true" mnemonicParsing="false" text="Hilfe">
+                <Menu disable="true" mnemonicParsing="false" text="%menuItem.help">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="Benutzerhandbuch" />
-                        <MenuItem mnemonicParsing="false" text="Über MCS" />
+                    <MenuItem mnemonicParsing="false" text="%menuItem.manual" />
+                        <MenuItem mnemonicParsing="false" text="%menuItem.about" />
                   </items>
                 </Menu>
               </menus>
@@ -67,7 +67,7 @@
                         <Text fx:id="textTotalTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                         <AnchorPane maxHeight="40.0" GridPane.columnIndex="1">
                            <children>
-                              <Label disable="true" contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="Volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
+                              <Label disable="true" contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="%label.volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
                                  <graphic>
                                     <Slider />
                                  </graphic>
@@ -100,7 +100,7 @@
             <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Label text="Track hinzufügen" GridPane.columnIndex="1" />
+            <Label text="%button.addTrack" GridPane.columnIndex="1" />
             <Button fx:id="buttonAddTrack" mnemonicParsing="false" text="+" />
          </children>
       </GridPane>
