@@ -29,4 +29,16 @@ public interface Track {
 	 */
 	void stop();
 
+	/**
+	 * @return the current position in microseconds
+	 * @see Track#getTotalMicroseconds()
+	 */
+	long getCurrentMicroseconds();
+
+	/**
+	 * @return the total length in microseconds.
+	 */
+	long getTotalMicroseconds();
+
+	String getFilename();
 }

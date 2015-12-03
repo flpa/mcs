@@ -60,11 +60,11 @@
                      <children>
                         <AnchorPane maxHeight="20.0" prefHeight="20.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <children>
-                              <ProgressBar prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                              <ProgressBar fx:id="progressBarTime" prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                            </children>
                         </AnchorPane>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.rowIndex="1" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="4:23" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <Text fx:id="textCurrentTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.rowIndex="1" />
+                        <Text fx:id="textTotalTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                         <AnchorPane maxHeight="40.0" GridPane.columnIndex="1">
                            <children>
                               <Label contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="Volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
@@ -101,7 +101,7 @@
          </rowConstraints>
          <children>
             <Label text="Track hinzufügen" GridPane.columnIndex="1" />
-            <Button mnemonicParsing="false" text="+" />
+            <Button fx:id="buttonAddTrack" mnemonicParsing="false" text="+" />
          </children>
       </GridPane>
    </bottom>

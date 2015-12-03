@@ -3,18 +3,22 @@ package at.fhtw.mcs.controller;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -33,6 +37,15 @@ public class RootController implements Initializable {
 	private Button buttonPlayPause;
 	@FXML
 	private Button buttonStop;
+	@FXML
+	private Button buttonAddTrack;
+	@FXML
+	private Text textCurrentTime;
+	@FXML
+	private Text textTotalTime;
+	@FXML
+	private ProgressBar progressBarTime;
+
 	private ResourceBundle bundle;
 	private Stage stage;
 
@@ -52,15 +65,24 @@ public class RootController implements Initializable {
 
 		// Java8 lambda
 		menuItemQuit.setOnAction(e -> Platform.exit());
-		menuItemAddTrack.setOnAction(e -> handleAddTrack(e));
+		menuItemAddTrack.setOnAction(this::handleAddTrack);
+
+		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
 			track.togglePlayPause();
+			// TODO: extract unicode constants
 			buttonPlayPause.setText("▶".equals(buttonPlayPause.getText()) ? "||" : "▶");
 		});
 		buttonStop.setOnAction(e -> {
 			track.stop();
 			buttonPlayPause.setText("▶");
 		});
+		buttonAddTrack.setOnAction(this::handleAddTrack);
+	}
+
+	private void updateTime() {
+		progressBarTime.setProgress((double) track.getCurrentMicroseconds() / track.getTotalMicroseconds());
+		textCurrentTime.setText(formatTimeString(track.getCurrentMicroseconds()));
 	}
 
 	private void handleAddTrack(ActionEvent e) {
@@ -70,5 +92,25 @@ public class RootController implements Initializable {
 		File file = chooser.showOpenDialog(stage);
 
 		track = TrackFactory.loadTrack(file.getAbsolutePath());
+		long totalMicroseconds = track.getTotalMicroseconds();
+		String timeString = formatTimeString(totalMicroseconds);
+		textTotalTime.setText(timeString);
+
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				updateTime();
+			}
+			// TODO: config parameter
+		}, 0, 500);
+	}
+
+	private String formatTimeString(long totalMicroseconds) {
+		long minutes = TimeUnit.MICROSECONDS.toMinutes(totalMicroseconds);
+		long seconds = TimeUnit.MICROSECONDS.toSeconds(totalMicroseconds) % 60;
+
+		String timeString = String.format("%d:%02d", minutes, seconds);
+		return timeString;
 	}
 }
