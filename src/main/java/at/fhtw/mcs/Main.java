@@ -31,6 +31,7 @@ public class Main extends Application {
 	public void initRootLayout() {
 		try {
 			FXMLLoader loader = new FXMLLoader();
+			loader.setController(new RootController(primaryStage));
 			loader.setLocation(Main.class.getResource("../../../views/Root.fxml"));
 			rootLayout = (BorderPane) loader.load();
 			rootController = (RootController) loader.getController();

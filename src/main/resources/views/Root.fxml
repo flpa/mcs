@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.fhtw.mcs.controller.RootController">
+<BorderPane prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <top>
       <VBox BorderPane.alignment="CENTER">
          <children>
@@ -17,12 +17,12 @@
                 <Menu mnemonicParsing="false" text="Datei">
                   <items>
                     <MenuItem mnemonicParsing="false" text="Neues Projekt" />
-                        <MenuItem mnemonicParsing="false" text="Öffnen ..." />
+                        <MenuItem mnemonicParsing="false" text="Öffnen..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem mnemonicParsing="false" text="Schließen" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem mnemonicParsing="false" text="Speichern" />
-                        <MenuItem mnemonicParsing="false" text="Speichern unter ..." />
+                        <MenuItem mnemonicParsing="false" text="Speichern unter..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="Beenden" />
                   </items>
@@ -30,6 +30,11 @@
                 <Menu mnemonicParsing="false" text="Bearbeiten">
                   <items>
                     <MenuItem mnemonicParsing="false" text="Audiogeräte" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Tracks">
+                  <items>
+                    <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="Track hinzufügen..." />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Hilfe">
@@ -69,8 +74,8 @@
                               </Label>
                               <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">
                                 <buttons>
-                                  <Button mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
-                                    <Button mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
+                                  <Button fx:id="buttonPlayPause" mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
+                                    <Button fx:id="buttonStop" mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
                                 </buttons>
                               </ButtonBar>
                            </children></AnchorPane>
