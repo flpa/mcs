@@ -16,18 +16,18 @@
               <menus>
                 <Menu mnemonicParsing="false" text="Datei">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="Neues Projekt" />
-                        <MenuItem mnemonicParsing="false" text="Öffnen..." />
+                    <MenuItem disable="true" mnemonicParsing="false" text="Neues Projekt" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="Öffnen..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Schließen" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="Schließen" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Speichern" />
-                        <MenuItem mnemonicParsing="false" text="Speichern unter..." />
+                        <MenuItem disable="true" mnemonicParsing="false" text="Speichern" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="Speichern unter..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="Beenden" />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Bearbeiten">
+                <Menu disable="true" mnemonicParsing="false" text="Bearbeiten">
                   <items>
                     <MenuItem mnemonicParsing="false" text="Audiogeräte" />
                   </items>
@@ -37,7 +37,7 @@
                     <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="Track hinzufügen..." />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Hilfe">
+                <Menu disable="true" mnemonicParsing="false" text="Hilfe">
                   <items>
                     <MenuItem mnemonicParsing="false" text="Benutzerhandbuch" />
                         <MenuItem mnemonicParsing="false" text="Über MCS" />
@@ -67,15 +67,15 @@
                         <Text fx:id="textTotalTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                         <AnchorPane maxHeight="40.0" GridPane.columnIndex="1">
                            <children>
-                              <Label contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="Volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
+                              <Label disable="true" contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="Volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
                                  <graphic>
                                     <Slider />
                                  </graphic>
                               </Label>
                               <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">
                                 <buttons>
-                                  <Button fx:id="buttonPlayPause" mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
-                                    <Button fx:id="buttonStop" mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
+                                  <Button fx:id="buttonPlayPause" disable="true" mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
+                                    <Button fx:id="buttonStop" disable="true" mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
                                 </buttons>
                               </ButtonBar>
                            </children></AnchorPane>

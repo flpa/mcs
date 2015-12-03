@@ -106,12 +106,18 @@ public class RootController implements Initializable {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new TrackController(track));
-			loader.setLocation(getClass().getResource("../../../views/Track.fxml"));
+			/*
+			 * TODO: proper way of loading without depending on package
+			 * structure?
+			 */
+			loader.setLocation(getClass().getResource("../../../../views/Track.fxml"));
 			Node track = loader.load();
 			vboxTracks.getChildren().add(track);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		buttonPlayPause.setDisable(false);
+		buttonStop.setDisable(false);
 	}
 
 	private String formatTimeString(long totalMicroseconds) {

@@ -23,9 +23,9 @@
             <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <RadioButton alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-            <Button mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <Button mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <RadioButton disable="true" alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
+            <Button disable="true" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Button disable="true" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
             <LineChart createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="225.0" style="-fx-padding: -10;" verticalGridLinesVisible="false" GridPane.columnIndex="1" GridPane.rowSpan="3">
               <xAxis>
                 <NumberAxis opacity="0" prefHeight="0.0" side="BOTTOM" tickLabelsVisible="false" />
@@ -40,9 +40,9 @@
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
                </children>
             </AnchorPane>
-            <TextArea promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextArea disable="true" promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
-      <Button mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Button disable="true" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>
