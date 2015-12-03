@@ -61,7 +61,7 @@ public class RootController implements Initializable {
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		this.bundle = arg1;
 
-		// Java8 lambda
+		// 'x -> functionCall' is a minimalistic Java8 lambda
 		menuItemQuit.setOnAction(e -> Platform.exit());
 		menuItemAddTrack.setOnAction(this::handleAddTrack);
 
@@ -85,6 +85,10 @@ public class RootController implements Initializable {
 
 	private void handleAddTrack(ActionEvent event) {
 		FileChooser chooser = new FileChooser();
+		/*
+		 * TODO: should restrict file types! but maybe don't hardcode, rather
+		 * 'ask' a responsible class what file types are allowed?
+		 */
 
 		chooser.setTitle("TRANSLATE ME");
 		File file = chooser.showOpenDialog(stage);
