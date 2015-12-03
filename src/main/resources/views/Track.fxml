@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="300.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.fhtw.mcs.controller.TrackController">
+   <children>
+      <GridPane alignment="CENTER" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+        <columnConstraints>
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <RadioButton alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
+            <Button mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Button mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <LineChart createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="225.0" style="-fx-padding: -10;" verticalGridLinesVisible="false" GridPane.columnIndex="1" GridPane.rowSpan="3">
+              <xAxis>
+                <NumberAxis opacity="0" prefHeight="0.0" side="BOTTOM" tickLabelsVisible="false" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis opacity="0" prefWidth="0.0" side="LEFT" tickLabelsVisible="false" />
+              </yAxis>
+            </LineChart>
+            <AnchorPane prefHeight="70.0" prefWidth="660.0" GridPane.columnIndex="1">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="jfp.wav" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+               </children>
+            </AnchorPane>
+            <TextArea promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+         </children>
+      </GridPane>
+      <Button mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+   </children>
+</AnchorPane>

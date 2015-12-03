@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.fhtw.mcs.controller.RootController">
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="Datei">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Neues Projekt" />
+                        <MenuItem mnemonicParsing="false" text="Öffnen ..." />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Schließen" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Speichern" />
+                        <MenuItem mnemonicParsing="false" text="Speichern unter ..." />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Beenden" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Bearbeiten">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Audiogeräte" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Hilfe">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Benutzerhandbuch" />
+                        <MenuItem mnemonicParsing="false" text="Über MCS" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <AnchorPane prefHeight="100.0" prefWidth="800.0">
+               <children>
+                  <GridPane alignment="CENTER" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                    <columnConstraints>
+                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="75.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="75.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <AnchorPane maxHeight="20.0" prefHeight="20.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <children>
+                              <ProgressBar prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.rowIndex="1" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="4:23" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <AnchorPane maxHeight="40.0" GridPane.columnIndex="1">
+                           <children>
+                              <Label contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="Volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
+                                 <graphic>
+                                    <Slider />
+                                 </graphic>
+                              </Label>
+                              <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">
+                                <buttons>
+                                  <Button mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
+                                    <Button mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
+                                </buttons>
+                              </ButtonBar>
+                           </children></AnchorPane>
+                     </children>
+                  </GridPane>
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </top>
+   <bottom>
+      <GridPane BorderPane.alignment="BOTTOM_LEFT">
+         <BorderPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </BorderPane.margin>
+         <columnConstraints>
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+            <ColumnConstraints hgrow="SOMETIMES" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label text="Track hinzufügen" GridPane.columnIndex="1" />
+            <Button mnemonicParsing="false" text="+" />
+         </children>
+      </GridPane>
+   </bottom>
+   <center>
+      <VBox fx:id="vboxTracks" spacing="10.0" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>
