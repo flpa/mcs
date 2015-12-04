@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="%menuItem.file">
+                  <items>
+                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.newProject" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.openProject" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.closeProject" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProject" />
+                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProjectAs" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="%menuItem.quit" />
+                  </items>
+                </Menu>
+                <Menu disable="true" mnemonicParsing="false" text="%menuItem.edit">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="%menuItem.outputDevices" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="%menuItem.tracks">
+                  <items>
+                    <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="%menuItem.addTrack" />
+                  </items>
+                </Menu>
+                <Menu disable="true" mnemonicParsing="false" text="%menuItem.help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="%menuItem.manual" />
+                        <MenuItem mnemonicParsing="false" text="%menuItem.about" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <AnchorPane prefHeight="100.0" prefWidth="800.0">
+               <children>
+                  <GridPane alignment="CENTER" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                    <columnConstraints>
+                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="75.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="75.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <AnchorPane maxHeight="20.0" prefHeight="20.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <children>
+                              <ProgressBar fx:id="progressBarTime" prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                        <Text fx:id="textCurrentTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.rowIndex="1" />
+                        <Text fx:id="textTotalTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <AnchorPane maxHeight="40.0" GridPane.columnIndex="1">
+                           <children>
+                              <Label disable="true" contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="%label.volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
+                                 <graphic>
+                                    <Slider />
+                                 </graphic>
+                              </Label>
+                              <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">
+                                <buttons>
+                                  <Button fx:id="buttonPlayPause" disable="true" mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
+                                    <Button fx:id="buttonStop" disable="true" mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
+                                </buttons>
+                              </ButtonBar>
+                           </children></AnchorPane>
+                     </children>
+                  </GridPane>
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </top>
+   <bottom>
+      <GridPane BorderPane.alignment="BOTTOM_LEFT">
+         <BorderPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </BorderPane.margin>
+         <columnConstraints>
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+            <ColumnConstraints hgrow="SOMETIMES" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="60" minWidth="60" prefWidth="60" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label text="%button.addTrack" GridPane.columnIndex="1" />
+            <Button fx:id="buttonAddTrack" mnemonicParsing="false" text="+" />
+         </children>
+      </GridPane>
+   </bottom>
+   <center>
+      <VBox fx:id="vboxTracks" spacing="10.0" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>

@@ -10,6 +10,8 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import org.apache.commons.io.FilenameUtils;
+
 import at.fhtw.mcs.model.TrackFactory.UnsupportedFormatException;
 import at.fhtw.mcs.util.FormatDetection;
 import javazoom.jl.converter.Converter;
@@ -99,5 +101,21 @@ public class JavaxJavazoomTrack implements Track {
 	public void stop() {
 		clip.stop();
 		framePosition = 0;
+		clip.setFramePosition(0);
+	}
+
+	@Override
+	public long getCurrentMicroseconds() {
+		return clip.getMicrosecondPosition();
+	}
+
+	@Override
+	public long getTotalMicroseconds() {
+		return clip.getMicrosecondLength();
+	}
+
+	@Override
+	public String getFilename() {
+		return FilenameUtils.getName(path);
 	}
 }
