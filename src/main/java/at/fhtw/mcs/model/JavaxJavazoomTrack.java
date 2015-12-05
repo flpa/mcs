@@ -94,6 +94,7 @@ public class JavaxJavazoomTrack implements Track {
 	private void storeData(String path) throws UnsupportedAudioFileException, IOException {
 
 		final int BUFFER_LENGTH = 1024;
+		int offset = 0;
 
 		File sourceFile = new File(path);
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
@@ -109,9 +110,16 @@ public class JavaxJavazoomTrack implements Track {
 		int bread;
 
 		while (true) {
-			if ((bread = inputAIS.read(bytes)) == -1) {
+			// bread = inputAIS.read(bytes, offset, BUFFER_LENGTH *
+			// audioFormat.getChannels();
+			bread = inputAIS.read(bytes);
+
+			if (bread == -1) {
 				break;
 			}
+
+			offset += BUFFER_LENGTH * audioFormat.getChannels();
+
 			samples = unpack(bytes, transfer, samples, bread, audioFormat);
 			audioData.add(samples);
 		}

@@ -37,18 +37,26 @@ public class TrackController implements Initializable {
 
 		int x = 0;
 
-		for (int i = 1; i <= tempData.size(); i++) {
+		for (int i = 0; i < tempData.size(); i++) {
 
-			if (tempData.elementAt(i - 1) == null) {
+			if (tempData.elementAt(i) == null) {
 				break;
 			}
 
-			for (int j = 0; j < tempData.elementAt(i - 1).length; j++) {
+			for (int j = 0; j < tempData.elementAt(i).length; j++) {
 
-				if (j % 2000 == 0) {
-					float leftChannel = tempData.elementAt(i - 1)[j];
-					float rightChannel = tempData.elementAt(i - 1)[j + 1];
+				if (j % 128 == 0) {
+					float leftChannel = tempData.elementAt(i)[j];
+					float rightChannel = tempData.elementAt(i)[j + 1];
 					float mean = (leftChannel + rightChannel) / 2;
+
+					// System.out.println("#" + x + " array: " + i);
+					// System.out.println("left: " + leftChannel);
+					// System.out.println("rigt: " + rightChannel);
+					// System.out.println("mean: " + mean);
+
+					// double level = Math.pow(-1, i) * Math.random();
+					// System.out.println(level + ":" + mean);
 
 					series.getData().add(new XYChart.Data<Number, Number>(x, mean));
 					x++;
