@@ -44,6 +44,12 @@ public class TrackController implements Initializable {
 			}
 
 			for (int j = 0; j < tempData.elementAt(i).length; j++) {
+				/**
+				 * TODO if the number after % is bigger, the performance will be
+				 * better but the waveform will be not as detailed, it also
+				 * shouldn't be bigger than the Buffer_size used in
+				 * JavaxJavazoomTrack.java
+				 */
 
 				if (j % 128 == 0) {
 					float leftChannel = tempData.elementAt(i)[j];
