@@ -1,5 +1,7 @@
 package at.fhtw.mcs.model;
 
+import java.util.Vector;
+
 /**
  * Defines the general interface of an audio track.
  * 
@@ -41,4 +43,6 @@ public interface Track {
 	long getTotalMicroseconds();
 
 	String getFilename();
+
+	Vector<float[]> getAudioData();
 }
