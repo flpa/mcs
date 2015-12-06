@@ -45,4 +45,6 @@ public interface Track {
 	String getFilename();
 
 	Vector<float[]> getAudioData();
+
+	int getLength();
 }

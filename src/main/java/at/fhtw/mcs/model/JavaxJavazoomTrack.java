@@ -1,5 +1,6 @@
 package at.fhtw.mcs.model;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -24,6 +25,7 @@ public class JavaxJavazoomTrack implements Track {
 	private String path;
 	private Clip clip;
 	private int framePosition = 0;
+	private int frameLength;
 	private Vector<float[]> audioData = new Vector<float[]>();
 
 	/**
@@ -48,6 +50,8 @@ public class JavaxJavazoomTrack implements Track {
 		}
 
 		clip = openClip();
+
+		frameLength = clip.getFrameLength();
 
 		// calls a function which calculates als the amplitude Data as floats
 		try {
@@ -94,35 +98,38 @@ public class JavaxJavazoomTrack implements Track {
 	private void storeData(String path) throws UnsupportedAudioFileException, IOException {
 
 		final int BUFFER_LENGTH = 1024;
-		int offset = 0;
 
 		File sourceFile = new File(path);
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
 		AudioFormat audioFormat = fileFormat.getFormat();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
+		int nBufferSize = BUFFER_LENGTH * audioFormat.getFrameSize();
 		final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
-		float[] samples = new float[BUFFER_LENGTH * audioFormat.getChannels()];
-		long[] transfer = new long[samples.length];
-		byte[] bytes = new byte[samples.length * normalBytes];
+		byte[] bytes = new byte[nBufferSize];
 
 		AudioInputStream inputAIS = AudioSystem.getAudioInputStream(sourceFile);
 
-		int bread;
+		int bytesRead;
 
 		while (true) {
-			// bread = inputAIS.read(bytes, offset, BUFFER_LENGTH *
-			// audioFormat.getChannels();
-			bread = inputAIS.read(bytes);
+			bytesRead = inputAIS.read(bytes);
+			// bread = inputAIS.read(bytes);
 
-			if (bread == -1) {
+			if (bytesRead == -1) {
 				break;
 			}
 
-			offset += BUFFER_LENGTH * audioFormat.getChannels();
-
-			samples = unpack(bytes, transfer, samples, bread, audioFormat);
-			audioData.add(samples);
+			byteArrayOutputStream.write(bytes, 0, bytesRead);
 		}
+
+		byte[] byteAudioData = byteArrayOutputStream.toByteArray();
+
+		float[] samples = new float[(byteAudioData.length / normalBytes) * audioFormat.getChannels()];
+		long[] transfer = new long[samples.length];
+
+		samples = unpack(byteAudioData, transfer, samples, byteAudioData.length, audioFormat);
+		audioData.add(samples);
 
 	}
 
@@ -288,5 +295,10 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public Vector<float[]> getAudioData() {
 		return audioData;
+	}
+
+	@Override
+	public int getLength() {
+		return frameLength;
 	}
 }

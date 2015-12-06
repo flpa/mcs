@@ -35,6 +35,7 @@ public class TrackController implements Initializable {
 
 		Vector<float[]> tempData = track.getAudioData();
 
+		int audioFileLength = track.getLength();
 		int x = 0;
 
 		for (int i = 0; i < tempData.size(); i++) {
@@ -43,7 +44,8 @@ public class TrackController implements Initializable {
 				break;
 			}
 
-			for (int j = 0; j < tempData.elementAt(i).length; j++) {
+			for (int j = 0; j < audioFileLength * 2; j++) {
+
 				/**
 				 * TODO if the number after % is bigger, the performance will be
 				 * better but the waveform will be not as detailed, it also
@@ -51,18 +53,10 @@ public class TrackController implements Initializable {
 				 * JavaxJavazoomTrack.java
 				 */
 
-				if (j % 128 == 0) {
+				if (j % 64 == 0) {
 					float leftChannel = tempData.elementAt(i)[j];
 					float rightChannel = tempData.elementAt(i)[j + 1];
 					float mean = (leftChannel + rightChannel) / 2;
-
-					// System.out.println("#" + x + " array: " + i);
-					// System.out.println("left: " + leftChannel);
-					// System.out.println("rigt: " + rightChannel);
-					// System.out.println("mean: " + mean);
-
-					// double level = Math.pow(-1, i) * Math.random();
-					// System.out.println(level + ":" + mean);
 
 					series.getData().add(new XYChart.Data<Number, Number>(x, mean));
 					x++;

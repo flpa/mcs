@@ -108,7 +108,7 @@ public class RootController implements Initializable {
 				updateTime();
 			}
 			// TODO: config parameter
-		}, 0, 500);
+		}, 0, 50);
 
 		try {
 			FXMLLoader loader = new FXMLLoader();
