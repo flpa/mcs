@@ -53,13 +53,14 @@ public class TrackController implements Initializable {
 				 * JavaxJavazoomTrack.java
 				 */
 
-				if (j % 64 == 0) {
+				if (j % 1024 == 0) {
 					float leftChannel = tempData.elementAt(i)[j];
 					float rightChannel = tempData.elementAt(i)[j + 1];
 					float mean = (leftChannel + rightChannel) / 2;
 
 					series.getData().add(new XYChart.Data<Number, Number>(x, mean));
 					x++;
+					System.out.println(x * 1024 + " : " + audioFileLength * 2);
 				}
 			}
 		}
