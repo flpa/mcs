@@ -8,6 +8,7 @@ import at.fhtw.mcs.model.Track;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.text.Text;
 
@@ -66,6 +67,12 @@ public class TrackController implements Initializable {
 		}
 
 		lineChartWaveform.getData().add(series);
+
+		lineChartWaveform.getXAxis().setAutoRanging(false);
+		((NumberAxis) lineChartWaveform.getXAxis()).setUpperBound(x - 1);
+		lineChartWaveform.getYAxis().setAutoRanging(false);
+		((NumberAxis) lineChartWaveform.getYAxis()).setLowerBound(-1.5);
+		((NumberAxis) lineChartWaveform.getYAxis()).setUpperBound(1.5);
 
 	}
 }
