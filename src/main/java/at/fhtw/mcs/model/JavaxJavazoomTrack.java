@@ -335,12 +335,7 @@ public class JavaxJavazoomTrack implements Track {
 	public void calculateLoudness() {
 		float loudnessFloat = 0;
 		AudioFormat audioFormat = clip.getFormat();
-		/**
-		 * TODO schauen ob die gewichtung auch tatsächlich einen sinnvollen Wert
-		 * liefert
-		 */
-
-		float weight = audioFormat.getSampleRate() / 100;
+		int channels = audioFormat.getChannels();
 		int audioFileLength = this.getLength();
 
 		int x = 0;
@@ -351,20 +346,16 @@ public class JavaxJavazoomTrack implements Track {
 				break;
 			}
 
-			for (int j = 0; j < audioFileLength * 2; j++) {
+			for (int j = 0; j < audioFileLength * channels; j++) {
 
-				if (j % weight == 0) {
-					float leftChannel = audioData.elementAt(i)[j];
-					float rightChannel = audioData.elementAt(i)[j + 1];
-					float mean = (leftChannel + rightChannel) / 2;
-					x++;
-					sum += mean;
-					// System.out.println("mean: " + mean + " | sum: " + sum);
-				}
+				float leftChannel = audioData.elementAt(i)[j];
+				float rightChannel = audioData.elementAt(i)[j + 1];
+				float mean = (leftChannel + rightChannel) / 2;
+				x++;
+				sum += Math.pow(mean, 2);
 			}
 		}
-		// System.out.println("sum: " + sum + " | x: " + x);
-		loudnessFloat = sum / x;
+		loudnessFloat = (float) Math.sqrt(sum / x);
 		loudness = floatToDecibel(loudnessFloat);
 		System.out.println(loudness);
 
