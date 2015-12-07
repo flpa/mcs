@@ -72,7 +72,7 @@ public class RootController implements Initializable {
 
 	private Track track;
 	// TODO: store mixer, or store Mixer Info?
-	Mixer selectedMixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]);
+	private Mixer selectedMixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]);
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -99,6 +99,8 @@ public class RootController implements Initializable {
 		buttonAddTrack.setOnAction(this::handleAddTrack);
 
 		menuItemOutputDevices.setOnAction(e -> {
+			// TODO: sollte nur einmal geladen werden koennen
+			// TODO: handle device unplugged after selection
 			Stage stage = new Stage();
 			stage.setTitle("LOCALIZE ME");
 
@@ -122,8 +124,6 @@ public class RootController implements Initializable {
 			});
 			//@formatter:on
 
-			// TODO: handle device unplugged after selection
-
 			group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 				public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
 						Toggle newSelection) {
@@ -132,19 +132,10 @@ public class RootController implements Initializable {
 			});
 
 			stage.setScene(new Scene(container));
-			// TODO: sollte nur einmal geladen werden koennen?
 
+			// TODO: should autosize
+			stage.setMinWidth(400);
 			stage.show();
-
-			// Dialog<Object> d = new Dialog<>();
-			// d.setContentText("dext");
-			// Button button = new Button();
-			// button.setText("aha");
-			// button.setOnAction(e2 -> d.close());
-			// d.getDialogPane().getChildren().add(button);
-			// d.setWidth(200);
-			// d.setHeight(200);
-			// d.showAndWait();
 		});
 
 	}
