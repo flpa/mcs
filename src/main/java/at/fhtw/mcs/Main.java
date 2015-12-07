@@ -32,7 +32,6 @@ public class Main extends Application {
 			ResourceBundle bundle = ResourceBundle.getBundle("bundles.mcs");
 			loader.setResources(bundle);
 			rootLayout = (BorderPane) loader.load();
-
 			Scene scene = new Scene(rootLayout);
 			primaryStage.setTitle(bundle.getString("app.title"));
 			primaryStage.setScene(scene);

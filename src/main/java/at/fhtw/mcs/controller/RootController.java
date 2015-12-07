@@ -11,17 +11,28 @@ import java.util.concurrent.TimeUnit;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -35,6 +46,8 @@ public class RootController implements Initializable {
 	private MenuItem menuItemQuit;
 	@FXML
 	private MenuItem menuItemAddTrack;
+	@FXML
+	private MenuItem menuItemOutputDevices;
 	@FXML
 	private Button buttonPlayPause;
 	@FXML
@@ -76,6 +89,50 @@ public class RootController implements Initializable {
 			buttonPlayPause.setText("▶");
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
+
+		menuItemOutputDevices.setOnAction(e -> {
+			Stage stage = new Stage();
+			stage.setTitle("the radios");
+
+			final Button b = new Button("choose");
+
+			ToggleGroup group = new ToggleGroup();
+			RadioButton button1 = new RadioButton("select first");
+			button1.setUserData(123);
+			button1.setToggleGroup(group);
+			button1.setSelected(true);
+			RadioButton button2 = new RadioButton("select second");
+			button2.setToggleGroup(group);
+			button2.setUserData(666);
+			button2.setSelected(true);
+
+			b.setOnAction(e2 -> b.setText(group.getSelectedToggle().getUserData().toString()));
+
+			// TODO: handle device unplugged after selection
+
+			group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+				public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
+						Toggle newSelection) {
+					System.out.println(newSelection.getUserData());
+				}
+			});
+
+			stage.setScene(new Scene(new VBox(button1, button2, b)));
+			// should only be shown once?
+
+			stage.show();
+
+			// Dialog<Object> d = new Dialog<>();
+			// d.setContentText("dext");
+			// Button button = new Button();
+			// button.setText("aha");
+			// button.setOnAction(e2 -> d.close());
+			// d.getDialogPane().getChildren().add(button);
+			// d.setWidth(200);
+			// d.setHeight(200);
+			// d.showAndWait();
+		});
+
 	}
 
 	private void updateTime() {
@@ -113,10 +170,6 @@ public class RootController implements Initializable {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new TrackController(track));
-			/*
-			 * TODO: proper way of loading without depending on package
-			 * structure?
-			 */
 			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
 			loader.setResources(bundle);
 			Node track = loader.load();
