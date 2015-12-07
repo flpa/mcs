@@ -3,10 +3,16 @@ package at.fhtw.mcs.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
 
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
@@ -65,6 +71,8 @@ public class RootController implements Initializable {
 	private Stage stage;
 
 	private Track track;
+	// TODO: store mixer, or store Mixer Info?
+	Mixer selectedMixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]);
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -92,33 +100,39 @@ public class RootController implements Initializable {
 
 		menuItemOutputDevices.setOnAction(e -> {
 			Stage stage = new Stage();
-			stage.setTitle("the radios");
-
-			final Button b = new Button("choose");
+			stage.setTitle("LOCALIZE ME");
 
 			ToggleGroup group = new ToggleGroup();
-			RadioButton button1 = new RadioButton("select first");
-			button1.setUserData(123);
-			button1.setToggleGroup(group);
-			button1.setSelected(true);
-			RadioButton button2 = new RadioButton("select second");
-			button2.setToggleGroup(group);
-			button2.setUserData(666);
-			button2.setSelected(true);
+			VBox container = new VBox();
 
-			b.setOnAction(e2 -> b.setText(group.getSelectedToggle().getUserData().toString()));
+			// TODO: liste nur einmal aufbaun? oder jedes mal beim oeffnen?
+			// pro einmal: evt natuerlicher wenn der dialog immer da ist nur
+			// verborgen
+
+			//@formatter:off
+			Arrays.stream(AudioSystem.getMixerInfo())
+					.map(info -> AudioSystem.getMixer(info))
+					.filter(mixer -> mixer.isLineSupported(new Line.Info(Clip.class)))
+					.forEach(mixer -> {
+						RadioButton radio = new RadioButton(mixer.getMixerInfo().getDescription());
+						radio.setUserData(mixer);
+						radio.setToggleGroup(group);
+						radio.setSelected(mixer == selectedMixer);
+						container.getChildren().add(radio);
+			});
+			//@formatter:on
 
 			// TODO: handle device unplugged after selection
 
 			group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 				public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
 						Toggle newSelection) {
-					System.out.println(newSelection.getUserData());
+					selectedMixer = (Mixer) newSelection.getUserData();
 				}
 			});
 
-			stage.setScene(new Scene(new VBox(button1, button2, b)));
-			// should only be shown once?
+			stage.setScene(new Scene(container));
+			// TODO: sollte nur einmal geladen werden koennen?
 
 			stage.show();
 
