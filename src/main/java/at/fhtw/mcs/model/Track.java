@@ -42,6 +42,21 @@ public interface Track {
 	 */
 	long getTotalMicroseconds();
 
+	/**
+	 * @return the dB Value of a float (-1.0 to 1.0)
+	 */
+	float floatToDecibel(float sample);
+
+	/**
+	 * @return a float (-1.0 to 1.0) of a dB-Value
+	 */
+	float decibelToFloat(float dB);
+
+	/**
+	 * @return the average Loudness of the Track in dB
+	 */
+	void calculateLoudness();
+
 	String getFilename();
 
 	Vector<float[]> getAudioData();

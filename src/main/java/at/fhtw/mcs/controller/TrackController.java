@@ -30,6 +30,17 @@ public class TrackController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		int OFFSET;
+		int shortTrackBoundary = 30000000;
+		int mediumTrackBoundary = 180000000;
+		if (track.getTotalMicroseconds() < shortTrackBoundary) {
+			OFFSET = 64;
+		} else if (track.getTotalMicroseconds() < mediumTrackBoundary) {
+			OFFSET = 512;
+		} else {
+			OFFSET = 1024;
+		}
+
 		textTrackName.setText(track.getFilename());
 
 		XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
@@ -45,23 +56,24 @@ public class TrackController implements Initializable {
 				break;
 			}
 
+			/**
+			 * TODO Ich geh hier momentan hardcoded davon aus, dass wir immer
+			 * Stereofiles haben. Das sollt aber eigentlich ned so sein. Schöner
+			 * wärs wenn wir die Channel Anzahl auslesen und dann die Funktion
+			 * anpassen. Es müsste bei mono auch kein "mean" gebildet werden.
+			 */
+
 			for (int j = 0; j < audioFileLength * 2; j++) {
 
-				/**
-				 * TODO if the number after % is bigger, the performance will be
-				 * better but the waveform will be not as detailed, it also
-				 * shouldn't be bigger than the Buffer_size used in
-				 * JavaxJavazoomTrack.java
-				 */
-
-				if (j % 1024 == 0) {
+				if (j % OFFSET == 0) {
 					float leftChannel = tempData.elementAt(i)[j];
 					float rightChannel = tempData.elementAt(i)[j + 1];
 					float mean = (leftChannel + rightChannel) / 2;
 
 					series.getData().add(new XYChart.Data<Number, Number>(x, mean));
 					x++;
-					System.out.println(x * 1024 + " : " + audioFileLength * 2);
+					// System.out.println(x * OFFSET + " : " + audioFileLength *
+					// 2);
 				}
 			}
 		}
@@ -71,8 +83,8 @@ public class TrackController implements Initializable {
 		lineChartWaveform.getXAxis().setAutoRanging(false);
 		((NumberAxis) lineChartWaveform.getXAxis()).setUpperBound(x - 1);
 		lineChartWaveform.getYAxis().setAutoRanging(false);
-		((NumberAxis) lineChartWaveform.getYAxis()).setLowerBound(-1.5);
-		((NumberAxis) lineChartWaveform.getYAxis()).setUpperBound(1.5);
+		((NumberAxis) lineChartWaveform.getYAxis()).setLowerBound(-1.0);
+		((NumberAxis) lineChartWaveform.getYAxis()).setUpperBound(1.0);
 
 	}
 }

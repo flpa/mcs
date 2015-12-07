@@ -26,6 +26,7 @@ public class JavaxJavazoomTrack implements Track {
 	private Clip clip;
 	private int framePosition = 0;
 	private int frameLength;
+	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
 
 	/**
@@ -54,8 +55,10 @@ public class JavaxJavazoomTrack implements Track {
 		frameLength = clip.getFrameLength();
 
 		// calls a function which calculates als the amplitude Data as floats
+		// and a function that calculates the loudness
 		try {
 			storeData(path);
+			calculateLoudness();
 		} catch (UnsupportedAudioFileException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -300,5 +303,65 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public int getLength() {
 		return frameLength;
+	}
+
+	@Override
+	public float floatToDecibel(float sample) {
+		float db;
+		sample = Math.abs(sample);
+
+		if (sample != 0.0f) {
+			db = (float) (20.0f * Math.log10(sample));
+		} else {
+			db = -144.0f;
+		}
+		return db;
+	}
+
+	@Override
+	public float decibelToFloat(float dB) {
+		float sample;
+
+		if (dB != -144.0f) {
+			sample = (float) Math.pow(10, (dB / 20));
+		} else {
+			sample = 0.0f;
+		}
+
+		return sample;
+	}
+
+	@Override
+	public void calculateLoudness() {
+		float loudnessFloat = 0;
+		AudioFormat audioFormat = clip.getFormat();
+		float weight = audioFormat.getSampleRate() / 100;
+		int audioFileLength = this.getLength();
+
+		int x = 0;
+		float sum = 0;
+		for (int i = 0; i < audioData.size(); i++) {
+
+			if (this.audioData.elementAt(i) == null) {
+				break;
+			}
+
+			for (int j = 0; j < audioFileLength * 2; j++) {
+
+				if (j % weight == 0) {
+					float leftChannel = audioData.elementAt(i)[j];
+					float rightChannel = audioData.elementAt(i)[j + 1];
+					float mean = (leftChannel + rightChannel) / 2;
+					x++;
+					sum += mean;
+					// System.out.println("mean: " + mean + " | sum: " + sum);
+				}
+			}
+		}
+		// System.out.println("sum: " + sum + " | x: " + x);
+		loudnessFloat = sum / x;
+		loudness = floatToDecibel(loudnessFloat);
+		// System.out.println(loudness);
+
 	}
 }
