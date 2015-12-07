@@ -74,6 +74,7 @@ public class TrackController implements Initializable {
 					x++;
 					// System.out.println(x * OFFSET + " : " + audioFileLength *
 					// 2);
+					// System.out.println(mean);
 				}
 			}
 		}
