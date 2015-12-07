@@ -24,7 +24,6 @@ import javazoom.jl.decoder.JavaLayerException;
 public class JavaxJavazoomTrack implements Track {
 	private String path;
 	private Clip clip;
-	private int framePosition = 0;
 	private int frameLength;
 	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
@@ -138,13 +137,11 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void play() {
-		clip.setFramePosition(framePosition);
 		clip.start();
 	}
 
 	@Override
 	public void pause() {
-		framePosition = clip.getFramePosition();
 		clip.stop();
 	}
 
@@ -160,7 +157,6 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public void stop() {
 		clip.stop();
-		framePosition = 0;
 		clip.setFramePosition(0);
 	}
 
