@@ -350,7 +350,10 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * Fetch important clip data and dispose of the old clip.
 		 */
-		// TODO: will also need to clone MUTE status
+		/*
+		 * TODO: will also need to clone MUTE status (when supporting multiple
+		 * tracks)
+		 */
 		boolean wasRunning = clip.isRunning();
 		clip.stop();
 		int framePosition = clip.getFramePosition();

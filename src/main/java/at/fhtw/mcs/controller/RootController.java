@@ -96,7 +96,6 @@ public class RootController implements Initializable {
 
 		ToggleGroup group = new ToggleGroup();
 
-		// TODO: mistery of disappearing mixer?
 		//@formatter:off
 		Arrays.stream(AudioSystem.getMixerInfo())
 				.filter(RootController::isOutputMixerInfo)
