@@ -29,6 +29,12 @@ import javafx.stage.Stage;
  */
 public class RootController implements Initializable {
 
+	/*
+	 * Where to move those? ResourceBundles?
+	 */
+	private static final String ICON_PAUSE = "||";
+	private static final String ICON_PLAY = "▶";
+
 	@FXML
 	private VBox vboxTracks;
 	@FXML
@@ -68,19 +74,25 @@ public class RootController implements Initializable {
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
 			track.togglePlayPause();
-			// TODO: extract unicode constants
-			buttonPlayPause.setText("▶".equals(buttonPlayPause.getText()) ? "||" : "▶");
+			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
 		buttonStop.setOnAction(e -> {
 			track.stop();
-			buttonPlayPause.setText("▶");
+			buttonPlayPause.setText(ICON_PLAY);
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
 	}
 
 	private void updateTime() {
-		progressBarTime.setProgress((double) track.getCurrentMicroseconds() / track.getTotalMicroseconds());
-		textCurrentTime.setText(formatTimeString(track.getCurrentMicroseconds()));
+		long currentMicroseconds = track.getCurrentMicroseconds();
+		long totalMicroseconds = track.getTotalMicroseconds();
+		progressBarTime.setProgress((double) currentMicroseconds / totalMicroseconds);
+		textCurrentTime.setText(formatTimeString(currentMicroseconds));
+
+		// TODO: reset playPause button; doesn't work
+		// if (currentMicroseconds == totalMicroseconds) {
+		// buttonPlayPause.setText(ICON_PLAY);
+		// }
 	}
 
 	private void handleAddTrack(ActionEvent event) {
