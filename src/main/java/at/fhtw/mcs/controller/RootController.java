@@ -25,11 +25,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.RadioButton;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
@@ -44,6 +44,8 @@ public class RootController implements Initializable {
 
 	@FXML
 	private VBox vboxTracks;
+	@FXML
+	private Menu menuOutputDevices;
 	@FXML
 	private MenuItem menuItemQuit;
 	@FXML
@@ -73,8 +75,8 @@ public class RootController implements Initializable {
 	}
 
 	@Override
-	public void initialize(URL arg0, ResourceBundle arg1) {
-		this.bundle = arg1;
+	public void initialize(URL viewSource, ResourceBundle translations) {
+		this.bundle = translations;
 
 		// 'x -> functionCall' is a minimalistic Java8 lambda
 		menuItemQuit.setOnAction(e -> Platform.exit());
@@ -92,50 +94,35 @@ public class RootController implements Initializable {
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
 
-		menuItemOutputDevices.setOnAction(e -> {
-			// TODO: sollte nur einmal geladen werden koennen
-			// TODO: handle device unplugged after selection
-			Stage stage = new Stage();
-			stage.setTitle("LOCALIZE ME");
+		ToggleGroup group = new ToggleGroup();
 
-			ToggleGroup group = new ToggleGroup();
-			VBox container = new VBox();
-
-			// TODO: liste nur einmal aufbaun? oder jedes mal beim oeffnen?
-			// pro einmal: evt natuerlicher wenn der dialog immer da ist nur
-			// verborgen
-
-			// TODO: mistery of disappearing mixer?
-
-			//@formatter:off
-			Arrays.stream(AudioSystem.getMixerInfo())
-					.filter(info -> AudioSystem.getMixer(info).isLineSupported(new Line.Info(Clip.class)))
-					.forEach(info -> {
-						RadioButton radio = new RadioButton(info.getDescription());
-						radio.setUserData(info);
-						radio.setToggleGroup(group);
-						radio.setSelected(info.equals(AudioOuput.getSelectedMixerInfo()));
-						container.getChildren().add(radio);
-			});
-			//@formatter:on
-
-			group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-				public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
-						Toggle newSelection) {
-					AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
-					if (track != null) {
-						track.reload();
-					}
-				}
-			});
-
-			stage.setScene(new Scene(container));
-
-			// TODO: should autosize
-			stage.setMinWidth(400);
-			stage.show();
+		// TODO: mistery of disappearing mixer?
+		//@formatter:off
+		Arrays.stream(AudioSystem.getMixerInfo())
+				.filter(RootController::isOutputMixerInfo)
+				.forEach(info -> {
+					RadioMenuItem radio = new RadioMenuItem();
+					radio.setText(String.format("%s (%s)", info.getName(), info.getDescription()));
+					radio.setUserData(info);
+					radio.setToggleGroup(group);
+					radio.setSelected(info.equals(AudioOuput.getSelectedMixerInfo()));
+					menuOutputDevices.getItems().add(radio);
 		});
+		//@formatter:on
 
+		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
+					Toggle newSelection) {
+				AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
+				if (track != null) {
+					track.reload();
+				}
+			}
+		});
+	}
+
+	private static boolean isOutputMixerInfo(Mixer.Info info) {
+		return AudioSystem.getMixer(info).isLineSupported(new Line.Info(Clip.class));
 	}
 
 	private void updateTime() {

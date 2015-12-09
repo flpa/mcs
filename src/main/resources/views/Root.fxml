@@ -29,7 +29,7 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.edit">
                   <items>
-                    <MenuItem fx:id="menuItemOutputDevices" mnemonicParsing="false" text="%menuItem.outputDevices" />
+                        <Menu fx:id="menuOutputDevices" mnemonicParsing="false" text="%menu.outputDevices" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.tracks">
