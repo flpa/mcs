@@ -14,10 +14,10 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
 
+import at.fhtw.mcs.model.AudioOuput;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -27,18 +27,14 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -71,8 +67,6 @@ public class RootController implements Initializable {
 	private Stage stage;
 
 	private Track track;
-	// TODO: store mixer, or store Mixer Info?
-	private Mixer selectedMixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[0]);
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -111,15 +105,16 @@ public class RootController implements Initializable {
 			// pro einmal: evt natuerlicher wenn der dialog immer da ist nur
 			// verborgen
 
+			// TODO: mistery of disappearing mixer?
+
 			//@formatter:off
 			Arrays.stream(AudioSystem.getMixerInfo())
-					.map(info -> AudioSystem.getMixer(info))
-					.filter(mixer -> mixer.isLineSupported(new Line.Info(Clip.class)))
-					.forEach(mixer -> {
-						RadioButton radio = new RadioButton(mixer.getMixerInfo().getDescription());
-						radio.setUserData(mixer);
+					.filter(info -> AudioSystem.getMixer(info).isLineSupported(new Line.Info(Clip.class)))
+					.forEach(info -> {
+						RadioButton radio = new RadioButton(info.getDescription());
+						radio.setUserData(info);
 						radio.setToggleGroup(group);
-						radio.setSelected(mixer == selectedMixer);
+						radio.setSelected(info.equals(AudioOuput.getSelectedMixerInfo()));
 						container.getChildren().add(radio);
 			});
 			//@formatter:on
@@ -127,7 +122,10 @@ public class RootController implements Initializable {
 			group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 				public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
 						Toggle newSelection) {
-					selectedMixer = (Mixer) newSelection.getUserData();
+					AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
+					if (track != null) {
+						track.reload();
+					}
 				}
 			});
 
@@ -170,7 +168,7 @@ public class RootController implements Initializable {
 				updateTime();
 			}
 			// TODO: config parameter
-		}, 0, 50);
+		}, 0, 500);
 
 		try {
 			FXMLLoader loader = new FXMLLoader();

@@ -3,7 +3,6 @@ package at.fhtw.mcs.model;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Vector;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -49,7 +48,7 @@ public class JavaxJavazoomTrack implements Track {
 				throw new UnsupportedFormatException(format);
 		}
 
-		clip = openClip();
+		clip = AudioOuput.openClip(new File(path));
 
 		frameLength = clip.getFrameLength();
 
@@ -83,18 +82,6 @@ public class JavaxJavazoomTrack implements Track {
 		}
 
 		return newPath;
-	}
-
-	private Clip openClip() throws RuntimeException {
-		try {
-			URL url = new File(path).toURI().toURL();
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
-			Clip clip = AudioSystem.getClip();
-			clip.open(audioIn);
-			return clip;
-		} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-			throw new RuntimeException("Error while opening clip", e);
-		}
 	}
 
 	private void storeData(String path) throws UnsupportedAudioFileException, IOException {
@@ -359,5 +346,27 @@ public class JavaxJavazoomTrack implements Track {
 		loudness = floatToDecibel(loudnessFloat);
 		System.out.println(loudness);
 
+	}
+
+	@Override
+	public void reload() {
+		/*
+		 * Fetch important clip data and dispose of the old clip.
+		 */
+		// TODO: will also need to clone MUTE status
+		boolean wasRunning = clip.isRunning();
+		clip.stop(); // fails on second device...
+		int framePosition = clip.getFramePosition();
+		clip.close();
+
+		/*
+		 * Open a new clip with the same properties as the old.
+		 */
+		Clip newClip = AudioOuput.openClip(new File(path));
+		newClip.setFramePosition(framePosition);
+		if (wasRunning) {
+			newClip.start();
+		}
+		clip = newClip;
 	}
 }

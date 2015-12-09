@@ -52,4 +52,9 @@ public interface Track {
 	Vector<float[]> getAudioData();
 
 	int getLength();
+
+	/**
+	 * Reloads the Track. Does *not* repeat audio analysis.
+	 */
+	void reload();
 }
