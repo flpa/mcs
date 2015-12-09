@@ -30,16 +30,9 @@ public class TrackController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		int OFFSET;
-		int shortTrackBoundary = 30000000;
-		int mediumTrackBoundary = 180000000;
-		if (track.getTotalMicroseconds() < shortTrackBoundary) {
-			OFFSET = 64;
-		} else if (track.getTotalMicroseconds() < mediumTrackBoundary) {
-			OFFSET = 512;
-		} else {
-			OFFSET = 1024;
-		}
+		int offset = Math.round(track.getLength() / 2000);
+
+		System.out.println(offset);
 
 		textTrackName.setText(track.getFilename());
 
@@ -57,24 +50,20 @@ public class TrackController implements Initializable {
 			}
 
 			/**
-			 * TODO Ich geh hier momentan hardcoded davon aus, dass wir immer
-			 * Stereofiles haben. Das sollt aber eigentlich ned so sein. Schöner
-			 * wärs wenn wir die Channel Anzahl auslesen und dann die Funktion
-			 * anpassen. Es müsste bei mono auch kein "mean" gebildet werden.
+			 * TODO momentan ist die Zeichnung auf 2000 Werte begrenzt, bei
+			 * längeren Files kommt dadurch kein schönes Bild zustande, müssen
+			 * wir uns noch anschauen
 			 */
 
 			for (int j = 0; j < audioFileLength * 2; j++) {
 
-				if (j % OFFSET == 0) {
+				if (j % offset == 0) {
 					float leftChannel = tempData.elementAt(i)[j];
 					float rightChannel = tempData.elementAt(i)[j + 1];
 					float mean = (leftChannel + rightChannel) / 2;
 
 					series.getData().add(new XYChart.Data<Number, Number>(x, mean));
 					x++;
-					// System.out.println(x * OFFSET + " : " + audioFileLength *
-					// 2);
-					// System.out.println(mean);
 				}
 			}
 		}
