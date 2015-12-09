@@ -57,7 +57,7 @@ public class JavaxJavazoomTrack implements Track {
 		// calls a function which calculates als the amplitude Data as floats
 		// and a function that calculates the loudness
 		try {
-			storeData(path);
+			storeData(this.path);
 			calculateLoudness();
 		} catch (UnsupportedAudioFileException e) {
 			// TODO Auto-generated catch block
@@ -305,8 +305,10 @@ public class JavaxJavazoomTrack implements Track {
 		return frameLength;
 	}
 
-	@Override
-	public float floatToDecibel(float sample) {
+	/**
+	 * @return the dB Value of a float (-1.0 to 1.0)
+	 */
+	private float floatToDecibel(float sample) {
 		float db;
 		sample = Math.abs(sample);
 
@@ -318,8 +320,10 @@ public class JavaxJavazoomTrack implements Track {
 		return db;
 	}
 
-	@Override
-	public float decibelToFloat(float dB) {
+	/**
+	 * @return a float (-1.0 to 1.0) of a dB-Value
+	 */
+	private float decibelToFloat(float dB) {
 		float sample;
 
 		if (dB != -144.0f) {
