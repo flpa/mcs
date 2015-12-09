@@ -14,8 +14,9 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.commons.io.FilenameUtils;
 
-import at.fhtw.mcs.model.TrackFactory.UnsupportedFormatException;
+import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
+import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 

@@ -1,4 +1,4 @@
-package at.fhtw.mcs.model;
+package at.fhtw.mcs.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,11 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+/**
+ * This class centralizes management of audio output. It maintains the selected
+ * {@link Mixer} and is reponsible for opening {@link Clip}s.
+ *
+ */
 public class AudioOuput {
 
 	private AudioOuput() {

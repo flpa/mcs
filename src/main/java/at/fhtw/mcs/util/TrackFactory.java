@@ -1,6 +1,8 @@
-package at.fhtw.mcs.model;
+package at.fhtw.mcs.util;
 
-import at.fhtw.mcs.util.ExtensionFormatDetection;
+import at.fhtw.mcs.model.Format;
+import at.fhtw.mcs.model.JavaxJavazoomTrack;
+import at.fhtw.mcs.model.Track;
 
 /**
  * Helper class to instatiate {@link Track}s.

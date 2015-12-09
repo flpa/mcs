@@ -14,9 +14,9 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
 
-import at.fhtw.mcs.model.AudioOuput;
 import at.fhtw.mcs.model.Track;
-import at.fhtw.mcs.model.TrackFactory;
+import at.fhtw.mcs.util.AudioOuput;
+import at.fhtw.mcs.util.TrackFactory;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
