@@ -10,7 +10,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.commons.io.FilenameUtils;
@@ -85,7 +84,6 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	private void storeData(String path) throws UnsupportedAudioFileException, IOException {
-
 		final int BUFFER_LENGTH = 1024;
 
 		File sourceFile = new File(path);
@@ -119,7 +117,6 @@ public class JavaxJavazoomTrack implements Track {
 
 		samples = unpack(byteAudioData, transfer, samples, byteAudioData.length, audioFormat);
 		audioData.add(samples);
-
 	}
 
 	@Override
@@ -163,7 +160,6 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	public static int normalBytesFromBits(int bitsPerSample) {
-
 		/*
 		 * some formats allow for bit depths in non-multiples of 8. they will,
 		 * however, typically pad so the samples are stored that way. AIFF is
@@ -355,12 +351,12 @@ public class JavaxJavazoomTrack implements Track {
 		 */
 		// TODO: will also need to clone MUTE status
 		boolean wasRunning = clip.isRunning();
-		clip.stop(); // fails on second device...
+		clip.stop();
 		int framePosition = clip.getFramePosition();
 		clip.close();
 
 		/*
-		 * Open a new clip with the same properties as the old.
+		 * Open a new clip with the same properties as the old one.
 		 */
 		Clip newClip = AudioOuput.openClip(new File(path));
 		newClip.setFramePosition(framePosition);
