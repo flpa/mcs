@@ -14,7 +14,6 @@ public class Main extends Application {
 
 	private Stage primaryStage;
 	private BorderPane rootLayout;
-	private RootController rootController;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -33,7 +32,6 @@ public class Main extends Application {
 			ResourceBundle bundle = ResourceBundle.getBundle("bundles.mcs");
 			loader.setResources(bundle);
 			rootLayout = (BorderPane) loader.load();
-			rootController = (RootController) loader.getController();
 
 			Scene scene = new Scene(rootLayout);
 			primaryStage.setTitle(bundle.getString("app.title"));
