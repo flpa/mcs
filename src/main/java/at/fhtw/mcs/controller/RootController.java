@@ -165,7 +165,9 @@ public class RootController implements Initializable {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
+				long prevMillis = System.currentTimeMillis();
 				updateTime();
+				System.out.println("Update took ms: " + (System.currentTimeMillis() - prevMillis));
 			}
 			// TODO: config parameter
 		}, 0, 500);
