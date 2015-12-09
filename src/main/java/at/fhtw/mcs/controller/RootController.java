@@ -113,9 +113,15 @@ public class RootController implements Initializable {
 		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
 					Toggle newSelection) {
-				AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
-				if (track != null) {
-					track.reload();
+				/*
+				 * When modifying grouped RadioMenuItems, this is invoked twice:
+				 * 1) oldValue and null 2) null and newValue
+				 */
+				if (newSelection != null) {
+					AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
+					if (track != null) {
+						track.reload();
+					}
 				}
 			}
 		});
@@ -148,16 +154,30 @@ public class RootController implements Initializable {
 		String timeString = formatTimeString(totalMicroseconds);
 		textTotalTime.setText(timeString);
 
+		// TODO: config parameter
+		long updateFrequencyMs = 100;
+
 		Timer timer = new Timer(true);
+		/*
+		 * Reading the documentation of timer.schedule(...), it seems like
+		 * there's no danger of timer-execution-congestion when a time
+		 * invocation blocks: "[...]each execution is scheduled relative to the
+		 * actual execution time of the previous execution."
+		 */
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				long prevMillis = System.currentTimeMillis();
 				updateTime();
-				System.out.println("Update took ms: " + (System.currentTimeMillis() - prevMillis));
+				long elapsedMs = System.currentTimeMillis() - prevMillis;
+
+				if (elapsedMs >= updateFrequencyMs) {
+					System.err.println(
+							String.format("Warning: Time update (%dms) took longer than the update frequency (%dms).",
+									elapsedMs, updateFrequencyMs));
+				}
 			}
-			// TODO: config parameter
-		}, 0, 500);
+		}, 0, updateFrequencyMs);
 
 		try {
 			FXMLLoader loader = new FXMLLoader();
