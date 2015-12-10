@@ -29,6 +29,10 @@ public class TrackFactory {
 			this.format = format;
 		}
 
+		public UnsupportedFormatException(String message) {
+			super(message);
+		}
+
 		public UnsupportedFormatException(Format format, String message, Exception e) {
 			super(message, e);
 			this.format = format;

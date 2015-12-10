@@ -22,10 +22,11 @@ import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
+	private static final int BUFFER_LENGTH = 1024;
+
 	private String path;
 	private Clip clip;
 	private int framePosition = 0;
-	private int frameLength;
 	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
 
@@ -52,19 +53,13 @@ public class JavaxJavazoomTrack implements Track {
 
 		clip = openClip();
 
-		frameLength = clip.getFrameLength();
-
 		// calls a function which calculates als the amplitude Data as floats
 		// and a function that calculates the loudness
 		try {
-			storeData(this.path);
+			storeAudioData(this.path);
 			calculateLoudness();
-		} catch (UnsupportedAudioFileException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (UnsupportedAudioFileException | IOException e) {
+			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
 	}
 
@@ -98,10 +93,7 @@ public class JavaxJavazoomTrack implements Track {
 		}
 	}
 
-	private void storeData(String path) throws UnsupportedAudioFileException, IOException {
-
-		final int BUFFER_LENGTH = 1024;
-
+	private void storeAudioData(String path) throws UnsupportedAudioFileException, IOException {
 		File sourceFile = new File(path);
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
 		AudioFormat audioFormat = fileFormat.getFormat();
@@ -115,25 +107,16 @@ public class JavaxJavazoomTrack implements Track {
 
 		int bytesRead;
 
-		while (true) {
-			bytesRead = inputAIS.read(bytes);
-			// bread = inputAIS.read(bytes);
-
-			if (bytesRead == -1) {
-				break;
-			}
-
+		while ((bytesRead = inputAIS.read(bytes)) != -1) {
 			byteArrayOutputStream.write(bytes, 0, bytesRead);
 		}
 
 		byte[] byteAudioData = byteArrayOutputStream.toByteArray();
 
 		float[] samples = new float[(byteAudioData.length / normalBytes) * audioFormat.getChannels()];
-		long[] transfer = new long[samples.length];
 
-		samples = unpack(byteAudioData, transfer, samples, byteAudioData.length, audioFormat);
+		unpack(byteAudioData, samples, byteAudioData.length, audioFormat);
 		audioData.add(samples);
-
 	}
 
 	@Override
@@ -179,38 +162,38 @@ public class JavaxJavazoomTrack implements Track {
 		return FilenameUtils.getName(path);
 	}
 
-	public static int normalBytesFromBits(int bitsPerSample) {
-
-		/*
-		 * some formats allow for bit depths in non-multiples of 8. they will,
-		 * however, typically pad so the samples are stored that way. AIFF is
-		 * one of these formats.
-		 * 
-		 * so the expression:
-		 * 
-		 * bitsPerSample + 7 >> 3
-		 * 
-		 * computes a division of 8 rounding up (for positive numbers).
-		 * 
-		 * this is basically equivalent to:
-		 * 
-		 * (int)Math.ceil(bitsPerSample / 8.0)
-		 * 
-		 */
-
+	/**
+	 * some formats allow for bit depths in non-multiples of 8. they will,
+	 * however, typically pad so the samples are stored that way. AIFF is one of
+	 * these formats.
+	 * 
+	 * so the expression:
+	 * 
+	 * bitsPerSample + 7 >> 3
+	 * 
+	 * computes a division of 8 rounding up (for positive numbers).
+	 * 
+	 * this is basically equivalent to:
+	 * 
+	 * (int)Math.ceil(bitsPerSample / 8.0)
+	 * 
+	 */
+	private static int normalBytesFromBits(int bitsPerSample) {
 		return bitsPerSample + 7 >> 3;
 	}
 
-	public static float[] unpack(byte[] bytes, long[] transfer, float[] samples, int bvalid, AudioFormat fmt) {
+	public static void unpack(byte[] bytes, float[] samples, int bvalid, AudioFormat fmt) {
 		if (fmt.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
 				&& fmt.getEncoding() != AudioFormat.Encoding.PCM_UNSIGNED) {
-
-			return samples;
+			throw new UnsupportedFormatException("Only PCM Encodings are suppported! Encoding:" + fmt.getEncoding());
 		}
+
+		long[] transfer = new long[samples.length];
 
 		final int bitsPerSample = fmt.getSampleSizeInBits();
 		final int normalBytes = normalBytesFromBits(bitsPerSample);
 
+		// TODO: maybe combine loops (keep performance in mind!)
 		if (fmt.isBigEndian()) {
 			for (int i = 0, k = 0, b; i < bvalid; i += normalBytes, k++) {
 				transfer[k] = 0L;
@@ -230,6 +213,7 @@ public class JavaxJavazoomTrack implements Track {
 			}
 		}
 
+		// fullScale is the maximum possible value
 		final long fullScale = (long) Math.pow(2.0, bitsPerSample - 1);
 
 		/*
@@ -291,8 +275,6 @@ public class JavaxJavazoomTrack implements Track {
 		for (int i = 0; i < transfer.length; i++) {
 			samples[i] = (float) transfer[i] / (float) fullScale;
 		}
-
-		return samples;
 	}
 
 	@Override
@@ -302,7 +284,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public int getLength() {
-		return frameLength;
+		return clip.getFrameLength();
 	}
 
 	/**
@@ -344,6 +326,9 @@ public class JavaxJavazoomTrack implements Track {
 
 		int x = 0;
 		float sum = 0;
+		/*
+		 * RMS (Root mean square) loudness calculation
+		 */
 		for (int i = 0; i < audioData.size(); i++) {
 
 			if (this.audioData.elementAt(i) == null) {
@@ -362,6 +347,5 @@ public class JavaxJavazoomTrack implements Track {
 		loudnessFloat = (float) Math.sqrt(sum / x);
 		loudness = floatToDecibel(loudnessFloat);
 		System.out.println(loudness);
-
 	}
 }

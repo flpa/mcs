@@ -31,8 +31,7 @@ public class TrackController implements Initializable {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		int offset = Math.round(track.getLength() / 2000);
-
-		System.out.println(offset);
+		System.out.println("Offset: " + offset);
 
 		textTrackName.setText(track.getFilename());
 
@@ -75,6 +74,5 @@ public class TrackController implements Initializable {
 		lineChartWaveform.getYAxis().setAutoRanging(false);
 		((NumberAxis) lineChartWaveform.getYAxis()).setLowerBound(-1.0);
 		((NumberAxis) lineChartWaveform.getYAxis()).setUpperBound(1.0);
-
 	}
 }
