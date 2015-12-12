@@ -53,8 +53,6 @@ public class JavaxJavazoomTrack implements Track {
 
 		clip = openClip();
 
-		// calls a function which calculates als the amplitude Data as floats
-		// and a function that calculates the loudness
 		try {
 			storeAudioData(this.path);
 			calculateLoudness();
@@ -336,10 +334,15 @@ public class JavaxJavazoomTrack implements Track {
 			}
 
 			for (int j = 0; j < audioFileLength * channels; j++) {
-
+				float mean = 0;
 				float leftChannel = audioData.elementAt(i)[j];
-				float rightChannel = audioData.elementAt(i)[j + 1];
-				float mean = (leftChannel + rightChannel) / 2;
+				if (channels == 2) {
+					float rightChannel = audioData.elementAt(i)[j + 1];
+					mean = (leftChannel + rightChannel) / 2;
+
+				} else {
+					mean = leftChannel;
+				}
 				x++;
 				sum += Math.pow(mean, 2);
 			}
@@ -347,5 +350,19 @@ public class JavaxJavazoomTrack implements Track {
 		loudnessFloat = (float) Math.sqrt(sum / x);
 		loudness = floatToDecibel(loudnessFloat);
 		System.out.println(loudness);
+	}
+
+	@Override
+	public int getNumberOfChannels() {
+		File sourceFile = new File(this.path);
+		AudioFileFormat fileFormat;
+		try {
+			fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
+		} catch (UnsupportedAudioFileException | IOException e) {
+			throw new UnsupportedFormatException(Format.MP3,
+					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
+		}
+		AudioFormat audioFormat = fileFormat.getFormat();
+		return audioFormat.getChannels();
 	}
 }

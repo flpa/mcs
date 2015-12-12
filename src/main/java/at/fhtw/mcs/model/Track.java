@@ -47,9 +47,23 @@ public interface Track {
 	 */
 	void calculateLoudness();
 
+	/**
+	 * @return the name of the File
+	 */
 	String getFilename();
 
+	/**
+	 * @return the Amplitudedata of each Sample of the audiofile
+	 */
 	Vector<float[]> getAudioData();
 
+	/**
+	 * @return the length of the audiofile in Samples
+	 */
 	int getLength();
+
+	/**
+	 * @return the number of Channels of the audiofile
+	 */
+	int getNumberOfChannels();
 }
