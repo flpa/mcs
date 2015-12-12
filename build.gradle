@@ -41,3 +41,13 @@ buildscript {
     classpath "org.sonarqube.gradle:gradle-sonarqube-plugin:1.1"
   }
 }
+
+// include license in distribution package
+distZip {
+    into(project.name + "-" + version) {
+        from '.'
+        include 'LICENSE.txt'
+        include 'LICENSE-3RD-PARTY.txt'
+        include 'README.txt'
+    }
+}
