@@ -16,9 +16,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -41,6 +45,8 @@ public class RootController implements Initializable {
 	private MenuItem menuItemQuit;
 	@FXML
 	private MenuItem menuItemAddTrack;
+	@FXML
+	private MenuItem menuItemAbout;
 	@FXML
 	private Button buttonPlayPause;
 	@FXML
@@ -70,6 +76,7 @@ public class RootController implements Initializable {
 		// 'x -> functionCall' is a minimalistic Java8 lambda
 		menuItemQuit.setOnAction(e -> Platform.exit());
 		menuItemAddTrack.setOnAction(this::handleAddTrack);
+		menuItemAbout.setOnAction(this::handleAbout);
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
@@ -145,5 +152,19 @@ public class RootController implements Initializable {
 		long seconds = TimeUnit.MICROSECONDS.toSeconds(totalMicroseconds) % 60;
 
 		return String.format("%d:%02d", minutes, seconds);
+	}
+
+	private void handleAbout(ActionEvent event) {
+		Alert alertAbout = new Alert(AlertType.INFORMATION);
+		alertAbout.setTitle(bundle.getString("about.title"));
+		alertAbout.setHeaderText(null);
+		alertAbout.setContentText(bundle.getString("about.contentText"));
+
+		((Label) alertAbout.getDialogPane().getChildren().get(1)).setWrapText(false);
+		alertAbout.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+		// TODO: auto-resize to content
+		alertAbout.getDialogPane().setPrefWidth(700);
+
+		alertAbout.showAndWait();
 	}
 }
