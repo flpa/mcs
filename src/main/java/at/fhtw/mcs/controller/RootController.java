@@ -8,8 +8,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import javax.sound.sampled.AudioFormat;
+
+import at.fhtw.mcs.model.Format;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.model.TrackFactory;
+import at.fhtw.mcs.model.TrackFactory.UnsupportedFormatException;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -115,7 +119,15 @@ public class RootController implements Initializable {
 			return;
 		}
 
-		track = TrackFactory.loadTrack(file.getAbsolutePath());
+		try {
+			track = TrackFactory.loadTrack(file.getAbsolutePath());
+		} catch (UnsupportedFormatException e) {
+			e.printStackTrace();
+			this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
+			track = null;
+			return;
+		}
+
 		long totalMicroseconds = track.getTotalMicroseconds();
 		String timeString = formatTimeString(totalMicroseconds);
 		textTotalTime.setText(timeString);
@@ -166,5 +178,36 @@ public class RootController implements Initializable {
 		alertAbout.getDialogPane().setPrefWidth(700);
 
 		alertAbout.showAndWait();
+	}
+
+	private void showErrorUnsupportedFormat(Format format, AudioFormat audioFormat) {
+		Alert alertError = new Alert(AlertType.ERROR);
+		alertError.setTitle(bundle.getString("errorUnsupportedFormat.title"));
+		alertError.setHeaderText(null);
+
+		String errorText;
+		switch (format) {
+			case AIFF:
+			case WAV:
+				if (audioFormat.getSampleSizeInBits() == 24) {
+					errorText = bundle.getString("errorUnsupportedFormat.content24bit");
+				} else {
+					errorText = bundle.getString("errorUnsupportedFormat.contentDefault");
+				}
+				break;
+			case MP3:
+				errorText = bundle.getString("errorUnsupportedFormat.contentMp3");
+				break;
+			default:
+				errorText = bundle.getString("errorUnsupportedFormat.contentDefault");
+				break;
+		}
+		errorText += bundle.getString("errorUnsupportedFormat.supportedFormats");
+		alertError.setContentText(errorText);
+
+		alertError.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+		alertError.getDialogPane().setPrefWidth(700);
+
+		alertError.showAndWait();
 	}
 }
