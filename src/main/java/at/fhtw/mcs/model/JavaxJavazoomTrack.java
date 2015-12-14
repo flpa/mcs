@@ -29,6 +29,7 @@ public class JavaxJavazoomTrack implements Track {
 	private int framePosition = 0;
 	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
+	public int numberOfChannels = 0;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -52,6 +53,8 @@ public class JavaxJavazoomTrack implements Track {
 		}
 
 		clip = openClip();
+
+		numberOfChannels = this.setNumberOfChannels();
 
 		try {
 			storeAudioData(this.path);
@@ -352,8 +355,7 @@ public class JavaxJavazoomTrack implements Track {
 		System.out.println(loudness);
 	}
 
-	@Override
-	public int getNumberOfChannels() {
+	private int setNumberOfChannels() {
 		File sourceFile = new File(this.path);
 		AudioFileFormat fileFormat;
 		try {
@@ -364,5 +366,10 @@ public class JavaxJavazoomTrack implements Track {
 		}
 		AudioFormat audioFormat = fileFormat.getFormat();
 		return audioFormat.getChannels();
+	}
+
+	@Override
+	public int getNumberOfChannels() {
+		return this.numberOfChannels;
 	}
 }
