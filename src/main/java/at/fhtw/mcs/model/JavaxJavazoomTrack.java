@@ -29,7 +29,7 @@ public class JavaxJavazoomTrack implements Track {
 	private int framePosition = 0;
 	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
-	public int numberOfChannels = 0;
+	private int numberOfChannels = 0;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
