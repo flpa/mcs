@@ -66,4 +66,9 @@ public interface Track {
 	 * @return the number of Channels of the audiofile
 	 */
 	int getNumberOfChannels();
+
+	/**
+	 * Reloads the Track. Does *not* repeat audio analysis.
+	 */
+	void reload();
 }

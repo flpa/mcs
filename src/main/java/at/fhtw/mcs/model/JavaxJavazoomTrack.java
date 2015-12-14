@@ -3,7 +3,6 @@ package at.fhtw.mcs.model;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Vector;
@@ -13,13 +12,13 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.commons.io.FilenameUtils;
 
-import at.fhtw.mcs.model.TrackFactory.UnsupportedFormatException;
+import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
+import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
@@ -28,7 +27,6 @@ public class JavaxJavazoomTrack implements Track {
 
 	private String path;
 	private Clip clip;
-	private int framePosition = 0;
 	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
 	private int numberOfChannels = 0;
@@ -54,7 +52,7 @@ public class JavaxJavazoomTrack implements Track {
 				throw new UnsupportedFormatException(format);
 		}
 
-		clip = openClip();
+		clip = AudioOuput.openClip(new File(path));
 
 		numberOfChannels = this.setNumberOfChannels();
 
@@ -90,21 +88,6 @@ public class JavaxJavazoomTrack implements Track {
 		return newPath;
 	}
 
-	private Clip openClip() throws RuntimeException {
-		AudioInputStream audioIn = null;
-		try {
-			URL url = new File(path).toURI().toURL();
-			audioIn = AudioSystem.getAudioInputStream(url);
-			Clip clip = AudioSystem.getClip();
-			clip.open(audioIn);
-			return clip;
-		} catch (UnsupportedAudioFileException | LineUnavailableException e) {
-			throw new UnsupportedFormatException(Format.WAV, audioIn.getFormat());
-		} catch (IOException e) {
-			throw new RuntimeException("Error while opening clip", e);
-		}
-	}
-
 	private void storeAudioData(String path) throws UnsupportedAudioFileException, IOException {
 		File sourceFile = new File(path);
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
@@ -133,13 +116,11 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void play() {
-		clip.setFramePosition(framePosition);
 		clip.start();
 	}
 
 	@Override
 	public void pause() {
-		framePosition = clip.getFramePosition();
 		clip.stop();
 	}
 
@@ -155,7 +136,6 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public void stop() {
 		clip.stop();
-		framePosition = 0;
 		clip.setFramePosition(0);
 	}
 
@@ -382,5 +362,30 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public int getNumberOfChannels() {
 		return this.numberOfChannels;
+	}
+
+	@Override
+	public void reload() {
+		/*
+		 * Fetch important clip data and dispose of the old clip.
+		 */
+		/*
+		 * TODO: will also need to clone MUTE status (when supporting multiple
+		 * tracks)
+		 */
+		boolean wasRunning = clip.isRunning();
+		clip.stop();
+		int framePosition = clip.getFramePosition();
+		clip.close();
+
+		/*
+		 * Open a new clip with the same properties as the old one.
+		 */
+		Clip newClip = AudioOuput.openClip(new File(path));
+		newClip.setFramePosition(framePosition);
+		if (wasRunning) {
+			newClip.start();
+		}
+		clip = newClip;
 	}
 }
