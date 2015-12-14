@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.8
-version = 'v0.2.0'
+version = 'v0.3.0'
 
 mainClassName = "at.fhtw.mcs.Main"
 
@@ -40,4 +40,14 @@ buildscript {
   dependencies {
     classpath "org.sonarqube.gradle:gradle-sonarqube-plugin:1.1"
   }
+}
+
+// include license in distribution package
+distZip {
+    into(project.name + "-" + version) {
+        from '.'
+        include 'LICENSE.txt'
+        include 'LICENSE-3RD-PARTY.txt'
+        include 'README.txt'
+    }
 }

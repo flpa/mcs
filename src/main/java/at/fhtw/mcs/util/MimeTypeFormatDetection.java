@@ -29,9 +29,7 @@ public class MimeTypeFormatDetection implements FormatDetection {
 					return Format.UNKNOWN;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException("Error while probing file!", e);
 		}
-		return null;
 	}
 }

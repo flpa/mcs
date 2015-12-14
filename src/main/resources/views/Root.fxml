@@ -27,9 +27,9 @@
                         <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="%menuItem.quit" />
                   </items>
                 </Menu>
-                <Menu disable="true" mnemonicParsing="false" text="%menuItem.edit">
+                <Menu mnemonicParsing="false" text="%menuItem.edit">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="%menuItem.outputDevices" />
+                        <Menu fx:id="menuOutputDevices" mnemonicParsing="false" text="%menu.outputDevices" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.tracks">
@@ -37,10 +37,10 @@
                     <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="%menuItem.addTrack" />
                   </items>
                 </Menu>
-                <Menu disable="true" mnemonicParsing="false" text="%menuItem.help">
+                <Menu mnemonicParsing="false" text="%menuItem.help">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="%menuItem.manual" />
-                        <MenuItem mnemonicParsing="false" text="%menuItem.about" />
+                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.manual" />
+                        <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="%menuItem.about" />
                   </items>
                 </Menu>
               </menus>

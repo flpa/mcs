@@ -1,5 +1,7 @@
 package at.fhtw.mcs.model;
 
+import java.util.Vector;
+
 /**
  * Defines the general interface of an audio track.
  * 
@@ -40,5 +42,33 @@ public interface Track {
 	 */
 	long getTotalMicroseconds();
 
+	/**
+	 * @return the average Loudness of the Track in dB
+	 */
+	void calculateLoudness();
+
+	/**
+	 * @return the name of the File
+	 */
 	String getFilename();
+
+	/**
+	 * @return the Amplitudedata of each Sample of the audiofile
+	 */
+	Vector<float[]> getAudioData();
+
+	/**
+	 * @return the length of the audiofile in Samples
+	 */
+	int getLength();
+
+	/**
+	 * @return the number of Channels of the audiofile
+	 */
+	int getNumberOfChannels();
+
+	/**
+	 * Reloads the Track. Does *not* repeat audio analysis.
+	 */
+	void reload();
 }
