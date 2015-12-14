@@ -52,7 +52,7 @@ public class JavaxJavazoomTrack implements Track {
 				throw new UnsupportedFormatException(format);
 		}
 
-		clip = AudioOuput.openClip(new File(path));
+		clip = AudioOuput.openClip(new File(this.path));
 
 		numberOfChannels = this.setNumberOfChannels();
 
