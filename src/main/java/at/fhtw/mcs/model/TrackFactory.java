@@ -1,5 +1,7 @@
 package at.fhtw.mcs.model;
 
+import javax.sound.sampled.AudioFormat;
+
 import at.fhtw.mcs.util.ExtensionFormatDetection;
 
 /**
@@ -24,13 +26,24 @@ public class TrackFactory {
 		private static final long serialVersionUID = -1933962444432614242L;
 
 		private Format format;
+		private AudioFormat audioFormat;
 
 		public UnsupportedFormatException(Format format) {
 			this.format = format;
 		}
 
+		public UnsupportedFormatException(Format format, AudioFormat audioFormat) {
+			this.format = format;
+			this.audioFormat = audioFormat;
+		}
+
 		public UnsupportedFormatException(String message) {
 			super(message);
+		}
+
+		public UnsupportedFormatException(Format format, String message) {
+			super(message);
+			this.format = format;
 		}
 
 		public UnsupportedFormatException(Format format, String message, Exception e) {
@@ -40,6 +53,10 @@ public class TrackFactory {
 
 		public Format getFormat() {
 			return format;
+		}
+
+		public AudioFormat getAudioFormat() {
+			return audioFormat;
 		}
 	}
 }

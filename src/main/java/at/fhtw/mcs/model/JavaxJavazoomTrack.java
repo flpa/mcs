@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Vector;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -79,17 +81,26 @@ public class JavaxJavazoomTrack implements Track {
 					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
 		}
 
+		// throw exception if converted file does not exist
+		if (!Files.exists(Paths.get(newPath))) {
+			throw new UnsupportedFormatException(Format.MP3,
+					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.");
+		}
+
 		return newPath;
 	}
 
 	private Clip openClip() throws RuntimeException {
+		AudioInputStream audioIn = null;
 		try {
 			URL url = new File(path).toURI().toURL();
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
+			audioIn = AudioSystem.getAudioInputStream(url);
 			Clip clip = AudioSystem.getClip();
 			clip.open(audioIn);
 			return clip;
-		} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+		} catch (UnsupportedAudioFileException | LineUnavailableException e) {
+			throw new UnsupportedFormatException(Format.WAV, audioIn.getFormat());
+		} catch (IOException e) {
 			throw new RuntimeException("Error while opening clip", e);
 		}
 	}
