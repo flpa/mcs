@@ -3,7 +3,9 @@ package at.fhtw.mcs.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +29,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -81,7 +82,7 @@ public class RootController implements Initializable {
 	private ResourceBundle bundle;
 	private Stage stage;
 
-	private Track track;
+	private List<Track> tracks = new ArrayList<>();
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -98,11 +99,11 @@ public class RootController implements Initializable {
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
-			track.togglePlayPause();
+			tracks.forEach(Track::togglePlayPause);
 			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
 		buttonStop.setOnAction(e -> {
-			track.stop();
+			tracks.forEach(Track::stop);
 			buttonPlayPause.setText(ICON_PLAY);
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
@@ -131,9 +132,7 @@ public class RootController implements Initializable {
 				 */
 				if (newSelection != null) {
 					AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
-					if (track != null) {
-						track.reload();
-					}
+					tracks.forEach(Track::reload);
 				}
 			}
 		});
@@ -144,6 +143,8 @@ public class RootController implements Initializable {
 	}
 
 	private void updateTime() {
+		// TODO: for now, we'll assume only checking the first track is ok.
+		Track track = tracks.get(0);
 		long currentMicroseconds = track.getCurrentMicroseconds();
 		long totalMicroseconds = track.getTotalMicroseconds();
 		progressBarTime.setProgress((double) currentMicroseconds / totalMicroseconds);
@@ -168,51 +169,53 @@ public class RootController implements Initializable {
 			return;
 		}
 
+		Track track;
 		try {
 			track = TrackFactory.loadTrack(file.getAbsolutePath());
 		} catch (UnsupportedFormatException e) {
-			e.printStackTrace();
 			this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
-			track = null;
 			return;
 		}
 
-		long totalMicroseconds = track.getTotalMicroseconds();
-		String timeString = formatTimeString(totalMicroseconds);
-		textTotalTime.setText(timeString);
+		// Things to be done for first track
+		if (tracks.isEmpty()) {
+			long totalMicroseconds = track.getTotalMicroseconds();
+			String timeString = formatTimeString(totalMicroseconds);
+			textTotalTime.setText(timeString);
 
-		// TODO: config parameter
-		long updateFrequencyMs = 100;
+			// TODO: config parameter
+			long updateFrequencyMs = 100;
 
-		Timer timer = new Timer(true);
-		/*
-		 * Reading the documentation of timer.schedule(...), it seems like
-		 * there's no danger of timer-execution-congestion when a time
-		 * invocation blocks: "[...]each execution is scheduled relative to the
-		 * actual execution time of the previous execution."
-		 */
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				long prevMillis = System.currentTimeMillis();
-				updateTime();
-				long elapsedMs = System.currentTimeMillis() - prevMillis;
+			Timer timer = new Timer(true);
+			/*
+			 * Reading the documentation of timer.schedule(...), it seems like
+			 * there's no danger of timer-execution-congestion when a time
+			 * invocation blocks: "[...]each execution is scheduled relative to
+			 * the actual execution time of the previous execution."
+			 */
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					long prevMillis = System.currentTimeMillis();
+					updateTime();
+					long elapsedMs = System.currentTimeMillis() - prevMillis;
 
-				if (elapsedMs >= updateFrequencyMs) {
-					System.err.println(
-							String.format("Warning: Time update (%dms) took longer than the update frequency (%dms).",
-									elapsedMs, updateFrequencyMs));
+					if (elapsedMs >= updateFrequencyMs) {
+						System.err.println(String.format(
+								"Warning: Time update (%dms) took longer than the update frequency (%dms).", elapsedMs,
+								updateFrequencyMs));
+					}
 				}
-			}
-		}, 0, updateFrequencyMs);
+			}, 0, updateFrequencyMs);
+		}
+		tracks.add(track);
 
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new TrackController(track));
 			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
 			loader.setResources(bundle);
-			Node track = loader.load();
-			vboxTracks.getChildren().add(track);
+			vboxTracks.getChildren().add(loader.load());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
