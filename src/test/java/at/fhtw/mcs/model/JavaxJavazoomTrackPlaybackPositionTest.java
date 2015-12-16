@@ -9,7 +9,11 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
+
+import at.fhtw.mcs.util.AudioOuput;
 
 /**
  * Integration test for testing track playback position behaviour. Does actually
@@ -20,6 +24,11 @@ import org.junit.Test;
  *
  */
 public class JavaxJavazoomTrackPlaybackPositionTest {
+
+	@Before
+	public void beforeTest() {
+		Assume.assumeTrue(AudioOuput.hasMixer());
+	}
 
 	/**
 	 * On my machine, this stops the track at 22 microseconds.
