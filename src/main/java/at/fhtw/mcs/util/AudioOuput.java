@@ -24,6 +24,7 @@ public class AudioOuput {
 	private static Mixer.Info selectedMixerInfo = AudioSystem.getMixerInfo()[0];
 
 	public static Clip openClip(File file) {
+		System.out.println("Opening " + file.getAbsolutePath());
 		try {
 			AudioInputStream audioIn = AudioSystem.getAudioInputStream(file);
 			Clip clip = AudioSystem.getClip(selectedMixerInfo);
