@@ -30,6 +30,7 @@ public class JavaxJavazoomTrack implements Track {
 	private float loudness;
 	private Vector<float[]> audioData = new Vector<float[]>();
 	private int numberOfChannels = 0;
+	private int framePosition = 0;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -101,7 +102,6 @@ public class JavaxJavazoomTrack implements Track {
 		AudioInputStream inputAIS = AudioSystem.getAudioInputStream(sourceFile);
 
 		int bytesRead;
-
 		while ((bytesRead = inputAIS.read(bytes)) != -1) {
 			byteArrayOutputStream.write(bytes, 0, bytesRead);
 		}
@@ -116,12 +116,20 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void play() {
+		clip.setFramePosition(framePosition);
 		clip.start();
 	}
 
 	@Override
 	public void pause() {
+		long microPos = clip.getMicrosecondPosition();
+		framePosition = clip.getFramePosition();
 		clip.stop();
+		clip.setMicrosecondPosition(microPos);
+		clip.setFramePosition(framePosition);
+
+		System.out.println(microPos);
+		System.out.println(clip.getMicrosecondPosition());
 	}
 
 	@Override
@@ -136,7 +144,12 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public void stop() {
 		clip.stop();
-		clip.setFramePosition(0);
+		/*
+		 * Twice to really set
+		 */
+		clip.setMicrosecondPosition(0);
+		clip.setMicrosecondPosition(0);
+		framePosition = 0;
 	}
 
 	@Override
