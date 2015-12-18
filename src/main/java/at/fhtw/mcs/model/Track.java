@@ -10,12 +10,12 @@ import java.util.Vector;
 public interface Track {
 
 	/**
-	 * Starts playback. Does nothing, if playback is already running.
+	 * Starts playback. Does nothing if playback is already running.
 	 */
 	void play();
 
 	/**
-	 * Pauses playback. Does nothing, if playback is not running.
+	 * Pauses playback. Does nothing if playback is not running.
 	 */
 	void pause();
 
@@ -71,4 +71,15 @@ public interface Track {
 	 * Reloads the Track. Does *not* repeat audio analysis.
 	 */
 	void reload();
+
+	/**
+	 * Mutes the track: It continues playback if it was playing before but can
+	 * no longer be heard.
+	 */
+	void mute();
+
+	/**
+	 * Unmutes the track, so that it can be heard.
+	 */
+	void unmnute();
 }

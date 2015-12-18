@@ -11,6 +11,8 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.BooleanControl;
+import javax.sound.sampled.BooleanControl.Type;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -369,11 +371,8 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * Fetch important clip data and dispose of the old clip.
 		 */
-		/*
-		 * TODO: will also need to clone MUTE status (when supporting multiple
-		 * tracks)
-		 */
 		boolean wasRunning = clip.isRunning();
+		boolean wasMuted = getMuteControl(clip).getValue();
 		clip.stop();
 		int framePosition = clip.getFramePosition();
 		clip.close();
@@ -383,9 +382,24 @@ public class JavaxJavazoomTrack implements Track {
 		 */
 		Clip newClip = AudioOuput.openClip(new File(path));
 		newClip.setFramePosition(framePosition);
+		getMuteControl(newClip).setValue(wasMuted);
 		if (wasRunning) {
 			newClip.start();
 		}
 		clip = newClip;
+	}
+
+	@Override
+	public void mute() {
+		getMuteControl(clip).setValue(true);
+	}
+
+	private BooleanControl getMuteControl(Clip c) {
+		return (BooleanControl) c.getControl(Type.MUTE);
+	}
+
+	@Override
+	public void unmnute() {
+		getMuteControl(clip).setValue(false);
 	}
 }
