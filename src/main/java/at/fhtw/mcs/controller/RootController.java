@@ -84,6 +84,9 @@ public class RootController implements Initializable {
 
 	private List<Track> tracks = new ArrayList<>();
 
+	// TODO: config parameter
+	private long updateFrequencyMs = 100;
+
 	public RootController(Stage stage) {
 		this.stage = stage;
 	}
@@ -143,6 +146,9 @@ public class RootController implements Initializable {
 	}
 
 	private void updateTime() {
+		if (tracks.isEmpty()) {
+			return;
+		}
 		// TODO: for now, we'll assume only checking the first track is ok.
 		Track track = tracks.get(0);
 		long currentMicroseconds = track.getCurrentMicroseconds();
@@ -183,33 +189,17 @@ public class RootController implements Initializable {
 			String timeString = formatTimeString(totalMicroseconds);
 			textTotalTime.setText(timeString);
 
-			// TODO: config parameter
-			long updateFrequencyMs = 100;
-
-			Timer timer = new Timer(true);
-			/*
-			 * Reading the documentation of timer.schedule(...), it seems like
-			 * there's no danger of timer-execution-congestion when a time
-			 * invocation blocks: "[...]each execution is scheduled relative to
-			 * the actual execution time of the previous execution."
-			 */
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					long prevMillis = System.currentTimeMillis();
-					updateTime();
-					long elapsedMs = System.currentTimeMillis() - prevMillis;
-
-					if (elapsedMs >= updateFrequencyMs) {
-						System.err.println(String.format(
-								"Warning: Time update (%dms) took longer than the update frequency (%dms).", elapsedMs,
-								updateFrequencyMs));
-					}
-				}
-			}, 0, updateFrequencyMs);
+			startTimeUpdateThread();
 		}
-		tracks.add(track);
 
+		loadTrackUi(track);
+		buttonPlayPause.setDisable(false);
+		buttonStop.setDisable(false);
+
+		tracks.add(track);
+	}
+
+	private void loadTrackUi(Track track) {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setController(new TrackController(track));
@@ -217,10 +207,33 @@ public class RootController implements Initializable {
 			loader.setResources(bundle);
 			vboxTracks.getChildren().add(loader.load());
 		} catch (IOException e) {
+			// TODO: better exception handling
 			e.printStackTrace();
 		}
-		buttonPlayPause.setDisable(false);
-		buttonStop.setDisable(false);
+	}
+
+	private void startTimeUpdateThread() {
+		Timer timer = new Timer(true);
+		/*
+		 * Reading the documentation of timer.schedule(...), it seems like
+		 * there's no danger of timer-execution-congestion when a time
+		 * invocation blocks: "[...]each execution is scheduled relative to the
+		 * actual execution time of the previous execution."
+		 */
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				long prevMillis = System.currentTimeMillis();
+				updateTime();
+				long elapsedMs = System.currentTimeMillis() - prevMillis;
+
+				if (elapsedMs >= updateFrequencyMs) {
+					System.err.println(
+							String.format("Warning: Time update (%dms) took longer than the update frequency (%dms).",
+									elapsedMs, updateFrequencyMs));
+				}
+			}
+		}, 0, updateFrequencyMs);
 	}
 
 	private String formatTimeString(long totalMicroseconds) {
@@ -249,23 +262,7 @@ public class RootController implements Initializable {
 		alertError.setTitle(bundle.getString("errorUnsupportedFormat.title"));
 		alertError.setHeaderText(null);
 
-		String errorText;
-		switch (format) {
-			case AIFF:
-			case WAV:
-				if (audioFormat.getSampleSizeInBits() == 24) {
-					errorText = bundle.getString("errorUnsupportedFormat.content24bit");
-				} else {
-					errorText = bundle.getString("errorUnsupportedFormat.contentDefault");
-				}
-				break;
-			case MP3:
-				errorText = bundle.getString("errorUnsupportedFormat.contentMp3");
-				break;
-			default:
-				errorText = bundle.getString("errorUnsupportedFormat.contentDefault");
-				break;
-		}
+		String errorText = bundle.getString(determineErrorDescriptionForFormat(format, audioFormat));
 		errorText += bundle.getString("errorUnsupportedFormat.supportedFormats");
 		alertError.setContentText(errorText);
 
@@ -273,5 +270,21 @@ public class RootController implements Initializable {
 		alertError.getDialogPane().setPrefWidth(700);
 
 		alertError.showAndWait();
+	}
+
+	private String determineErrorDescriptionForFormat(Format format, AudioFormat audioFormat) {
+		switch (format) {
+			case AIFF:
+			case WAV:
+				if (audioFormat.getSampleSizeInBits() == 24) {
+					return "errorUnsupportedFormat.content24bit";
+				} else {
+					return "errorUnsupportedFormat.contentDefault";
+				}
+			case MP3:
+				return "errorUnsupportedFormat.contentMp3";
+			default:
+				return "errorUnsupportedFormat.contentDefault";
+		}
 	}
 }
