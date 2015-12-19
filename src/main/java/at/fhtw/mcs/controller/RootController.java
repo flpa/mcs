@@ -79,6 +79,7 @@ public class RootController implements Initializable {
 	@FXML
 	private ProgressBar progressBarTime;
 
+	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
 	private Stage stage;
 
@@ -111,7 +112,7 @@ public class RootController implements Initializable {
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
 
-		ToggleGroup group = new ToggleGroup();
+		ToggleGroup toggleGroupOutputDevice = new ToggleGroup();
 
 		//@formatter:off
 		Arrays.stream(AudioSystem.getMixerInfo())
@@ -120,13 +121,13 @@ public class RootController implements Initializable {
 					RadioMenuItem radio = new RadioMenuItem();
 					radio.setText(String.format("%s (%s)", info.getName(), info.getDescription()));
 					radio.setUserData(info);
-					radio.setToggleGroup(group);
+					radio.setToggleGroup(toggleGroupOutputDevice);
 					radio.setSelected(info.equals(AudioOuput.getSelectedMixerInfo()));
 					menuOutputDevices.getItems().add(radio);
 		});
 		//@formatter:on
 
-		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+		toggleGroupOutputDevice.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
 					Toggle newSelection) {
 				/*
@@ -137,6 +138,16 @@ public class RootController implements Initializable {
 					AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
 					tracks.forEach(Track::reload);
 				}
+			}
+		});
+
+		toggleGroupActiveTrack.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
+					Toggle newSelection) {
+				if (previousSelection != null) {
+					((Track) previousSelection.getUserData()).mute();
+				}
+				((Track) newSelection.getUserData()).unmute();
 			}
 		});
 	}
@@ -190,6 +201,8 @@ public class RootController implements Initializable {
 			textTotalTime.setText(timeString);
 
 			startTimeUpdateThread();
+		} else {
+			track.mute();
 		}
 
 		loadTrackUi(track);
@@ -202,7 +215,7 @@ public class RootController implements Initializable {
 	private void loadTrackUi(Track track) {
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			loader.setController(new TrackController(track));
+			loader.setController(new TrackController(track, toggleGroupActiveTrack));
 			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
 			loader.setResources(bundle);
 			vboxTracks.getChildren().add(loader.load());

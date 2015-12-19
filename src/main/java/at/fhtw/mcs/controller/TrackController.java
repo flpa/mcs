@@ -10,6 +10,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.text.Text;
 
 /**
@@ -18,14 +20,17 @@ import javafx.scene.text.Text;
 public class TrackController implements Initializable {
 	@FXML
 	private Text textTrackName;
-
 	@FXML
 	private LineChart<Number, Number> lineChartWaveform;
+	@FXML
+	private RadioButton radioButtonActiveTrack;
 
+	private ToggleGroup toggleGroup;
 	private Track track;
 
-	public TrackController(Track track) {
+	public TrackController(Track track, ToggleGroup toggleGroup) {
 		this.track = track;
+		this.toggleGroup = toggleGroup;
 	}
 
 	@Override
@@ -78,5 +83,9 @@ public class TrackController implements Initializable {
 		lineChartWaveform.getYAxis().setAutoRanging(false);
 		((NumberAxis) lineChartWaveform.getYAxis()).setLowerBound(-1.0);
 		((NumberAxis) lineChartWaveform.getYAxis()).setUpperBound(1.0);
+
+		radioButtonActiveTrack.setToggleGroup(toggleGroup);
+		radioButtonActiveTrack.setUserData(track);
+		radioButtonActiveTrack.setSelected(track.isMuted() == false);
 	}
 }

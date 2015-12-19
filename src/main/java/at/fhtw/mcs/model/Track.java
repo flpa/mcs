@@ -81,5 +81,7 @@ public interface Track {
 	/**
 	 * Unmutes the track, so that it can be heard.
 	 */
-	void unmnute();
+	void unmute();
+
+	boolean isMuted();
 }

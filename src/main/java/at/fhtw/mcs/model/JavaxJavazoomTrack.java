@@ -399,7 +399,12 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	@Override
-	public void unmnute() {
+	public void unmute() {
 		getMuteControl(clip).setValue(false);
+	}
+
+	@Override
+	public boolean isMuted() {
+		return getMuteControl(clip).getValue();
 	}
 }
