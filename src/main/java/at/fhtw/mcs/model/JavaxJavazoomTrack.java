@@ -14,6 +14,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.BooleanControl.Type;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.commons.io.FilenameUtils;
@@ -406,5 +407,24 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public boolean isMuted() {
 		return getMuteControl(clip).getValue();
+	}
+
+	@Override
+	public float getLoudness() {
+		return this.loudness;
+	}
+
+	@Override
+	public void setVolume(float lowest) {
+
+		if (this.loudness == lowest) {
+			return;
+		}
+
+		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
+		float deltaDBValue = this.loudness - lowest;
+
+		gainController.setValue(0 - deltaDBValue);
+
 	}
 }

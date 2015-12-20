@@ -114,18 +114,16 @@ public class RootController implements Initializable {
 
 		ToggleGroup toggleGroupOutputDevice = new ToggleGroup();
 
-		//@formatter:off
-		Arrays.stream(AudioSystem.getMixerInfo())
-				.filter(RootController::isOutputMixerInfo)
-				.forEach(info -> {
-					RadioMenuItem radio = new RadioMenuItem();
-					radio.setText(String.format("%s (%s)", info.getName(), info.getDescription()));
-					radio.setUserData(info);
-					radio.setToggleGroup(toggleGroupOutputDevice);
-					radio.setSelected(info.equals(AudioOuput.getSelectedMixerInfo()));
-					menuOutputDevices.getItems().add(radio);
+		// @formatter:off
+		Arrays.stream(AudioSystem.getMixerInfo()).filter(RootController::isOutputMixerInfo).forEach(info -> {
+			RadioMenuItem radio = new RadioMenuItem();
+			radio.setText(String.format("%s (%s)", info.getName(), info.getDescription()));
+			radio.setUserData(info);
+			radio.setToggleGroup(toggleGroupOutputDevice);
+			radio.setSelected(info.equals(AudioOuput.getSelectedMixerInfo()));
+			menuOutputDevices.getItems().add(radio);
 		});
-		//@formatter:on
+		// @formatter:on
 
 		toggleGroupOutputDevice.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
@@ -210,6 +208,20 @@ public class RootController implements Initializable {
 		buttonStop.setDisable(false);
 
 		tracks.add(track);
+
+		// anpassen der lautstärke
+		float min = 0;
+
+		for (Track trackiterator : tracks) {
+			if (min > trackiterator.getLoudness()) {
+				min = trackiterator.getLoudness();
+			}
+		}
+
+		for (Track track2 : tracks) {
+			track2.setVolume(min);
+		}
+
 	}
 
 	private void loadTrackUi(Track track) {

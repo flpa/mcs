@@ -84,4 +84,8 @@ public interface Track {
 	void unmute();
 
 	boolean isMuted();
+
+	float getLoudness();
+
+	void setVolume(float lowest);
 }
