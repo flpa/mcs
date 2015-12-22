@@ -29,6 +29,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -84,6 +85,8 @@ public class RootController implements Initializable {
 	private Stage stage;
 
 	private List<Track> tracks = new ArrayList<>();
+	private List<TrackController> trackControllers = new ArrayList<>();
+	private List<List<Button>> moveButtonList = new ArrayList<>();
 
 	// TODO: config parameter
 	private long updateFrequencyMs = 100;
@@ -209,19 +212,10 @@ public class RootController implements Initializable {
 
 		tracks.add(track);
 
-		// anpassen der lautstärke
-		float min = 0;
-
-		for (Track trackiterator : tracks) {
-			if (min > trackiterator.getLoudness()) {
-				min = trackiterator.getLoudness();
-			}
-		}
-
-		for (Track track2 : tracks) {
-			track2.setVolume(min);
-		}
-
+		addMoveButtons();
+		setLoudnessLevel();
+		// setMoveButtons();
+		setMoveButtonsEventHandler();
 	}
 
 	private void loadTrackUi(Track track) {
@@ -230,6 +224,8 @@ public class RootController implements Initializable {
 			loader.setController(new TrackController(track, toggleGroupActiveTrack));
 			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
 			loader.setResources(bundle);
+			trackControllers.add(loader.getController());
+
 			vboxTracks.getChildren().add(loader.load());
 		} catch (IOException e) {
 			// TODO: better exception handling
@@ -310,6 +306,141 @@ public class RootController implements Initializable {
 				return "errorUnsupportedFormat.contentMp3";
 			default:
 				return "errorUnsupportedFormat.contentDefault";
+		}
+	}
+
+	private void addMoveButtons() {
+		moveButtonList.clear();
+		for (int i = 0; i < trackControllers.size(); i++) {
+			List<Button> tempList = new ArrayList<>();
+			tempList.add(trackControllers.get(i).getButtonMoveUp());
+			tempList.add(trackControllers.get(i).getButtonMoveDown());
+
+			moveButtonList.add(tempList);
+		}
+	}
+
+	private void setLoudnessLevel() {
+		// anpassen der lautstärke
+		float min = 0;
+
+		for (Track trackiterator : tracks) {
+			if (min > trackiterator.getLoudness()) {
+				min = trackiterator.getLoudness();
+			}
+		}
+
+		for (Track track2 : tracks) {
+			track2.setVolume(min);
+		}
+	}
+
+	private void setMoveButtons() {
+		for (int i = 0; i < tracks.size(); i++) {
+			if (i == 0) {
+				moveButtonList.get(i).get(0).setDisable(true);
+				moveButtonList.get(i).get(1).setDisable(false);
+			} else if (i < tracks.size() - 1) {
+				moveButtonList.get(i).get(0).setDisable(false);
+				moveButtonList.get(i).get(1).setDisable(false);
+			}
+			if (i == tracks.size() - 1) {
+				moveButtonList.get(i).get(1).setDisable(true);
+			}
+		}
+	}
+
+	private void setMoveButtonsEventHandler() {
+		for (int i = 0; i < moveButtonList.size(); i++) {
+			for (int j = 0; j < moveButtonList.get(i).size(); j++) {
+				final int trackNumber = i;
+				final int buttonNumber = j;
+				moveButtonList.get(i).get(j).setOnAction(e -> {
+					if (buttonNumber != 1) {
+						moveUp(trackNumber);
+					} else {
+						moveDown(trackNumber);
+					}
+				});
+			}
+		}
+	}
+
+	private void moveUp(int number) {
+		System.out.println("number: " + number);
+		if (number != 0) {
+			List<Node> tempVboxTracks = new ArrayList<>();
+			List<TrackController> tempTrackController = new ArrayList<>();
+			List<Track> tempTracks = new ArrayList<>();
+
+			for (int i = 0; i < vboxTracks.getChildren().size(); i++) {
+				if (i == number - 1) {
+					tempVboxTracks.add(vboxTracks.getChildren().get(i + 1));
+					tempTrackController.add(trackControllers.get(i + 1));
+					tempTracks.add(tracks.get(i + 1));
+				} else if (i == number) {
+					tempVboxTracks.add(vboxTracks.getChildren().get(i - 1));
+					tempTrackController.add(trackControllers.get(i - 1));
+					tempTracks.add(tracks.get(i - 1));
+				} else {
+					tempVboxTracks.add(vboxTracks.getChildren().get(i));
+					tempTrackController.add(trackControllers.get(i));
+					tempTracks.add(tracks.get(i));
+				}
+			}
+
+			vboxTracks.getChildren().clear();
+			trackControllers.clear();
+			tracks.clear();
+
+			for (int i = 0; i < tempVboxTracks.size(); i++) {
+				vboxTracks.getChildren().add(tempVboxTracks.get(i));
+				trackControllers.add(tempTrackController.get(i));
+				tracks.add(tempTracks.get(i));
+			}
+
+			addMoveButtons();
+			// setMoveButtons();
+			setMoveButtonsEventHandler();
+		}
+	}
+
+	private void moveDown(int number) {
+		System.out.println("number: " + number);
+		if (number != tracks.size() - 1) {
+			List<Node> tempVboxTracks = new ArrayList<>();
+			List<TrackController> tempTrackController = new ArrayList<>();
+			List<Track> tempTracks = new ArrayList<>();
+
+			for (int i = 0; i < vboxTracks.getChildren().size(); i++) {
+				if (i == number + 1) {
+					tempVboxTracks.add(vboxTracks.getChildren().get(i - 1));
+					tempTrackController.add(trackControllers.get(i - 1));
+					tempTracks.add(tracks.get(i - 1));
+				} else if (i == number) {
+					tempVboxTracks.add(vboxTracks.getChildren().get(i + 1));
+					tempTrackController.add(trackControllers.get(i + 1));
+					tempTracks.add(tracks.get(i + 1));
+				} else {
+					tempVboxTracks.add(vboxTracks.getChildren().get(i));
+					tempTrackController.add(trackControllers.get(i));
+					tempTracks.add(tracks.get(i));
+				}
+			}
+
+			vboxTracks.getChildren().clear();
+			trackControllers.clear();
+			tracks.clear();
+
+			for (int i = 0; i < tempVboxTracks.size(); i++) {
+				vboxTracks.getChildren().add(tempVboxTracks.get(i));
+				trackControllers.add(tempTrackController.get(i));
+				tracks.add(tempTracks.get(i));
+			}
+
+			addMoveButtons();
+			// setMoveButtons();
+			setMoveButtonsEventHandler();
 		}
 	}
 }

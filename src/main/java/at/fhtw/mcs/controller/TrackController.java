@@ -10,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.text.Text;
@@ -24,6 +25,10 @@ public class TrackController implements Initializable {
 	private LineChart<Number, Number> lineChartWaveform;
 	@FXML
 	private RadioButton radioButtonActiveTrack;
+	@FXML
+	private Button buttonMoveUp;
+	@FXML
+	private Button buttonMoveDown;
 
 	private ToggleGroup toggleGroup;
 	private Track track;
@@ -87,5 +92,13 @@ public class TrackController implements Initializable {
 		radioButtonActiveTrack.setToggleGroup(toggleGroup);
 		radioButtonActiveTrack.setUserData(track);
 		radioButtonActiveTrack.setSelected(track.isMuted() == false);
+	}
+
+	public Button getButtonMoveUp() {
+		return this.buttonMoveUp;
+	}
+
+	public Button getButtonMoveDown() {
+		return this.buttonMoveDown;
 	}
 }

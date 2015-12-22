@@ -24,8 +24,8 @@
         </rowConstraints>
          <children>
             <RadioButton fx:id="radioButtonActiveTrack" alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-            <Button disable="true" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <Button disable="true" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Button fx:id="buttonMoveUp" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Button fx:id="buttonMoveDown" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
             <LineChart fx:id="lineChartWaveform" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="225.0" style="-fx-padding: -10;" verticalGridLinesVisible="false" GridPane.columnIndex="1" GridPane.rowSpan="3">
               <xAxis>
                 <NumberAxis opacity="0" prefHeight="0.0" side="BOTTOM" tickLabelsVisible="false" />

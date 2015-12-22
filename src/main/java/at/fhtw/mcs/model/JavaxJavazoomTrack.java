@@ -424,7 +424,7 @@ public class JavaxJavazoomTrack implements Track {
 		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
 		float deltaDBValue = this.loudness - lowest;
 
-		gainController.setValue(0 - deltaDBValue);
+		gainController.setValue(0 - (deltaDBValue * 1.05f));
 
 	}
 }
