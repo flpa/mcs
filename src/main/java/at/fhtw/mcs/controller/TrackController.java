@@ -29,6 +29,8 @@ public class TrackController implements Initializable {
 	private Button buttonMoveUp;
 	@FXML
 	private Button buttonMoveDown;
+	@FXML
+	private Button buttonDelete;
 
 	private ToggleGroup toggleGroup;
 	private Track track;
@@ -100,5 +102,9 @@ public class TrackController implements Initializable {
 
 	public Button getButtonMoveDown() {
 		return this.buttonMoveDown;
+	}
+
+	public Button getButtonDelete() {
+		return this.buttonDelete;
 	}
 }

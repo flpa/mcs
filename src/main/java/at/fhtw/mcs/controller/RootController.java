@@ -94,6 +94,7 @@ public class RootController implements Initializable {
 	private List<Track> tracks = new ArrayList<>();
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
+	private List<Button> deleteButtonList = new ArrayList<>();
 
 	// TODO: config parameter
 	private long updateFrequencyMs = 100;
@@ -227,10 +228,10 @@ public class RootController implements Initializable {
 
 		tracks.add(track);
 
-		addMoveButtons();
+		addButtons();
 		setLoudnessLevel();
 		// setMoveButtons();
-		setMoveButtonsEventHandler();
+		setButtonsEventHandler();
 	}
 
 	private void loadTrackUi(Track track) {
@@ -324,13 +325,17 @@ public class RootController implements Initializable {
 		}
 	}
 
-	private void addMoveButtons() {
+	private void addButtons() {
 		moveButtonList.clear();
+		deleteButtonList.clear();
 		for (int i = 0; i < trackControllers.size(); i++) {
+			// deleteButton
+			deleteButtonList.add(trackControllers.get(i).getButtonDelete());
+
+			// moveButtons
 			List<Button> tempList = new ArrayList<>();
 			tempList.add(trackControllers.get(i).getButtonMoveUp());
 			tempList.add(trackControllers.get(i).getButtonMoveDown());
-
 			moveButtonList.add(tempList);
 		}
 	}
@@ -365,10 +370,13 @@ public class RootController implements Initializable {
 		}
 	}
 
-	private void setMoveButtonsEventHandler() {
+	private void setButtonsEventHandler() {
 		for (int i = 0; i < moveButtonList.size(); i++) {
+			final int trackNumber = i;
+			deleteButtonList.get(i).setOnAction(e -> {
+				deleteTrack(trackNumber);
+			});
 			for (int j = 0; j < moveButtonList.get(i).size(); j++) {
-				final int trackNumber = i;
 				final int buttonNumber = j;
 				moveButtonList.get(i).get(j).setOnAction(e -> {
 					if (buttonNumber != 1) {
@@ -381,8 +389,23 @@ public class RootController implements Initializable {
 		}
 	}
 
+	private void deleteTrack(int number) {
+		// System.out.println(number);
+
+		vboxTracks.getChildren().remove(number);
+		tracks.remove(number);
+		trackControllers.remove(number);
+		moveButtonList.remove(number);
+		deleteButtonList.remove(number);
+
+		addButtons();
+		// setMoveButtons();
+		setButtonsEventHandler();
+		setLoudnessLevel();
+	}
+
 	private void moveUp(int number) {
-		System.out.println("number: " + number);
+		// System.out.println("number: " + number);
 		if (number != 0) {
 			List<Node> tempVboxTracks = new ArrayList<>();
 			List<TrackController> tempTrackController = new ArrayList<>();
@@ -414,14 +437,14 @@ public class RootController implements Initializable {
 				tracks.add(tempTracks.get(i));
 			}
 
-			addMoveButtons();
+			addButtons();
 			// setMoveButtons();
-			setMoveButtonsEventHandler();
+			setButtonsEventHandler();
 		}
 	}
 
 	private void moveDown(int number) {
-		System.out.println("number: " + number);
+		// System.out.println("number: " + number);
 		if (number != tracks.size() - 1) {
 			List<Node> tempVboxTracks = new ArrayList<>();
 			List<TrackController> tempTrackController = new ArrayList<>();
@@ -453,9 +476,9 @@ public class RootController implements Initializable {
 				tracks.add(tempTracks.get(i));
 			}
 
-			addMoveButtons();
+			addButtons();
 			// setMoveButtons();
-			setMoveButtonsEventHandler();
+			setButtonsEventHandler();
 		}
 	}
 

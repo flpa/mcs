@@ -51,6 +51,6 @@
             <TextArea disable="true" promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
-      <Button disable="true" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Button fx:id="buttonDelete" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>
