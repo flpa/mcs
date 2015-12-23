@@ -36,8 +36,16 @@
             </LineChart>
             <AnchorPane prefHeight="70.0" prefWidth="660.0" GridPane.columnIndex="1">
                <children>
-                  <Text fx:id="textTrackName" strokeType="OUTSIDE" strokeWidth="0.0" text="" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                  <TextFlow style="-fx-background-color: rgba(244, 244, 244, .7);" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                     <children>
+                        <Text fx:id="textTrackName" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                     </children>
+                  </TextFlow>
+                  <TextFlow style="-fx-background-color: rgba(244, 244, 244, .7);" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" />
+                     </children>
+                  </TextFlow>
                </children>
             </AnchorPane>
             <TextArea disable="true" promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
