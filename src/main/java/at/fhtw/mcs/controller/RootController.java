@@ -167,6 +167,11 @@ public class RootController implements Initializable {
 			}
 		});
 
+		/*
+		 * Start the update thread here to prevent multiple threads when adding
+		 * a track, deleting it, adding a track [...]
+		 */
+		startTimeUpdateThread();
 	}
 
 	private static boolean isOutputMixerInfo(Mixer.Info info) {
@@ -174,11 +179,16 @@ public class RootController implements Initializable {
 	}
 
 	private void updateTime() {
-		if (tracks.isEmpty()) {
+		Toggle selectedToggle = toggleGroupActiveTrack.getSelectedToggle();
+		if (tracks.isEmpty() || selectedToggle == null) {
 			return;
 		}
-		// TODO: for now, we'll assume only checking the first track is ok.
-		Track track = tracks.get(0);
+
+		/*
+		 * TODO: should we check more than the current track? There might be
+		 * tracks with a longer total length.
+		 */
+		Track track = (Track) selectedToggle.getUserData();
 		long currentMicroseconds = track.getCurrentMicroseconds();
 		long totalMicroseconds = track.getTotalMicroseconds();
 		progressBarTime.setProgress((double) currentMicroseconds / totalMicroseconds);
@@ -216,8 +226,6 @@ public class RootController implements Initializable {
 			long totalMicroseconds = track.getTotalMicroseconds();
 			String timeString = formatTimeString(totalMicroseconds);
 			textTotalTime.setText(timeString);
-
-			startTimeUpdateThread();
 		} else {
 			track.mute();
 		}
