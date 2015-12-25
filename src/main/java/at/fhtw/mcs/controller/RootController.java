@@ -215,6 +215,10 @@ public class RootController implements Initializable {
 			return;
 		}
 
+		addFile(file);
+	}
+
+	public void addFile(File file) {
 		Track track;
 		try {
 			track = TrackFactory.loadTrack(file.getAbsolutePath());
