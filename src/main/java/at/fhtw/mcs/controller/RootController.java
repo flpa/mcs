@@ -116,11 +116,14 @@ public class RootController implements Initializable {
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
-			tracks.forEach(Track::togglePlayPause);
+			// tracks.forEach(Track::togglePlayPause);
+			getSelectedTrack().ifPresent(Track::togglePlayPause);
+
 			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
 		buttonStop.setOnAction(e -> {
-			tracks.forEach(Track::stop);
+			// tracks.forEach(Track::stop);
+			getSelectedTrack().ifPresent(Track::stop);
 			buttonPlayPause.setText(ICON_PLAY);
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
@@ -155,10 +158,21 @@ public class RootController implements Initializable {
 		toggleGroupActiveTrack.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
 					Toggle newSelection) {
+
+				long currentMs = 0;
+				boolean wasRunning = false;
 				if (previousSelection != null) {
-					((Track) previousSelection.getUserData()).mute();
+					Track prevTrack = (Track) previousSelection.getUserData();
+					wasRunning = prevTrack.isPlaying();
+					currentMs = prevTrack.getCurrentMicroseconds();
+					prevTrack.pause();
 				}
-				((Track) newSelection.getUserData()).unmute();
+				Track newTrack = (Track) newSelection.getUserData();
+				System.out.println("playing at " + currentMs);
+				newTrack.setCurrentMicroseconds(currentMs);
+				if (wasRunning) {
+					newTrack.play();
+				}
 			}
 		});
 
@@ -180,9 +194,17 @@ public class RootController implements Initializable {
 		return AudioSystem.getMixer(info).isLineSupported(new Line.Info(Clip.class));
 	}
 
-	private void updateTime() {
+	private Optional<Track> getSelectedTrack() {
 		Toggle selectedToggle = toggleGroupActiveTrack.getSelectedToggle();
-		if (tracks.isEmpty() || selectedToggle == null) {
+		if (selectedToggle == null) {
+			return Optional.empty();
+		}
+		return Optional.of((Track) selectedToggle.getUserData());
+	}
+
+	private void updateTime() {
+		Optional<Track> selectedTrack = getSelectedTrack();
+		if (tracks.isEmpty() || selectedTrack.isPresent() == false) {
 			return;
 		}
 
@@ -190,7 +212,7 @@ public class RootController implements Initializable {
 		 * TODO: should we check more than the current track? There might be
 		 * tracks with a longer total length.
 		 */
-		Track track = (Track) selectedToggle.getUserData();
+		Track track = selectedTrack.get();
 		long currentMicroseconds = track.getCurrentMicroseconds();
 		long totalMicroseconds = track.getTotalMicroseconds();
 		progressBarTime.setProgress((double) currentMicroseconds / totalMicroseconds);

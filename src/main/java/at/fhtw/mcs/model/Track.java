@@ -37,6 +37,8 @@ public interface Track {
 	 */
 	long getCurrentMicroseconds();
 
+	void setCurrentMicroseconds(long currentMicroseconds);
+
 	/**
 	 * @return the total length in microseconds.
 	 */
@@ -88,4 +90,6 @@ public interface Track {
 	float getLoudness();
 
 	void setVolume(float lowest);
+
+	boolean isPlaying();
 }

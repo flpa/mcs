@@ -392,7 +392,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void mute() {
-		getMuteControl(clip).setValue(true);
+		// getMuteControl(clip).setValue(true);
 	}
 
 	private BooleanControl getMuteControl(Clip c) {
@@ -401,7 +401,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void unmute() {
-		getMuteControl(clip).setValue(false);
+		// getMuteControl(clip).setValue(false);
 	}
 
 	@Override
@@ -426,5 +426,15 @@ public class JavaxJavazoomTrack implements Track {
 
 		gainController.setValue(0 - (deltaDBValue * 1.05f));
 
+	}
+
+	@Override
+	public void setCurrentMicroseconds(long currentMicroseconds) {
+		clip.setMicrosecondPosition(currentMicroseconds);
+	}
+
+	@Override
+	public boolean isPlaying() {
+		return clip.isRunning();
 	}
 }
