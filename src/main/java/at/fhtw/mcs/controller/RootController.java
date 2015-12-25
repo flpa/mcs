@@ -116,13 +116,11 @@ public class RootController implements Initializable {
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
-			// tracks.forEach(Track::togglePlayPause);
 			getSelectedTrack().ifPresent(Track::togglePlayPause);
 
 			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
 		buttonStop.setOnAction(e -> {
-			// tracks.forEach(Track::stop);
 			getSelectedTrack().ifPresent(Track::stop);
 			buttonPlayPause.setText(ICON_PLAY);
 		});
@@ -160,18 +158,21 @@ public class RootController implements Initializable {
 					Toggle newSelection) {
 
 				long currentMs = 0;
-				boolean wasRunning = false;
+				boolean wasPlaying = false;
+
 				if (previousSelection != null) {
 					Track prevTrack = (Track) previousSelection.getUserData();
-					wasRunning = prevTrack.isPlaying();
+					wasPlaying = prevTrack.isPlaying();
 					currentMs = prevTrack.getCurrentMicroseconds();
 					prevTrack.pause();
 				}
-				Track newTrack = (Track) newSelection.getUserData();
-				System.out.println("playing at " + currentMs);
-				newTrack.setCurrentMicroseconds(currentMs);
-				if (wasRunning) {
-					newTrack.play();
+
+				if (newSelection != null) {
+					Track newTrack = (Track) newSelection.getUserData();
+					newTrack.setCurrentMicroseconds(currentMs);
+					if (wasPlaying) {
+						newTrack.play();
+					}
 				}
 			}
 		});
@@ -254,8 +255,6 @@ public class RootController implements Initializable {
 			long totalMicroseconds = track.getTotalMicroseconds();
 			String timeString = formatTimeString(totalMicroseconds);
 			textTotalTime.setText(timeString);
-		} else {
-			track.mute();
 		}
 
 		loadTrackUi(track);
@@ -451,7 +450,10 @@ public class RootController implements Initializable {
 				track.stop();
 			}
 			vboxTracks.getChildren().remove(number);
-			tracks.remove(number);
+
+			Track removed = tracks.remove(number);
+			toggleGroupActiveTrack.getToggles().removeIf(toggle -> toggle.getUserData().equals(removed));
+
 			trackControllers.remove(number);
 			moveButtonList.remove(number);
 			deleteButtonList.remove(number);

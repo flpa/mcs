@@ -93,7 +93,9 @@ public class TrackController implements Initializable {
 
 		radioButtonActiveTrack.setToggleGroup(toggleGroup);
 		radioButtonActiveTrack.setUserData(track);
-		radioButtonActiveTrack.setSelected(track.isMuted() == false);
+		if (toggleGroup.getSelectedToggle() == null) {
+			radioButtonActiveTrack.setSelected(true);
+		}
 	}
 
 	public Button getButtonMoveUp() {

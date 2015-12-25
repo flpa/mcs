@@ -74,19 +74,6 @@ public interface Track {
 	 */
 	void reload();
 
-	/**
-	 * Mutes the track: It continues playback if it was playing before but can
-	 * no longer be heard.
-	 */
-	void mute();
-
-	/**
-	 * Unmutes the track, so that it can be heard.
-	 */
-	void unmute();
-
-	boolean isMuted();
-
 	float getLoudness();
 
 	void setVolume(float lowest);
