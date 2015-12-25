@@ -107,4 +107,8 @@ public class TrackController implements Initializable {
 	public Button getButtonDelete() {
 		return this.buttonDelete;
 	}
+
+	public RadioButton getRadioButtonActiveTrack() {
+		return this.radioButtonActiveTrack;
+	}
 }

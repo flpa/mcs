@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,6 +35,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -232,6 +234,17 @@ public class RootController implements Initializable {
 		setLoudnessLevel();
 		// setMoveButtons();
 		setButtonsEventHandler();
+
+		// handles the case if a longer track is loaded after a shorter one
+		long longest = 0;
+		for (Track t : tracks) {
+			if (t.getTotalMicroseconds() > longest) {
+				longest = t.getTotalMicroseconds();
+			}
+
+		}
+		String timeString = formatTimeString(longest);
+		textTotalTime.setText(timeString);
 	}
 
 	private void loadTrackUi(Track track) {
@@ -392,16 +405,31 @@ public class RootController implements Initializable {
 	private void deleteTrack(int number) {
 		// System.out.println(number);
 
-		vboxTracks.getChildren().remove(number);
-		tracks.remove(number);
-		trackControllers.remove(number);
-		moveButtonList.remove(number);
-		deleteButtonList.remove(number);
+		String trackName = tracks.get(number).getFilename();
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle(bundle.getString("alert.deleteTrackTitle"));
+		alert.setHeaderText(trackName + " " + bundle.getString("alert.deleteTrackHeader"));
+		alert.setContentText(bundle.getString("alert.deleteTrackContent"));
 
-		addButtons();
-		// setMoveButtons();
-		setButtonsEventHandler();
-		setLoudnessLevel();
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == ButtonType.OK) {
+			for (Track track : tracks) {
+				track.stop();
+			}
+			vboxTracks.getChildren().remove(number);
+			tracks.remove(number);
+			trackControllers.remove(number);
+			moveButtonList.remove(number);
+			deleteButtonList.remove(number);
+
+			addButtons();
+			// setMoveButtons();
+			setButtonsEventHandler();
+			setLoudnessLevel();
+			if (tracks.size() > 0) {
+				trackControllers.get(0).getRadioButtonActiveTrack().fire();
+			}
+		}
 	}
 
 	private void moveUp(int number) {
