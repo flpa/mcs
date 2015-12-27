@@ -78,5 +78,7 @@ public interface Track {
 
 	void setVolume(float lowest);
 
+	void changeVolume(double delta);
+
 	boolean isPlaying();
 }

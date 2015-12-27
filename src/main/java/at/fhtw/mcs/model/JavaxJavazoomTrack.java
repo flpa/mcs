@@ -29,6 +29,7 @@ public class JavaxJavazoomTrack implements Track {
 	private String path;
 	private Clip clip;
 	private float loudness;
+	private float deltaVolume = 0;
 	private Vector<float[]> audioData = new Vector<float[]>();
 	private int numberOfChannels = 0;
 
@@ -344,7 +345,6 @@ public class JavaxJavazoomTrack implements Track {
 		}
 		loudnessFloat = (float) Math.sqrt(sum / x);
 		loudness = floatToDecibel(loudnessFloat);
-		System.out.println(loudness);
 	}
 
 	private int setNumberOfChannels() {
@@ -399,8 +399,9 @@ public class JavaxJavazoomTrack implements Track {
 
 		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
 		float deltaDBValue = this.loudness - lowest;
+		this.deltaVolume = deltaDBValue * 1.05f;
 
-		gainController.setValue(0 - (deltaDBValue * 1.05f));
+		gainController.setValue(0 - this.deltaVolume);
 	}
 
 	@Override
@@ -411,5 +412,16 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public boolean isPlaying() {
 		return clip.isRunning();
+	}
+
+	@Override
+	public void changeVolume(double delta) {
+		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
+
+		gainController.setValue(0 - this.deltaVolume);
+
+		float temp = (float) (40f * delta);
+
+		gainController.setValue(temp - 40 - this.deltaVolume);
 	}
 }

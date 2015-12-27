@@ -70,9 +70,9 @@
                               <Text fx:id="textTotalTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                               <AnchorPane maxHeight="40.0" GridPane.columnIndex="1">
                                  <children>
-                                    <Label contentDisplay="RIGHT" disable="true" maxHeight="22.0" prefHeight="22.0" text="%label.volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
+                                    <Label contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="%label.volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
                                        <graphic>
-                                          <Slider />
+                                          <Slider fx:id="sliderMasterVolume"/>
                                        </graphic>
                                     </Label>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">
