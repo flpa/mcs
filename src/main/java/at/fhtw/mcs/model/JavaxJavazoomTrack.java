@@ -29,6 +29,7 @@ public class JavaxJavazoomTrack implements Track {
 	private String path;
 	private Clip clip;
 	private float loudness;
+	private float dynamicRange;
 	private float deltaVolume = 0;
 	private Vector<float[]> audioData = new Vector<float[]>();
 	private int numberOfChannels = 0;
@@ -61,6 +62,7 @@ public class JavaxJavazoomTrack implements Track {
 		try {
 			storeAudioData(this.path);
 			calculateLoudness();
+			calculateDynamicRange();
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
@@ -329,7 +331,7 @@ public class JavaxJavazoomTrack implements Track {
 				break;
 			}
 
-			for (int j = 0; j < audioFileLength * channels; j++) {
+			for (int j = 0; j < audioFileLength * channels; j += channels) {
 				float mean = 0;
 				float leftChannel = audioData.elementAt(i)[j];
 				if (channels == 2) {
@@ -423,5 +425,70 @@ public class JavaxJavazoomTrack implements Track {
 		float temp = (float) (40f * delta);
 
 		gainController.setValue(temp - 40 - this.deltaVolume);
+	}
+
+	/**
+	 * calculates dynamic range of track (as difference between peak and rms)
+	 */
+	private void calculateDynamicRange() {
+		int channels = this.getNumberOfChannels();
+		int audioFileLength = this.getLength();
+
+		float peak = 0;
+		float meanPrevious = 0;
+		float meanCurrent = 0;
+		float meanNext = 0;
+
+		for (int i = 0; i < audioData.size(); i++) {
+
+			if (this.audioData.elementAt(i) == null) {
+				break;
+			}
+
+			for (int j = 0; j < audioFileLength * channels; j += channels) {
+				// first sample
+				if (j == 0) {
+					float leftChannel = audioData.elementAt(i)[j];
+					if (channels == 2) {
+						float rightChannel = audioData.elementAt(i)[j + 1];
+						meanCurrent = Math.abs((leftChannel + rightChannel) / 2);
+
+					} else {
+						meanCurrent = Math.abs(leftChannel);
+					}
+				}
+
+				// next sample
+				if (j + channels < audioFileLength * channels) {
+					float leftChannel = audioData.elementAt(i)[j + channels];
+					if (channels == 2) {
+						float rightChannel = audioData.elementAt(i)[j + channels + 1];
+						meanNext = Math.abs((leftChannel + rightChannel) / 2);
+
+					} else {
+						meanNext = Math.abs(leftChannel);
+					}
+				} else {
+					meanNext = 0;
+				}
+
+				// check if sample is peak
+				if (meanPrevious < meanCurrent && meanCurrent > meanNext && meanCurrent > peak) {
+					peak = meanCurrent;
+				}
+
+				// set current as previous and next as current sample
+				meanPrevious = meanCurrent;
+				meanCurrent = meanNext;
+
+			}
+		}
+
+		dynamicRange = this.getLoudness() - this.floatToDecibel(peak);
+	}
+
+	@Override
+	public float getDynamicRange() {
+		return this.dynamicRange;
 	}
 }

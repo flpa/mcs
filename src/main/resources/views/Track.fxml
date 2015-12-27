@@ -43,7 +43,7 @@
                   </TextFlow>
                   <TextFlow style="-fx-background-color: rgba(244, 244, 244, .7);" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" />
+                        <Text fx:id="textDynamicRange" strokeType="OUTSIDE" strokeWidth="0.0" text="0 dB" textAlignment="RIGHT" />
                      </children>
                   </TextFlow>
                </children>

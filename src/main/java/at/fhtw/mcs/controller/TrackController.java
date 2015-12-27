@@ -22,6 +22,8 @@ public class TrackController implements Initializable {
 	@FXML
 	private Text textTrackName;
 	@FXML
+	private Text textDynamicRange;
+	@FXML
 	private LineChart<Number, Number> lineChartWaveform;
 	@FXML
 	private RadioButton radioButtonActiveTrack;
@@ -46,6 +48,7 @@ public class TrackController implements Initializable {
 		System.out.println("Offset: " + offset);
 
 		textTrackName.setText(track.getFilename());
+		textDynamicRange.setText(String.format("%.2f dB", track.getDynamicRange()));
 
 		XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
