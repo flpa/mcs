@@ -30,7 +30,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -41,12 +40,10 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -84,10 +81,6 @@ public class RootController implements Initializable {
 	private Text textTotalTime;
 	@FXML
 	private ProgressBar progressBarTime;
-	@FXML
-	private ScrollPane scrollPaneTracks;
-	@FXML
-	private Rectangle rectangleSpacer;
 
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
@@ -174,13 +167,6 @@ public class RootController implements Initializable {
 						newTrack.play();
 					}
 				}
-			}
-		});
-
-		scrollPaneTracks.viewportBoundsProperty().addListener(new ChangeListener<Bounds>() {
-			public void changed(ObservableValue<? extends Bounds> value, Bounds previousBounds, Bounds newBounds) {
-				double scrollBarWidth = scrollPaneTracks.getWidth() - scrollPaneTracks.getViewportBounds().getWidth();
-				rectangleSpacer.setWidth(scrollBarWidth);
 			}
 		});
 
