@@ -87,7 +87,7 @@
                         </GridPane>
                      </center>
                      <right>
-                        <Rectangle fx:id="rectangleSpacer" arcHeight="5.0" arcWidth="5.0" fill="#f4f4f4" height="1.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" BorderPane.alignment="CENTER" />
+                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#f4f4f4" height="1.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="17.0" BorderPane.alignment="CENTER" />
                      </right>
                   </BorderPane>
                </children>
@@ -115,7 +115,7 @@
       </GridPane>
    </bottom>
    <center>
-      <ScrollPane fx:id="scrollPaneTracks" fitToWidth="true" hbarPolicy="NEVER" style="-fx-padding: 0;" vbarPolicy="AS_NEEDED" BorderPane.alignment="CENTER">
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-padding: 0;" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
          <content>
             <VBox fx:id="vboxTracks" spacing="10.0" />
          </content>

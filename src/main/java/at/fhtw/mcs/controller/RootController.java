@@ -30,7 +30,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -192,13 +191,6 @@ public class RootController implements Initializable {
 						newTrack.play();
 					}
 				}
-			}
-		});
-
-		scrollPaneTracks.viewportBoundsProperty().addListener(new ChangeListener<Bounds>() {
-			public void changed(ObservableValue<? extends Bounds> value, Bounds previousBounds, Bounds newBounds) {
-				double scrollBarWidth = scrollPaneTracks.getWidth() - scrollPaneTracks.getViewportBounds().getWidth();
-				rectangleSpacer.setWidth(scrollBarWidth);
 			}
 		});
 
