@@ -5,6 +5,8 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 
 import at.fhtw.mcs.model.Track;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
@@ -12,6 +14,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.text.Text;
 
@@ -33,6 +36,8 @@ public class TrackController implements Initializable {
 	private Button buttonMoveDown;
 	@FXML
 	private Button buttonDelete;
+	@FXML
+	private TextArea textAreaComment;
 
 	private ToggleGroup toggleGroup;
 	private Track track;
@@ -99,6 +104,12 @@ public class TrackController implements Initializable {
 		if (toggleGroup.getSelectedToggle() == null) {
 			radioButtonActiveTrack.setSelected(true);
 		}
+
+		textAreaComment.textProperty().addListener(new ChangeListener<String>() {
+			public void changed(ObservableValue<? extends String> value, String previousComment, String newComment) {
+				track.setComment(newComment);
+			}
+		});
 	}
 
 	public Button getButtonMoveUp() {

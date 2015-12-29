@@ -48,7 +48,7 @@
                   </TextFlow>
                </children>
             </AnchorPane>
-            <TextArea disable="true" promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextArea fx:id="textAreaComment" promptText="%textArea.commentPromptText" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
       <Button fx:id="buttonDelete" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />

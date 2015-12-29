@@ -33,6 +33,7 @@ public class JavaxJavazoomTrack implements Track {
 	private float deltaVolume = 0;
 	private Vector<float[]> audioData = new Vector<float[]>();
 	private int numberOfChannels = 0;
+	private String comment;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -490,5 +491,15 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public float getDynamicRange() {
 		return this.dynamicRange;
+	}
+
+	@Override
+	public String getComment() {
+		return comment;
+	}
+
+	@Override
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 }

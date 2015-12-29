@@ -86,4 +86,11 @@ public interface Track {
 	void changeVolume(double delta);
 
 	boolean isPlaying();
+
+	/**
+	 * @return comment of the track
+	 */
+	String getComment();
+
+	void setComment(String comment);
 }
