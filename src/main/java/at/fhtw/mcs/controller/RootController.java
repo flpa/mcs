@@ -30,7 +30,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -42,6 +41,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Region;
@@ -88,6 +88,8 @@ public class RootController implements Initializable {
 	private ScrollPane scrollPaneTracks;
 	@FXML
 	private Rectangle rectangleSpacer;
+	@FXML
+	private Slider sliderMasterVolume;
 
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
@@ -100,6 +102,7 @@ public class RootController implements Initializable {
 
 	// TODO: config parameter
 	private long updateFrequencyMs = 100;
+	private double masterLevel = 1;
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -125,6 +128,20 @@ public class RootController implements Initializable {
 			buttonPlayPause.setText(ICON_PLAY);
 		});
 		buttonAddTrack.setOnAction(this::handleAddTrack);
+
+		// handle MasterVolumeChange
+		sliderMasterVolume.setMax(1);
+		sliderMasterVolume.setMin(0);
+		sliderMasterVolume.setValue(1);
+		sliderMasterVolume.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				masterLevel = (double) newValue;
+				for (Track track : tracks) {
+					track.changeVolume((double) newValue);
+				}
+			}
+		});
 
 		ToggleGroup toggleGroupOutputDevice = new ToggleGroup();
 
@@ -174,13 +191,6 @@ public class RootController implements Initializable {
 						newTrack.play();
 					}
 				}
-			}
-		});
-
-		scrollPaneTracks.viewportBoundsProperty().addListener(new ChangeListener<Bounds>() {
-			public void changed(ObservableValue<? extends Bounds> value, Bounds previousBounds, Bounds newBounds) {
-				double scrollBarWidth = scrollPaneTracks.getWidth() - scrollPaneTracks.getViewportBounds().getWidth();
-				rectangleSpacer.setWidth(scrollBarWidth);
 			}
 		});
 
@@ -398,6 +408,7 @@ public class RootController implements Initializable {
 
 		for (Track track2 : tracks) {
 			track2.setVolume(min);
+			track2.changeVolume(masterLevel);
 		}
 	}
 

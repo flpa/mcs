@@ -76,7 +76,21 @@ public interface Track {
 
 	float getLoudness();
 
+	/**
+	 * @return dynamic range of track (as difference between peak and rms) in dB
+	 */
+	float getDynamicRange();
+
 	void setVolume(float lowest);
 
+	void changeVolume(double delta);
+
 	boolean isPlaying();
+
+	/**
+	 * @return comment of the track
+	 */
+	String getComment();
+
+	void setComment(String comment);
 }

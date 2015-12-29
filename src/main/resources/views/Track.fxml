@@ -43,12 +43,12 @@
                   </TextFlow>
                   <TextFlow style="-fx-background-color: rgba(244, 244, 244, .7);" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" />
+                        <Text fx:id="textDynamicRange" strokeType="OUTSIDE" strokeWidth="0.0" text="0 dB" textAlignment="RIGHT" />
                      </children>
                   </TextFlow>
                </children>
             </AnchorPane>
-            <TextArea disable="true" promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextArea fx:id="textAreaComment" promptText="%textArea.commentPromptText" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
       <Button fx:id="buttonDelete" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
