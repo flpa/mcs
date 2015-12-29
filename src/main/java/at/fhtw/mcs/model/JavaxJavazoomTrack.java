@@ -34,6 +34,8 @@ public class JavaxJavazoomTrack implements Track {
 	private Vector<float[]> audioData = new Vector<float[]>();
 	private int numberOfChannels = 0;
 	private String comment;
+	private int startOffset;
+	private long startOffsetMs;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -67,6 +69,33 @@ public class JavaxJavazoomTrack implements Track {
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
+
+		// TODO: optional
+		int idx = findStartPoint();
+		this.startOffset = idx / 2;
+		this.startOffsetMs = framesToMicroseconds(startOffset);
+		this.clip.setFramePosition(startOffset);
+	}
+
+	private int findStartPoint() {
+		float[] data = audioData.get(0);
+
+		int middledStartPoint = 0;
+		// TODO: name and document magic factor and general idea
+		double valWeWant = decibelToFloat(loudness) * 0.8;
+
+		int from = -1;
+		for (int i = 0; i < data.length; i++) {
+			float f = Math.abs(data[i]);
+
+			if (from == -1 && f >= valWeWant) {
+				from = i;
+			} else if (from > -1 && f < valWeWant) {
+				middledStartPoint = (i + from) / 2;
+				break;
+			}
+		}
+		return middledStartPoint;
 	}
 
 	private String convertMp3ToWav(String path) {
@@ -141,16 +170,21 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public void stop() {
 		clip.stop();
-		clip.setFramePosition(0);
+		clip.setFramePosition(startOffset);
+	}
+
+	private long framesToMicroseconds(long frames) {
+		return (long) (frames * (1000000.0 / (double) clip.getFormat().getSampleRate()));
 	}
 
 	@Override
 	public long getCurrentMicroseconds() {
-		return clip.getMicrosecondPosition();
+		return clip.getMicrosecondPosition() - startOffsetMs;
 	}
 
 	@Override
 	public long getTotalMicroseconds() {
+		// TODO: offset?
 		return clip.getMicrosecondLength();
 	}
 
@@ -409,7 +443,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void setCurrentMicroseconds(long currentMicroseconds) {
-		clip.setMicrosecondPosition(currentMicroseconds);
+		clip.setMicrosecondPosition(currentMicroseconds + startOffsetMs);
 	}
 
 	@Override
