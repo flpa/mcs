@@ -29,13 +29,14 @@
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.edit">
+                  <CheckMenuItem fx:id="checkMenuItemSyncronizeStartPoints" mnemonicParsing="false" text="%checkMenuItem.syncronizeStartPoints"/>
                   <items>
                         <Menu fx:id="menuOutputDevices" mnemonicParsing="false" text="%menu.outputDevices" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.tracks">
                   <items>
-                    <MenuItem fx:id="menuItemAddTrack" mnemonicParsing="false" text="%menuItem.addTrack" />
+                    <MenuItem fx:id="menuItemAddTracks" mnemonicParsing="false" text="%menuItem.addTracks" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.help">
@@ -109,8 +110,8 @@
             <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Label text="%button.addTrack" GridPane.columnIndex="1" />
-            <Button fx:id="buttonAddTrack" mnemonicParsing="false" text="+" />
+            <Label text="%button.addTracks" GridPane.columnIndex="1" />
+            <Button fx:id="buttonAddTracks" mnemonicParsing="false" text="+" />
          </children>
       </GridPane>
    </bottom>

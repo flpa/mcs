@@ -69,12 +69,18 @@ public class JavaxJavazoomTrack implements Track {
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
+	}
 
-		// TODO: optional
-		int idx = findStartPoint();
-		this.startOffset = idx / 2;
-		this.startOffsetMicroseconds = framesToMicroseconds(startOffset);
-		this.clip.setFramePosition(startOffset);
+	public void applyStartPointOffset() {
+		int startPoint = findStartPoint();
+		startOffset = startPoint / 2;
+		startOffsetMicroseconds = framesToMicroseconds(startOffset);
+		clip.setFramePosition(startOffset);
+	}
+
+	public void resetStartPointOffset() {
+		startOffset = 0;
+		startOffsetMicroseconds = 0;
 	}
 
 	private int findStartPoint() {

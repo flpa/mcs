@@ -93,4 +93,8 @@ public interface Track {
 	String getComment();
 
 	void setComment(String comment);
+
+	void applyStartPointOffset();
+
+	void resetStartPointOffset();
 }

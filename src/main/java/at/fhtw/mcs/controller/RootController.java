@@ -1,5 +1,7 @@
 package at.fhtw.mcs.controller;
 
+import static at.fhtw.mcs.util.NullSafety.emptyListIfNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +37,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -65,11 +68,13 @@ public class RootController implements Initializable {
 	@FXML
 	private VBox vboxTracks;
 	@FXML
+	private CheckMenuItem checkMenuItemSyncronizeStartPoints;
+	@FXML
 	private Menu menuOutputDevices;
 	@FXML
 	private MenuItem menuItemQuit;
 	@FXML
-	private MenuItem menuItemAddTrack;
+	private MenuItem menuItemAddTracks;
 	@FXML
 	private MenuItem menuItemAbout;
 	@FXML
@@ -77,7 +82,7 @@ public class RootController implements Initializable {
 	@FXML
 	private Button buttonStop;
 	@FXML
-	private Button buttonAddTrack;
+	private Button buttonAddTracks;
 	@FXML
 	private Text textCurrentTime;
 	@FXML
@@ -114,7 +119,7 @@ public class RootController implements Initializable {
 
 		// 'x -> functionCall' is a minimalistic Java8 lambda
 		menuItemQuit.setOnAction(e -> Platform.exit());
-		menuItemAddTrack.setOnAction(this::handleAddTrack);
+		menuItemAddTracks.setOnAction(this::handleAddTracks);
 		menuItemAbout.setOnAction(this::handleAbout);
 
 		// TODO: inline lambdas vs methods?
@@ -127,7 +132,7 @@ public class RootController implements Initializable {
 			getSelectedTrack().ifPresent(Track::stop);
 			buttonPlayPause.setText(ICON_PLAY);
 		});
-		buttonAddTrack.setOnAction(this::handleAddTrack);
+		buttonAddTracks.setOnAction(this::handleAddTracks);
 
 		// handle MasterVolumeChange
 		sliderMasterVolume.setMax(1);
@@ -139,6 +144,20 @@ public class RootController implements Initializable {
 				masterLevel = (double) newValue;
 				for (Track track : tracks) {
 					track.changeVolume((double) newValue);
+				}
+			}
+		});
+
+		checkMenuItemSyncronizeStartPoints.setSelected(true);
+		checkMenuItemSyncronizeStartPoints.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				for (Track track : tracks) {
+					if (newValue) {
+						track.applyStartPointOffset();
+					} else {
+						track.resetStartPointOffset();
+					}
 				}
 			}
 		});
@@ -242,7 +261,7 @@ public class RootController implements Initializable {
 		});
 	}
 
-	private void handleAddTrack(ActionEvent event) {
+	private void handleAddTracks(ActionEvent event) {
 		FileChooser chooser = new FileChooser();
 
 		/*
@@ -251,7 +270,7 @@ public class RootController implements Initializable {
 		 */
 
 		chooser.setTitle("TRANSLATE ME");
-		List<File> files = chooser.showOpenMultipleDialog(stage);
+		List<File> files = emptyListIfNull(chooser.showOpenMultipleDialog(stage));
 		for (File file : files) {
 			addFile(file);
 		}
@@ -266,11 +285,8 @@ public class RootController implements Initializable {
 			return;
 		}
 
-		// Things to be done for first track
-		if (tracks.isEmpty()) {
-			long totalMicroseconds = track.getTotalMicroseconds();
-			String timeString = formatTimeString(totalMicroseconds);
-			textTotalTime.setText(timeString);
+		if (checkMenuItemSyncronizeStartPoints.isSelected()) {
+			track.applyStartPointOffset();
 		}
 
 		loadTrackUi(track);
