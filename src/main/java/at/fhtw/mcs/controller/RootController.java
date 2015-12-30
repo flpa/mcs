@@ -237,18 +237,17 @@ public class RootController implements Initializable {
 
 	private void handleAddTrack(ActionEvent event) {
 		FileChooser chooser = new FileChooser();
+
 		/*
 		 * TODO: should restrict file types! but maybe don't hardcode, rather
 		 * 'ask' a responsible class what file types are allowed?
 		 */
 
 		chooser.setTitle("TRANSLATE ME");
-		File file = chooser.showOpenDialog(stage);
-		if (file == null) {
-			return;
+		List<File> files = chooser.showOpenMultipleDialog(stage);
+		for (File file : files) {
+			addFile(file);
 		}
-
-		addFile(file);
 	}
 
 	public void addFile(File file) {
