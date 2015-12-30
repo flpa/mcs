@@ -235,13 +235,11 @@ public class RootController implements Initializable {
 		 */
 		Platform.runLater(() -> {
 			progressBarTime.setProgress(progress);
+			textCurrentTime.setText(formatTimeString(currentMicroseconds));
+			if (currentMicroseconds == totalMicroseconds) {
+				buttonPlayPause.setText(ICON_PLAY);
+			}
 		});
-		textCurrentTime.setText(formatTimeString(currentMicroseconds));
-
-		// TODO: reset playPause button; doesn't work
-		// if (currentMicroseconds == totalMicroseconds) {
-		// buttonPlayPause.setText(ICON_PLAY);
-		// }
 	}
 
 	private void handleAddTrack(ActionEvent event) {
