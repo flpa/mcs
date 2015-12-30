@@ -35,7 +35,7 @@ public class JavaxJavazoomTrack implements Track {
 	private int numberOfChannels = 0;
 	private String comment;
 	private int startOffset;
-	private long startOffsetMs;
+	private long startOffsetMicroseconds;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -73,7 +73,7 @@ public class JavaxJavazoomTrack implements Track {
 		// TODO: optional
 		int idx = findStartPoint();
 		this.startOffset = idx / 2;
-		this.startOffsetMs = framesToMicroseconds(startOffset);
+		this.startOffsetMicroseconds = framesToMicroseconds(startOffset);
 		this.clip.setFramePosition(startOffset);
 	}
 
@@ -173,19 +173,27 @@ public class JavaxJavazoomTrack implements Track {
 		clip.setFramePosition(startOffset);
 	}
 
+	/**
+	 * Copied from com.sun.media.sound.Toolkit.frames2micros(AudioFormat, long)
+	 */
 	private long framesToMicroseconds(long frames) {
-		return (long) (frames * (1000000.0 / (double) clip.getFormat().getSampleRate()));
+		return (long) (((double) frames) / clip.getFormat().getFrameRate() * 1000000.0d);
 	}
 
 	@Override
 	public long getCurrentMicroseconds() {
-		return clip.getMicrosecondPosition() - startOffsetMs;
+		long currentMicroseconds = clip.getMicrosecondPosition() - startOffsetMicroseconds;
+		/*
+		 * Ensure that this method never returns a negative value, which can
+		 * happend if the startOffsetMicroseconds has been calculated but the
+		 * frame position has not (yet) affected the microsecondPosition.
+		 */
+		return currentMicroseconds < 0 ? 0 : currentMicroseconds;
 	}
 
 	@Override
 	public long getTotalMicroseconds() {
-		// TODO: offset?
-		return clip.getMicrosecondLength();
+		return clip.getMicrosecondLength() - startOffsetMicroseconds;
 	}
 
 	@Override
@@ -443,7 +451,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void setCurrentMicroseconds(long currentMicroseconds) {
-		clip.setMicrosecondPosition(currentMicroseconds + startOffsetMs);
+		clip.setMicrosecondPosition(currentMicroseconds + startOffsetMicroseconds);
 	}
 
 	@Override
