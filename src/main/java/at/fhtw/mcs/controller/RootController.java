@@ -226,7 +226,16 @@ public class RootController implements Initializable {
 		Track track = selectedTrack.get();
 		long currentMicroseconds = track.getCurrentMicroseconds();
 		long totalMicroseconds = track.getTotalMicroseconds();
-		progressBarTime.setProgress((double) currentMicroseconds / totalMicroseconds);
+		double progress = (double) currentMicroseconds / totalMicroseconds;
+
+		/*
+		 * This seems to ensure that the actual update is done on the Java FX
+		 * thread. Trying to update GUI components from another thread can lead
+		 * to IllegalStateExceptions.
+		 */
+		Platform.runLater(() -> {
+			progressBarTime.setProgress(progress);
+		});
 		textCurrentTime.setText(formatTimeString(currentMicroseconds));
 
 		// TODO: reset playPause button; doesn't work
