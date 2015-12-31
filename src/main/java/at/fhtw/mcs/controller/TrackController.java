@@ -21,6 +21,7 @@ import javafx.scene.text.Text;
  * Controller class for Track.fxml
  */
 public class TrackController implements Initializable {
+	private static final int GRAPH_POINT_COUNT = 2000;
 	@FXML
 	private Text textTrackName;
 	@FXML
@@ -40,10 +41,12 @@ public class TrackController implements Initializable {
 
 	private ToggleGroup toggleGroup;
 	private Track track;
+	private long longestTrackFrameLength;
 
-	public TrackController(Track track, ToggleGroup toggleGroup) {
+	public TrackController(Track track, ToggleGroup toggleGroup, long longestTrackFrameLength) {
 		this.track = track;
 		this.toggleGroup = toggleGroup;
+		this.longestTrackFrameLength = longestTrackFrameLength;
 	}
 
 	@Override
@@ -67,7 +70,7 @@ public class TrackController implements Initializable {
 	}
 
 	public void drawTrack() {
-		int offset = Math.round(track.getLength() / 2000);
+		int offset = Math.round(longestTrackFrameLength / GRAPH_POINT_COUNT);
 		System.out.println("Offset: " + offset);
 
 		XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
@@ -97,6 +100,12 @@ public class TrackController implements Initializable {
 			x++;
 		}
 
+		// Fill rest with zeroes
+		// TODO: it seems like we're actually drawing 2 * 2000 points??
+		for (; x < GRAPH_POINT_COUNT * track.getNumberOfChannels(); x++) {
+			series.getData().add(new XYChart.Data<Number, Number>(x, 0));
+		}
+
 		lineChartWaveform.getData().clear();
 		lineChartWaveform.getData().add(series);
 
@@ -107,6 +116,13 @@ public class TrackController implements Initializable {
 		yAxis.setAutoRanging(false);
 		yAxis.setLowerBound(-1.0);
 		yAxis.setUpperBound(1.0);
+	}
+
+	public void setLongestTrackFrameLength(long longestTrackFrameLength) {
+		if (longestTrackFrameLength != this.longestTrackFrameLength) {
+			this.longestTrackFrameLength = longestTrackFrameLength;
+			drawTrack();
+		}
 	}
 
 	public Button getButtonMoveUp() {

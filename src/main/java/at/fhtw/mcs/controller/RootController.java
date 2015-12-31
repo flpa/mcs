@@ -42,6 +42,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
@@ -108,6 +109,8 @@ public class RootController implements Initializable {
 	// TODO: config parameter
 	private long updateFrequencyMs = 100;
 	private double masterLevel = 1;
+	private int longestTrackFrameLength;
+	private long longestTrackMicrosecondsLength;
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -238,14 +241,20 @@ public class RootController implements Initializable {
 			return;
 		}
 
+		Track currentTrack = selectedTrack.get();
+		long currentMicroseconds = currentTrack.getCurrentMicroseconds();
+		double progress = (double) currentMicroseconds / longestTrackMicrosecondsLength;
+		boolean currentTrackHasEnded = currentTrack.getTotalMicroseconds() == currentMicroseconds;
+
 		/*
-		 * TODO: should we check more than the current track? There might be
-		 * tracks with a longer total length.
+		 * Disable tracks with a length shorter than the current position. Also
+		 * enables them again after resetting via stop.
 		 */
-		Track track = selectedTrack.get();
-		long currentMicroseconds = track.getCurrentMicroseconds();
-		long totalMicroseconds = track.getTotalMicroseconds();
-		double progress = (double) currentMicroseconds / totalMicroseconds;
+		for (Toggle toggle : toggleGroupActiveTrack.getToggles()) {
+			RadioButton radio = (RadioButton) toggle;
+			Track track = (Track) radio.getUserData();
+			radio.setDisable(track != currentTrack && currentMicroseconds > track.getTotalMicroseconds());
+		}
 
 		/*
 		 * This seems to ensure that the actual update is done on the Java FX
@@ -255,7 +264,7 @@ public class RootController implements Initializable {
 		Platform.runLater(() -> {
 			progressBarTime.setProgress(progress);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
-			if (currentMicroseconds == totalMicroseconds) {
+			if (currentTrackHasEnded) {
 				buttonPlayPause.setText(ICON_PLAY);
 			}
 		});
@@ -288,34 +297,41 @@ public class RootController implements Initializable {
 		if (checkMenuItemSyncronizeStartPoints.isSelected()) {
 			track.applyStartPointOffset();
 		}
+		/*
+		 * Needs to be added before drawing so that the longest track can be
+		 * determined.
+		 */
+		tracks.add(track);
+		determineLongestTrackLengths();
 
 		loadTrackUi(track);
-		buttonPlayPause.setDisable(false);
-		buttonStop.setDisable(false);
-
-		tracks.add(track);
+		setPlaybackControlsDisable(false);
 
 		addButtons();
 		setLoudnessLevel();
 		// setMoveButtons();
 		setButtonsEventHandler();
+	}
 
-		// handles the case if a longer track is loaded after a shorter one
-		long longest = 0;
-		for (Track t : tracks) {
-			if (t.getTotalMicroseconds() > longest) {
-				longest = t.getTotalMicroseconds();
-			}
+	public void setPlaybackControlsDisable(boolean disable) {
+		buttonPlayPause.setDisable(disable);
+		buttonStop.setDisable(disable);
+	}
 
-		}
-		String timeString = formatTimeString(longest);
+	public void determineLongestTrackLengths() {
+		longestTrackFrameLength = tracks.stream().map(Track::getLength).max(Integer::compare).orElse(0);
+		longestTrackMicrosecondsLength = tracks.stream().map(Track::getTotalMicroseconds).max(Long::compare).orElse(0L);
+
+		trackControllers.forEach(controller -> controller.setLongestTrackFrameLength(longestTrackFrameLength));
+
+		String timeString = formatTimeString(longestTrackMicrosecondsLength);
 		textTotalTime.setText(timeString);
 	}
 
 	private void loadTrackUi(Track track) {
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			loader.setController(new TrackController(track, toggleGroupActiveTrack));
+			loader.setController(new TrackController(track, toggleGroupActiveTrack, longestTrackFrameLength));
 			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
 			loader.setResources(bundle);
 			trackControllers.add(loader.getController());
@@ -498,7 +514,10 @@ public class RootController implements Initializable {
 			setLoudnessLevel();
 			if (tracks.size() > 0) {
 				trackControllers.get(0).getRadioButtonActiveTrack().fire();
+			} else {
+				setPlaybackControlsDisable(true);
 			}
+			determineLongestTrackLengths();
 		}
 	}
 
