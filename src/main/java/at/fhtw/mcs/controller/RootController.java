@@ -128,10 +128,7 @@ public class RootController implements Initializable {
 
 			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
-		buttonStop.setOnAction(e -> {
-			getSelectedTrack().ifPresent(Track::stop);
-			buttonPlayPause.setText(ICON_PLAY);
-		});
+		buttonStop.setOnAction(this::handleStop);
 		buttonAddTracks.setOnAction(this::handleAddTracks);
 
 		// handle MasterVolumeChange
@@ -358,6 +355,11 @@ public class RootController implements Initializable {
 		return String.format("%d:%02d", minutes, seconds);
 	}
 
+	private void handleStop(ActionEvent event) {
+		getSelectedTrack().ifPresent(Track::stop);
+		buttonPlayPause.setText(ICON_PLAY);
+	}
+
 	private void handleAbout(ActionEvent event) {
 		Alert alertAbout = new Alert(AlertType.INFORMATION);
 		alertAbout.setTitle(bundle.getString("about.title"));
@@ -469,8 +471,6 @@ public class RootController implements Initializable {
 	}
 
 	private void deleteTrack(int number) {
-		// System.out.println(number);
-
 		String trackName = tracks.get(number).getFilename();
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle(bundle.getString("alert.deleteTrackTitle"));
@@ -479,9 +479,7 @@ public class RootController implements Initializable {
 
 		Optional<ButtonType> result = alert.showAndWait();
 		if (result.get() == ButtonType.OK) {
-			for (Track track : tracks) {
-				track.stop();
-			}
+			handleStop(null);
 			vboxTracks.getChildren().remove(number);
 
 			Track removed = tracks.remove(number);
@@ -578,5 +576,4 @@ public class RootController implements Initializable {
 			setButtonsEventHandler();
 		}
 	}
-
 }
