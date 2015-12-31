@@ -67,21 +67,18 @@ public class TrackController implements Initializable {
 		 * anschauen
 		 */
 
-		for (int j = 0; j < audioFileLength * track.getNumberOfChannels(); j++) {
+		for (int i = 0; i < audioFileLength * track.getNumberOfChannels(); i += offset) {
+			float mean = 0;
+			float leftChannel = tempData[i];
 
-			if (j % offset == 0) {
-				float mean = 0;
-				float leftChannel = tempData[j];
-
-				if (track.getNumberOfChannels() == 2) {
-					float rightChannel = tempData[j + 1];
-					mean = (leftChannel + rightChannel) / 2;
-				} else {
-					mean = leftChannel;
-				}
-				series.getData().add(new XYChart.Data<Number, Number>(x, mean));
-				x++;
+			if (track.getNumberOfChannels() == 2) {
+				float rightChannel = tempData[i + 1];
+				mean = (leftChannel + rightChannel) / 2;
+			} else {
+				mean = leftChannel;
 			}
+			series.getData().add(new XYChart.Data<Number, Number>(x, mean));
+			x++;
 		}
 
 		lineChartWaveform.getData().add(series);
