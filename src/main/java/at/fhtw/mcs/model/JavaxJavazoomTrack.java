@@ -25,6 +25,11 @@ import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
 	private static final int BUFFER_LENGTH = 1024;
+	/**
+	 * Percentage used for start point calculation. Has been empirically
+	 * determined.
+	 */
+	private static final double EXPECTED_START_POINT_PERCENTAGE = 0.8;
 
 	private String path;
 	private Clip clip;
@@ -86,22 +91,30 @@ public class JavaxJavazoomTrack implements Track {
 	private int findStartPoint() {
 		float[] data = audioData.get(0);
 
-		int middledStartPoint = 0;
-		// TODO: name and document magic factor and general idea
-		double valWeWant = decibelToFloat(loudness) * 0.8;
+		/*
+		 * The basic idea here is that we're looking for the first rise of the
+		 * level. This actual level we're looking for depends on the loudness:
+		 * For louder tracks, it will be higher. That's why we effectively
+		 * multiply 1 (the absolute maximum level) with the float factor of the
+		 * loudness (e.g. 0.25 for -6dB). The resulting value is reduced by an
+		 * empirically determined percentage so that the expected value is found
+		 * earlier.
+		 */
+		double expextedStartValue = 1 * decibelToFloat(loudness) * EXPECTED_START_POINT_PERCENTAGE;
 
-		int from = -1;
+		int middledStartIndex = 0;
+		int firstIndexAboveThreshold = -1;
 		for (int i = 0; i < data.length; i++) {
-			float f = Math.abs(data[i]);
+			float value = Math.abs(data[i]);
 
-			if (from == -1 && f >= valWeWant) {
-				from = i;
-			} else if (from > -1 && f < valWeWant) {
-				middledStartPoint = (i + from) / 2;
+			if (firstIndexAboveThreshold == -1 && value >= expextedStartValue) {
+				firstIndexAboveThreshold = i;
+			} else if (firstIndexAboveThreshold > -1 && value < expextedStartValue) {
+				middledStartIndex = (i + firstIndexAboveThreshold) / 2;
 				break;
 			}
 		}
-		return middledStartPoint;
+		return middledStartIndex;
 	}
 
 	private String convertMp3ToWav(String path) {
