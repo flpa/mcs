@@ -1,7 +1,5 @@
 package at.fhtw.mcs.model;
 
-import java.util.Vector;
-
 /**
  * Defines the general interface of an audio track.
  * 
@@ -10,12 +8,12 @@ import java.util.Vector;
 public interface Track {
 
 	/**
-	 * Starts playback. Does nothing, if playback is already running.
+	 * Starts playback. Does nothing if playback is already running.
 	 */
 	void play();
 
 	/**
-	 * Pauses playback. Does nothing, if playback is not running.
+	 * Pauses playback. Does nothing if playback is not running.
 	 */
 	void pause();
 
@@ -37,6 +35,8 @@ public interface Track {
 	 */
 	long getCurrentMicroseconds();
 
+	void setCurrentMicroseconds(long currentMicroseconds);
+
 	/**
 	 * @return the total length in microseconds.
 	 */
@@ -55,7 +55,7 @@ public interface Track {
 	/**
 	 * @return the Amplitudedata of each Sample of the audiofile
 	 */
-	Vector<float[]> getAudioData();
+	float[] getAudioData();
 
 	/**
 	 * @return the length of the audiofile in Samples
@@ -71,4 +71,28 @@ public interface Track {
 	 * Reloads the Track. Does *not* repeat audio analysis.
 	 */
 	void reload();
+
+	float getLoudness();
+
+	/**
+	 * @return dynamic range of track (as difference between peak and rms) in dB
+	 */
+	float getDynamicRange();
+
+	void setVolume(float lowest);
+
+	void changeVolume(double delta);
+
+	boolean isPlaying();
+
+	/**
+	 * @return comment of the track
+	 */
+	String getComment();
+
+	void setComment(String comment);
+
+	void applyStartPointOffset();
+
+	void resetStartPointOffset();
 }

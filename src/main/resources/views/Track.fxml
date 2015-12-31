@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="300.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="220.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <GridPane alignment="CENTER" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
         <columnConstraints>
@@ -23,10 +23,10 @@
             <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <RadioButton disable="true" alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-            <Button disable="true" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <Button disable="true" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <LineChart fx:id="lineChartWaveform" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="225.0" style="-fx-padding: -10;" verticalGridLinesVisible="false" GridPane.columnIndex="1" GridPane.rowSpan="3">
+            <RadioButton fx:id="radioButtonActiveTrack" alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
+            <Button fx:id="buttonMoveUp" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Button fx:id="buttonMoveDown" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <LineChart fx:id="lineChartWaveform" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" style="-fx-padding: -10;" verticalGridLinesVisible="false" GridPane.columnIndex="1" GridPane.rowSpan="3">
               <xAxis>
                 <NumberAxis opacity="0" prefHeight="0.0" side="BOTTOM" tickLabelsVisible="false" />
               </xAxis>
@@ -34,15 +34,23 @@
                 <NumberAxis opacity="0" prefWidth="0.0" side="LEFT" tickLabelsVisible="false" />
               </yAxis>
             </LineChart>
-            <AnchorPane prefHeight="70.0" prefWidth="660.0" GridPane.columnIndex="1">
+            <AnchorPane prefHeight="50.0" prefWidth="660.0" GridPane.columnIndex="1">
                <children>
-                  <Text fx:id="textTrackName" strokeType="OUTSIDE" strokeWidth="0.0" text="" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="-6 dB" textAlignment="RIGHT" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                  <TextFlow style="-fx-background-color: rgba(244, 244, 244, .7);" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                     <children>
+                        <Text fx:id="textTrackName" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                     </children>
+                  </TextFlow>
+                  <TextFlow style="-fx-background-color: rgba(244, 244, 244, .7);" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                     <children>
+                        <Text fx:id="textDynamicRange" strokeType="OUTSIDE" strokeWidth="0.0" text="0 dB" textAlignment="RIGHT" />
+                     </children>
+                  </TextFlow>
                </children>
             </AnchorPane>
-            <TextArea disable="true" promptText="Kommentar ..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextArea fx:id="textAreaComment" promptText="%textArea.commentPromptText" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
-      <Button disable="true" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Button fx:id="buttonDelete" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>

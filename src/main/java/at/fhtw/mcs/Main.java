@@ -1,5 +1,6 @@
 package at.fhtw.mcs;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
@@ -27,7 +28,8 @@ public class Main extends Application {
 	public void initRootLayout() {
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			loader.setController(new RootController(primaryStage));
+			RootController rootController = new RootController(primaryStage);
+			loader.setController(rootController);
 			loader.setLocation(getClass().getClassLoader().getResource("views/Root.fxml"));
 			ResourceBundle bundle = ResourceBundle.getBundle("bundles.mcs");
 			loader.setResources(bundle);
@@ -38,6 +40,9 @@ public class Main extends Application {
 			primaryStage.setMinWidth(800);
 			primaryStage.setMinHeight(550);
 			primaryStage.show();
+
+			// Files named on the commandline are added immediately
+			getParameters().getUnnamed().stream().map(File::new).forEach(rootController::addFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

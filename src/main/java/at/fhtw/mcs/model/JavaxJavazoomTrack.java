@@ -5,13 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Vector;
+import java.util.Arrays;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.commons.io.FilenameUtils;
@@ -24,12 +25,22 @@ import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
 	private static final int BUFFER_LENGTH = 1024;
+	/**
+	 * Percentage used for start point calculation. Has been empirically
+	 * determined.
+	 */
+	private static final double EXPECTED_START_POINT_PERCENTAGE = 0.8;
 
 	private String path;
 	private Clip clip;
 	private float loudness;
-	private Vector<float[]> audioData = new Vector<float[]>();
+	private float dynamicRange;
+	private float deltaVolume = 0;
+	private float[] audioData;
 	private int numberOfChannels = 0;
+	private String comment;
+	private int startOffsetFrames;
+	private long startOffsetMicroseconds;
 
 	/**
 	 * Creates the track using the given {@link FormatDetection}.
@@ -59,9 +70,49 @@ public class JavaxJavazoomTrack implements Track {
 		try {
 			storeAudioData(this.path);
 			calculateLoudness();
+			calculateDynamicRange();
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
+	}
+
+	public void applyStartPointOffset() {
+		int startPoint = findStartPoint();
+		startOffsetFrames = startPoint / 2;
+		startOffsetMicroseconds = framesToMicroseconds(startOffsetFrames);
+		clip.setFramePosition(startOffsetFrames);
+	}
+
+	public void resetStartPointOffset() {
+		startOffsetFrames = 0;
+		startOffsetMicroseconds = 0;
+	}
+
+	private int findStartPoint() {
+		/*
+		 * The basic idea here is that we're looking for the first rise of the
+		 * level. This actual level we're looking for depends on the loudness:
+		 * For louder tracks, it will be higher. That's why we effectively
+		 * multiply 1 (the absolute maximum level) with the float factor of the
+		 * loudness (e.g. 0.25 for -6dB). The resulting value is reduced by an
+		 * empirically determined percentage so that the expected value is found
+		 * earlier.
+		 */
+		double expextedStartValue = 1 * decibelToFloat(loudness) * EXPECTED_START_POINT_PERCENTAGE;
+
+		int middledStartIndex = 0;
+		int firstIndexAboveThreshold = -1;
+		for (int i = 0; i < audioData.length; i++) {
+			float value = Math.abs(audioData[i]);
+
+			if (firstIndexAboveThreshold == -1 && value >= expextedStartValue) {
+				firstIndexAboveThreshold = i;
+			} else if (firstIndexAboveThreshold > -1 && value < expextedStartValue) {
+				middledStartIndex = (i + firstIndexAboveThreshold) / 2;
+				break;
+			}
+		}
+		return middledStartIndex;
 	}
 
 	private String convertMp3ToWav(String path) {
@@ -111,7 +162,7 @@ public class JavaxJavazoomTrack implements Track {
 		float[] samples = new float[(byteAudioData.length / normalBytes) * audioFormat.getChannels()];
 
 		unpack(byteAudioData, samples, byteAudioData.length, audioFormat);
-		audioData.add(samples);
+		audioData = samples;
 	}
 
 	@Override
@@ -136,17 +187,30 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public void stop() {
 		clip.stop();
-		clip.setFramePosition(0);
+		clip.setFramePosition(startOffsetFrames);
+	}
+
+	/**
+	 * Copied from com.sun.media.sound.Toolkit.frames2micros(AudioFormat, long)
+	 */
+	private long framesToMicroseconds(long frames) {
+		return (long) (((double) frames) / clip.getFormat().getFrameRate() * 1000000.0d);
 	}
 
 	@Override
 	public long getCurrentMicroseconds() {
-		return clip.getMicrosecondPosition();
+		long currentMicroseconds = clip.getMicrosecondPosition() - startOffsetMicroseconds;
+		/*
+		 * Ensure that this method never returns a negative value, which can
+		 * happend if the startOffsetMicroseconds has been calculated but the
+		 * frame position has not (yet) affected the microsecondPosition.
+		 */
+		return currentMicroseconds < 0 ? 0 : currentMicroseconds;
 	}
 
 	@Override
 	public long getTotalMicroseconds() {
-		return clip.getMicrosecondLength();
+		return clip.getMicrosecondLength() - startOffsetMicroseconds;
 	}
 
 	@Override
@@ -270,13 +334,20 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	@Override
-	public Vector<float[]> getAudioData() {
+	public float[] getAudioData() {
+		if (startOffsetFrames > 0) {
+			/*
+			 * TODO: temporarily, this means that there's another copy of the
+			 * audiodata in memory. is that a problem?
+			 */
+			return Arrays.copyOfRange(audioData, startOffsetFrames * 2, audioData.length);
+		}
 		return audioData;
 	}
 
 	@Override
 	public int getLength() {
-		return clip.getFrameLength();
+		return clip.getFrameLength() - startOffsetFrames;
 	}
 
 	/**
@@ -321,29 +392,21 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * RMS (Root mean square) loudness calculation
 		 */
-		for (int i = 0; i < audioData.size(); i++) {
+		for (int j = 0; j < audioFileLength * channels; j += channels) {
+			float mean = 0;
+			float leftChannel = audioData[j];
+			if (channels == 2) {
+				float rightChannel = audioData[j + 1];
+				mean = (leftChannel + rightChannel) / 2;
 
-			if (this.audioData.elementAt(i) == null) {
-				break;
+			} else {
+				mean = leftChannel;
 			}
-
-			for (int j = 0; j < audioFileLength * channels; j++) {
-				float mean = 0;
-				float leftChannel = audioData.elementAt(i)[j];
-				if (channels == 2) {
-					float rightChannel = audioData.elementAt(i)[j + 1];
-					mean = (leftChannel + rightChannel) / 2;
-
-				} else {
-					mean = leftChannel;
-				}
-				x++;
-				sum += Math.pow(mean, 2);
-			}
+			x++;
+			sum += Math.pow(mean, 2);
 		}
 		loudnessFloat = (float) Math.sqrt(sum / x);
 		loudness = floatToDecibel(loudnessFloat);
-		System.out.println(loudness);
 	}
 
 	private int setNumberOfChannels() {
@@ -369,10 +432,6 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * Fetch important clip data and dispose of the old clip.
 		 */
-		/*
-		 * TODO: will also need to clone MUTE status (when supporting multiple
-		 * tracks)
-		 */
 		boolean wasRunning = clip.isRunning();
 		clip.stop();
 		int framePosition = clip.getFramePosition();
@@ -387,5 +446,112 @@ public class JavaxJavazoomTrack implements Track {
 			newClip.start();
 		}
 		clip = newClip;
+	}
+
+	@Override
+	public float getLoudness() {
+		return this.loudness;
+	}
+
+	@Override
+	public void setVolume(float lowest) {
+		if (this.loudness == lowest) {
+			return;
+		}
+
+		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
+		float deltaDBValue = this.loudness - lowest;
+		this.deltaVolume = deltaDBValue * 1.05f;
+
+		gainController.setValue(0 - this.deltaVolume);
+	}
+
+	@Override
+	public void setCurrentMicroseconds(long currentMicroseconds) {
+		clip.setMicrosecondPosition(currentMicroseconds + startOffsetMicroseconds);
+	}
+
+	@Override
+	public boolean isPlaying() {
+		return clip.isRunning();
+	}
+
+	@Override
+	public void changeVolume(double delta) {
+		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
+
+		gainController.setValue(0 - this.deltaVolume);
+
+		float temp = (float) (40f * delta);
+
+		gainController.setValue(temp - 40 - this.deltaVolume);
+	}
+
+	/**
+	 * calculates dynamic range of track (as difference between peak and rms)
+	 */
+	private void calculateDynamicRange() {
+		int channels = this.getNumberOfChannels();
+		int audioFileLength = this.getLength();
+
+		float peak = 0;
+		float meanPrevious = 0;
+		float meanCurrent = 0;
+		float meanNext = 0;
+
+		for (int j = 0; j < audioFileLength * channels; j += channels) {
+			// first sample
+			if (j == 0) {
+				float leftChannel = audioData[j];
+				if (channels == 2) {
+					float rightChannel = audioData[j + 1];
+					meanCurrent = Math.abs((leftChannel + rightChannel) / 2);
+
+				} else {
+					meanCurrent = Math.abs(leftChannel);
+				}
+			}
+
+			// next sample
+			if (j + channels < audioFileLength * channels) {
+				float leftChannel = audioData[j + channels];
+				if (channels == 2) {
+					float rightChannel = audioData[j + channels + 1];
+					meanNext = Math.abs((leftChannel + rightChannel) / 2);
+
+				} else {
+					meanNext = Math.abs(leftChannel);
+				}
+			} else {
+				meanNext = 0;
+			}
+
+			// check if sample is peak
+			if (meanPrevious < meanCurrent && meanCurrent > meanNext && meanCurrent > peak) {
+				peak = meanCurrent;
+			}
+
+			// set current as previous and next as current sample
+			meanPrevious = meanCurrent;
+			meanCurrent = meanNext;
+
+		}
+
+		dynamicRange = this.getLoudness() - this.floatToDecibel(peak);
+	}
+
+	@Override
+	public float getDynamicRange() {
+		return this.dynamicRange;
+	}
+
+	@Override
+	public String getComment() {
+		return comment;
+	}
+
+	@Override
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 }
