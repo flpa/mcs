@@ -1,5 +1,6 @@
 package at.fhtw.mcs;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
@@ -34,14 +35,13 @@ public class Main extends Application {
 			loader.setResources(bundle);
 			rootLayout = (BorderPane) loader.load();
 			Scene scene = new Scene(rootLayout);
-			primaryStage.setTitle(bundle.getString("app.title"));
 			primaryStage.setScene(scene);
 			primaryStage.setMinWidth(800);
 			primaryStage.setMinHeight(550);
 			primaryStage.show();
 
 			// Files named on the commandline are added immediately
-			// getParameters().getUnnamed().stream().map(File::new).forEach(rootController::addFile);
+			getParameters().getUnnamed().stream().map(File::new).forEach(rootController::addFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

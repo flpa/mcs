@@ -17,13 +17,13 @@
               <menus>
                 <Menu mnemonicParsing="false" text="%menuItem.file">
                   <items>
-                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.newProject" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.openProject" />
+                    <MenuItem fx:id="menuItemNewProject" mnemonicParsing="false" text="%menuItem.newProject" />
+                        <MenuItem fx:id="menuItemOpenProject" mnemonicParsing="false" text="%menuItem.openProject" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.closeProject" />
+                        <MenuItem fx:id="menuItemCloseProject" mnemonicParsing="false" text="%menuItem.closeProject" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProject" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProjectAs" />
+                        <MenuItem fx:id="menuItemSaveProject" mnemonicParsing="false" text="%menuItem.saveProject" />
+                        <MenuItem fx:id="menuItemSaveProjectAs" mnemonicParsing="false" text="%menuItem.saveProjectAs" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="%menuItem.quit" />
                   </items>

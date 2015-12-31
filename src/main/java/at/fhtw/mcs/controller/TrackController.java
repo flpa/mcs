@@ -51,7 +51,7 @@ public class TrackController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		textTrackName.setText(track.getFilename());
+		textTrackName.setText(track.getName());
 		textDynamicRange.setText(String.format("%.2f dB", track.getDynamicRange()));
 
 		drawTrack();
@@ -62,6 +62,7 @@ public class TrackController implements Initializable {
 			radioButtonActiveTrack.setSelected(true);
 		}
 
+		textAreaComment.setText(track.getComment());
 		textAreaComment.textProperty().addListener(new ChangeListener<String>() {
 			public void changed(ObservableValue<? extends String> value, String previousComment, String newComment) {
 				track.setComment(newComment);
@@ -101,7 +102,7 @@ public class TrackController implements Initializable {
 		}
 
 		// Fill rest with zeroes
-		// TODO: it seems like we're actually drawing 2 * 2000 points??
+		// TODO: it seems like we're actually drawing 2 x 2000 points??
 		for (; x < GRAPH_POINT_COUNT * track.getNumberOfChannels(); x++) {
 			series.getData().add(new XYChart.Data<Number, Number>(x, 0));
 		}
