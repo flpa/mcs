@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Vector;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -36,7 +35,7 @@ public class JavaxJavazoomTrack implements Track {
 	private float loudness;
 	private float dynamicRange;
 	private float deltaVolume = 0;
-	private Vector<float[]> audioData = new Vector<float[]>();
+	private float[] audioData;
 	private int numberOfChannels = 0;
 	private String comment;
 	private int startOffset;
@@ -89,8 +88,6 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	private int findStartPoint() {
-		float[] data = audioData.get(0);
-
 		/*
 		 * The basic idea here is that we're looking for the first rise of the
 		 * level. This actual level we're looking for depends on the loudness:
@@ -104,8 +101,8 @@ public class JavaxJavazoomTrack implements Track {
 
 		int middledStartIndex = 0;
 		int firstIndexAboveThreshold = -1;
-		for (int i = 0; i < data.length; i++) {
-			float value = Math.abs(data[i]);
+		for (int i = 0; i < audioData.length; i++) {
+			float value = Math.abs(audioData[i]);
 
 			if (firstIndexAboveThreshold == -1 && value >= expextedStartValue) {
 				firstIndexAboveThreshold = i;
@@ -164,7 +161,7 @@ public class JavaxJavazoomTrack implements Track {
 		float[] samples = new float[(byteAudioData.length / normalBytes) * audioFormat.getChannels()];
 
 		unpack(byteAudioData, samples, byteAudioData.length, audioFormat);
-		audioData.add(samples);
+		audioData = samples;
 	}
 
 	@Override
@@ -336,7 +333,7 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	@Override
-	public Vector<float[]> getAudioData() {
+	public float[] getAudioData() {
 		return audioData;
 	}
 
@@ -387,25 +384,18 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * RMS (Root mean square) loudness calculation
 		 */
-		for (int i = 0; i < audioData.size(); i++) {
+		for (int j = 0; j < audioFileLength * channels; j += channels) {
+			float mean = 0;
+			float leftChannel = audioData[j];
+			if (channels == 2) {
+				float rightChannel = audioData[j + 1];
+				mean = (leftChannel + rightChannel) / 2;
 
-			if (this.audioData.elementAt(i) == null) {
-				break;
+			} else {
+				mean = leftChannel;
 			}
-
-			for (int j = 0; j < audioFileLength * channels; j += channels) {
-				float mean = 0;
-				float leftChannel = audioData.elementAt(i)[j];
-				if (channels == 2) {
-					float rightChannel = audioData.elementAt(i)[j + 1];
-					mean = (leftChannel + rightChannel) / 2;
-
-				} else {
-					mean = leftChannel;
-				}
-				x++;
-				sum += Math.pow(mean, 2);
-			}
+			x++;
+			sum += Math.pow(mean, 2);
 		}
 		loudnessFloat = (float) Math.sqrt(sum / x);
 		loudness = floatToDecibel(loudnessFloat);
@@ -501,49 +491,42 @@ public class JavaxJavazoomTrack implements Track {
 		float meanCurrent = 0;
 		float meanNext = 0;
 
-		for (int i = 0; i < audioData.size(); i++) {
+		for (int j = 0; j < audioFileLength * channels; j += channels) {
+			// first sample
+			if (j == 0) {
+				float leftChannel = audioData[j];
+				if (channels == 2) {
+					float rightChannel = audioData[j + 1];
+					meanCurrent = Math.abs((leftChannel + rightChannel) / 2);
 
-			if (this.audioData.elementAt(i) == null) {
-				break;
-			}
-
-			for (int j = 0; j < audioFileLength * channels; j += channels) {
-				// first sample
-				if (j == 0) {
-					float leftChannel = audioData.elementAt(i)[j];
-					if (channels == 2) {
-						float rightChannel = audioData.elementAt(i)[j + 1];
-						meanCurrent = Math.abs((leftChannel + rightChannel) / 2);
-
-					} else {
-						meanCurrent = Math.abs(leftChannel);
-					}
-				}
-
-				// next sample
-				if (j + channels < audioFileLength * channels) {
-					float leftChannel = audioData.elementAt(i)[j + channels];
-					if (channels == 2) {
-						float rightChannel = audioData.elementAt(i)[j + channels + 1];
-						meanNext = Math.abs((leftChannel + rightChannel) / 2);
-
-					} else {
-						meanNext = Math.abs(leftChannel);
-					}
 				} else {
-					meanNext = 0;
+					meanCurrent = Math.abs(leftChannel);
 				}
-
-				// check if sample is peak
-				if (meanPrevious < meanCurrent && meanCurrent > meanNext && meanCurrent > peak) {
-					peak = meanCurrent;
-				}
-
-				// set current as previous and next as current sample
-				meanPrevious = meanCurrent;
-				meanCurrent = meanNext;
-
 			}
+
+			// next sample
+			if (j + channels < audioFileLength * channels) {
+				float leftChannel = audioData[j + channels];
+				if (channels == 2) {
+					float rightChannel = audioData[j + channels + 1];
+					meanNext = Math.abs((leftChannel + rightChannel) / 2);
+
+				} else {
+					meanNext = Math.abs(leftChannel);
+				}
+			} else {
+				meanNext = 0;
+			}
+
+			// check if sample is peak
+			if (meanPrevious < meanCurrent && meanCurrent > meanNext && meanCurrent > peak) {
+				peak = meanCurrent;
+			}
+
+			// set current as previous and next as current sample
+			meanPrevious = meanCurrent;
+			meanCurrent = meanNext;
+
 		}
 
 		dynamicRange = this.getLoudness() - this.floatToDecibel(peak);

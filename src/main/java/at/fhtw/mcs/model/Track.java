@@ -1,7 +1,5 @@
 package at.fhtw.mcs.model;
 
-import java.util.Vector;
-
 /**
  * Defines the general interface of an audio track.
  * 
@@ -57,7 +55,7 @@ public interface Track {
 	/**
 	 * @return the Amplitudedata of each Sample of the audiofile
 	 */
-	Vector<float[]> getAudioData();
+	float[] getAudioData();
 
 	/**
 	 * @return the length of the audiofile in Samples
