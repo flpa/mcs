@@ -156,6 +156,9 @@ public class RootController implements Initializable {
 						track.resetStartPointOffset();
 					}
 				}
+				for (TrackController trackController : trackControllers) {
+					trackController.drawTrack();
+				}
 			}
 		});
 

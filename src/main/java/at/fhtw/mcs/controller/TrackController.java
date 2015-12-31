@@ -48,11 +48,27 @@ public class TrackController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		int offset = Math.round(track.getLength() / 2000);
-		System.out.println("Offset: " + offset);
-
 		textTrackName.setText(track.getFilename());
 		textDynamicRange.setText(String.format("%.2f dB", track.getDynamicRange()));
+
+		drawTrack();
+
+		radioButtonActiveTrack.setToggleGroup(toggleGroup);
+		radioButtonActiveTrack.setUserData(track);
+		if (toggleGroup.getSelectedToggle() == null) {
+			radioButtonActiveTrack.setSelected(true);
+		}
+
+		textAreaComment.textProperty().addListener(new ChangeListener<String>() {
+			public void changed(ObservableValue<? extends String> value, String previousComment, String newComment) {
+				track.setComment(newComment);
+			}
+		});
+	}
+
+	public void drawTrack() {
+		int offset = Math.round(track.getLength() / 2000);
+		System.out.println("Offset: " + offset);
 
 		XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
@@ -81,6 +97,7 @@ public class TrackController implements Initializable {
 			x++;
 		}
 
+		lineChartWaveform.getData().clear();
 		lineChartWaveform.getData().add(series);
 
 		NumberAxis xAxis = (NumberAxis) lineChartWaveform.getXAxis();
@@ -90,18 +107,6 @@ public class TrackController implements Initializable {
 		yAxis.setAutoRanging(false);
 		yAxis.setLowerBound(-1.0);
 		yAxis.setUpperBound(1.0);
-
-		radioButtonActiveTrack.setToggleGroup(toggleGroup);
-		radioButtonActiveTrack.setUserData(track);
-		if (toggleGroup.getSelectedToggle() == null) {
-			radioButtonActiveTrack.setSelected(true);
-		}
-
-		textAreaComment.textProperty().addListener(new ChangeListener<String>() {
-			public void changed(ObservableValue<? extends String> value, String previousComment, String newComment) {
-				track.setComment(newComment);
-			}
-		});
 	}
 
 	public Button getButtonMoveUp() {

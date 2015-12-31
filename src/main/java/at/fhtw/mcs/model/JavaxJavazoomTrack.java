@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -38,7 +39,7 @@ public class JavaxJavazoomTrack implements Track {
 	private float[] audioData;
 	private int numberOfChannels = 0;
 	private String comment;
-	private int startOffset;
+	private int startOffsetFrames;
 	private long startOffsetMicroseconds;
 
 	/**
@@ -77,13 +78,13 @@ public class JavaxJavazoomTrack implements Track {
 
 	public void applyStartPointOffset() {
 		int startPoint = findStartPoint();
-		startOffset = startPoint / 2;
-		startOffsetMicroseconds = framesToMicroseconds(startOffset);
-		clip.setFramePosition(startOffset);
+		startOffsetFrames = startPoint / 2;
+		startOffsetMicroseconds = framesToMicroseconds(startOffsetFrames);
+		clip.setFramePosition(startOffsetFrames);
 	}
 
 	public void resetStartPointOffset() {
-		startOffset = 0;
+		startOffsetFrames = 0;
 		startOffsetMicroseconds = 0;
 	}
 
@@ -186,7 +187,7 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public void stop() {
 		clip.stop();
-		clip.setFramePosition(startOffset);
+		clip.setFramePosition(startOffsetFrames);
 	}
 
 	/**
@@ -334,12 +335,19 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public float[] getAudioData() {
+		if (startOffsetFrames > 0) {
+			/*
+			 * TODO: temporarily, this means that there's another copy of the
+			 * audiodata in memory. is that a problem?
+			 */
+			return Arrays.copyOfRange(audioData, startOffsetFrames * 2, audioData.length);
+		}
 		return audioData;
 	}
 
 	@Override
 	public int getLength() {
-		return clip.getFrameLength();
+		return clip.getFrameLength() - startOffsetFrames;
 	}
 
 	/**
