@@ -79,6 +79,7 @@ public class TrackController implements Initializable {
 				if (j % offset == 0) {
 					float mean = 0;
 					float leftChannel = tempData.elementAt(i)[j];
+
 					if (track.getNumberOfChannels() == 2) {
 						float rightChannel = tempData.elementAt(i)[j + 1];
 						mean = (leftChannel + rightChannel) / 2;
@@ -93,11 +94,13 @@ public class TrackController implements Initializable {
 
 		lineChartWaveform.getData().add(series);
 
-		lineChartWaveform.getXAxis().setAutoRanging(false);
-		((NumberAxis) lineChartWaveform.getXAxis()).setUpperBound(x - 1);
-		lineChartWaveform.getYAxis().setAutoRanging(false);
-		((NumberAxis) lineChartWaveform.getYAxis()).setLowerBound(-1.0);
-		((NumberAxis) lineChartWaveform.getYAxis()).setUpperBound(1.0);
+		NumberAxis xAxis = (NumberAxis) lineChartWaveform.getXAxis();
+		xAxis.setAutoRanging(false);
+		xAxis.setUpperBound(x - 1);
+		NumberAxis yAxis = (NumberAxis) lineChartWaveform.getYAxis();
+		yAxis.setAutoRanging(false);
+		yAxis.setLowerBound(-1.0);
+		yAxis.setUpperBound(1.0);
 
 		radioButtonActiveTrack.setToggleGroup(toggleGroup);
 		radioButtonActiveTrack.setUserData(track);
