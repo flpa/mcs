@@ -23,6 +23,7 @@ import javax.sound.sampled.Mixer;
 import at.fhtw.mcs.model.Format;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.util.AudioOuput;
+import at.fhtw.mcs.util.DragDropSupport;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
 import javafx.application.Platform;
@@ -311,6 +312,8 @@ public class RootController implements Initializable {
 		setLoudnessLevel();
 		// setMoveButtons();
 		setButtonsEventHandler();
+
+		DragDropSupport.register(vboxTracks);
 	}
 
 	public void setPlaybackControlsDisable(boolean disable) {
