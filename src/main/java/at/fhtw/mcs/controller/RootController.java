@@ -91,6 +91,8 @@ public class RootController implements Initializable {
 	@FXML
 	private ProgressBar progressBarTime;
 	@FXML
+	private Slider sliderProgressBarTime;
+	@FXML
 	private ScrollPane scrollPaneTracks;
 	@FXML
 	private Rectangle rectangleSpacer;
@@ -147,6 +149,8 @@ public class RootController implements Initializable {
 				}
 			}
 		});
+		// TODO: check if Volume changes if you alter the value with clicking
+		// instead of dragging
 
 		checkMenuItemSyncronizeStartPoints.setSelected(true);
 		checkMenuItemSyncronizeStartPoints.selectedProperty().addListener(new ChangeListener<Boolean>() {
@@ -221,6 +225,22 @@ public class RootController implements Initializable {
 		 * a track, deleting it, adding a track [...]
 		 */
 		startTimeUpdateThread();
+
+		// Eventlistener to change the Playbackpoint
+		// TODO fix bug, where timeline is set back when switching between
+		// tracks
+		sliderProgressBarTime.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if ((double) newValue - (double) oldValue > 2500000 || (double) newValue - (double) oldValue < 0) {
+					for (Track track : tracks) {
+						long temp = Math.round((double) newValue);
+						track.setCurrentMicroseconds(temp + 250000);
+						System.out.println(newValue + ":" + oldValue);
+					}
+				}
+			}
+		});
 	}
 
 	private static boolean isOutputMixerInfo(Mixer.Info info) {
@@ -258,11 +278,12 @@ public class RootController implements Initializable {
 
 		/*
 		 * This seems to ensure that the actual update is done on the Java FX
-		 * thread. Trying to update GUI components from another thread can lead
+		 * thread. Trying to update GUI components from another thrßead can lead
 		 * to IllegalStateExceptions.
 		 */
 		Platform.runLater(() -> {
 			progressBarTime.setProgress(progress);
+			sliderProgressBarTime.setValue(currentMicroseconds - 250000);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
 			if (currentTrackHasEnded) {
 				buttonPlayPause.setText(ICON_PLAY);
@@ -326,6 +347,10 @@ public class RootController implements Initializable {
 
 		String timeString = formatTimeString(longestTrackMicrosecondsLength);
 		textTotalTime.setText(timeString);
+
+		// Set the Slider to the same length as the Progressbar
+		sliderProgressBarTime.setMin(0);
+		sliderProgressBarTime.setMax(longestTrackMicrosecondsLength - 250000);
 	}
 
 	private void loadTrackUi(Track track) {

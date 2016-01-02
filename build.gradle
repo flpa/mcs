@@ -42,6 +42,26 @@ buildscript {
   }
 }
 
+
+//for creating DMG file - BUG HAUPTKLASSE FEHLT
+apply plugin: "edu.sc.seis.macAppBundle"
+
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.edu.sc.seis:macAppBundle:2.1.5"
+  }
+}
+
+macAppBundle {
+    mainClassName = "at.fhtw.mcs.Main"
+}
+
+
 // include license in distribution package
 distZip {
     into(project.name + "-" + version) {
