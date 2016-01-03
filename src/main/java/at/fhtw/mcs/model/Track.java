@@ -95,4 +95,6 @@ public interface Track {
 	void applyStartPointOffset();
 
 	void resetStartPointOffset();
+
+	long getStartPointOffset();
 }

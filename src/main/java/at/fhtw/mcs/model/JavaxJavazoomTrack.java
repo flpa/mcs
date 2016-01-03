@@ -554,4 +554,9 @@ public class JavaxJavazoomTrack implements Track {
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
+
+	@Override
+	public long getStartPointOffset() {
+		return startOffsetMicroseconds;
+	}
 }

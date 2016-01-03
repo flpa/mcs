@@ -114,6 +114,10 @@ public class RootController implements Initializable {
 	private int longestTrackFrameLength;
 	private long longestTrackMicrosecondsLength;
 
+	// debug variables
+	Boolean trackChanged = false;
+	int trackChangedChecker = 0;
+
 	public RootController(Stage stage) {
 		this.stage = stage;
 	}
@@ -202,6 +206,7 @@ public class RootController implements Initializable {
 
 				long currentMs = 0;
 				boolean wasPlaying = false;
+				trackChanged = true;
 
 				if (previousSelection != null) {
 					Track prevTrack = (Track) previousSelection.getUserData();
@@ -233,10 +238,13 @@ public class RootController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if ((double) newValue - (double) oldValue > 2500000 || (double) newValue - (double) oldValue < 0) {
-					for (Track track : tracks) {
-						long temp = Math.round((double) newValue);
-						track.setCurrentMicroseconds(temp + 250000);
-						System.out.println(newValue + ":" + oldValue);
+					if (!trackChanged) {
+						for (Track track : tracks) {
+							long temp = Math.round((double) newValue);
+							track.setCurrentMicroseconds(temp + 250000);
+							// System.out.println("valuechange: " + newValue +
+							// ":" + oldValue);
+						}
 					}
 				}
 			}
@@ -259,6 +267,13 @@ public class RootController implements Initializable {
 		Optional<Track> selectedTrack = getSelectedTrack();
 		if (tracks.isEmpty() || selectedTrack.isPresent() == false) {
 			return;
+		}
+
+		if (trackChanged && trackChangedChecker > 10) {
+			trackChanged = false;
+			trackChangedChecker = 0;
+		} else if (trackChanged) {
+			trackChangedChecker++;
 		}
 
 		Track currentTrack = selectedTrack.get();
