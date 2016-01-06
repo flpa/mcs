@@ -68,6 +68,12 @@ public interface Track {
 	int getLength();
 
 	/**
+	 * @return in weighted Samples, so 48000Hz Files have the same length as
+	 *         441000Hz files
+	 */
+	int getLengthWeighted();
+
+	/**
 	 * @return the number of Channels of the audiofile
 	 */
 	int getNumberOfChannels();
@@ -104,4 +110,6 @@ public interface Track {
 	long getStartPointOffset();
 
 	void registerCommentChangeListener(ChangeListener<? super String> listener);
+
+	float getSampleRate();
 }

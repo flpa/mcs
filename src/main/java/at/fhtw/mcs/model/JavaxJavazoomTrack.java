@@ -39,6 +39,7 @@ public class JavaxJavazoomTrack implements Track {
 	private SimpleObjectProperty<String> comment = new SimpleObjectProperty<String>("");
 	private Clip clip;
 	private float loudness;
+	private float sampleRate;
 	private float dynamicRange;
 	private float deltaVolume = 0;
 	private float[] audioData;
@@ -149,6 +150,7 @@ public class JavaxJavazoomTrack implements Track {
 	private void storeAudioData() throws UnsupportedAudioFileException, IOException {
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(file);
 		AudioFormat audioFormat = fileFormat.getFormat();
+		sampleRate = audioFormat.getSampleRate();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
 		int nBufferSize = BUFFER_LENGTH * audioFormat.getFrameSize();
@@ -357,7 +359,12 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public int getLength() {
-		return clip.getFrameLength() - startOffsetFrames;
+		return (clip.getFrameLength() - startOffsetFrames);
+	}
+
+	@Override
+	public int getLengthWeighted() {
+		return (int) ((clip.getFrameLength() - startOffsetFrames) * (44100 / this.sampleRate));
 	}
 
 	/**
@@ -590,5 +597,10 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public long getStartPointOffset() {
 		return startOffsetMicroseconds;
+	}
+
+	@Override
+	public float getSampleRate() {
+		return sampleRate;
 	}
 }

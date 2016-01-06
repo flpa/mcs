@@ -72,7 +72,7 @@ public class TrackController implements Initializable {
 
 	public void drawTrack() {
 		int offset = Math.round(longestTrackFrameLength / GRAPH_POINT_COUNT);
-		System.out.println("Offset: " + offset);
+		offset = (int) (offset * (track.getSampleRate() / 44100));
 
 		XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
@@ -140,5 +140,9 @@ public class TrackController implements Initializable {
 
 	public RadioButton getRadioButtonActiveTrack() {
 		return this.radioButtonActiveTrack;
+	}
+
+	public Track getTrack() {
+		return this.track;
 	}
 }
