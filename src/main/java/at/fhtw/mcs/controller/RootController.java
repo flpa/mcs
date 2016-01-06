@@ -129,11 +129,11 @@ public class RootController implements Initializable {
 	private long updateFrequencyMs = 100;
 	private int longestTrackFrameLength;
 	private long longestTrackMicrosecondsLength;
+	private Project project;
 
 	// debug variables
 	Boolean trackChanged = false;
 	int trackChangedChecker = 0;
-	private Project project;
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -219,8 +219,8 @@ public class RootController implements Initializable {
 				if (previousSelection != null) {
 					Track prevTrack = (Track) previousSelection.getUserData();
 					wasPlaying = prevTrack.isPlaying();
-					currentMs = prevTrack.getCurrentMicroseconds();
 					prevTrack.pause();
+					currentMs = prevTrack.getCurrentMicroseconds();
 				}
 
 				if (newSelection != null) {
@@ -494,7 +494,7 @@ public class RootController implements Initializable {
 		}
 		Track longestTrack = project.getTracks().stream().max(comparing(Track::getTotalMicroseconds)).get();
 
-		longestTrackFrameLength = longestTrack.getLength();
+		longestTrackFrameLength = longestTrack.getLengthWeighted();
 		longestTrackMicrosecondsLength = longestTrack.getTotalMicroseconds();
 
 		trackControllers.forEach(controller -> controller.setLongestTrackFrameLength(longestTrackFrameLength));
