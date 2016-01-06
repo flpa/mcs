@@ -65,7 +65,7 @@
                               <AnchorPane maxHeight="20.0" prefHeight="20.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                  <children>
                                     <ProgressBar fx:id="progressBarTime" prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                                    <Slider fx:id="sliderProgressBarTime" blendMode="SRC_ATOP" layoutY="2.0" prefHeight="16.0" prefWidth="652.0" />
+                                    <Slider fx:id="sliderProgressBarTime" blendMode="SRC_ATOP" layoutY="2.0" prefHeight="16.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                                  </children>
                               </AnchorPane>
                               <Text fx:id="textCurrentTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.rowIndex="1" />
