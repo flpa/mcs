@@ -1,6 +1,7 @@
 package at.fhtw.mcs.controller;
 
 import static at.fhtw.mcs.util.NullSafety.emptyListIfNull;
+import static java.util.Comparator.comparing;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -488,9 +489,13 @@ public class RootController implements Initializable {
 	}
 
 	public void determineLongestTrackLengths() {
-		longestTrackFrameLength = project.getTracks().stream().map(Track::getLength).max(Integer::compare).orElse(0);
-		longestTrackMicrosecondsLength = project.getTracks().stream().map(Track::getTotalMicroseconds)
-				.max(Long::compare).orElse(0L);
+		if (project.getTracks().isEmpty()) {
+			return;
+		}
+		Track longestTrack = project.getTracks().stream().max(comparing(Track::getTotalMicroseconds)).get();
+
+		longestTrackFrameLength = longestTrack.getLength();
+		longestTrackMicrosecondsLength = longestTrack.getTotalMicroseconds();
 
 		trackControllers.forEach(controller -> controller.setLongestTrackFrameLength(longestTrackFrameLength));
 
