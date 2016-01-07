@@ -39,7 +39,6 @@ public class JavaxJavazoomTrack implements Track {
 	private SimpleObjectProperty<String> comment = new SimpleObjectProperty<String>("");
 	private Clip clip;
 	private float loudness;
-	private float sampleRate;
 	private float dynamicRange;
 	private float deltaVolume = 0;
 	private float[] audioData;
@@ -363,7 +362,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public int getLengthWeighted() {
-		return (int) ((clip.getFrameLength() - startOffsetFrames) * (44100 / this.sampleRate));
+		return (int) ((clip.getFrameLength() - startOffsetFrames) * (44100 / clip.getFormat().getSampleRate()));
 	}
 
 	/**
@@ -600,6 +599,6 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public float getSampleRate() {
-		return sampleRate;
+		return clip.getFormat().getSampleRate();
 	}
 }
