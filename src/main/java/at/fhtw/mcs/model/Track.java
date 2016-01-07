@@ -1,5 +1,10 @@
 package at.fhtw.mcs.model;
 
+import java.io.File;
+import java.io.IOException;
+
+import javafx.beans.value.ChangeListener;
+
 /**
  * Defines the general interface of an audio track.
  * 
@@ -42,15 +47,15 @@ public interface Track {
 	 */
 	long getTotalMicroseconds();
 
-	/**
-	 * @return the average Loudness of the Track in dB
-	 */
-	void calculateLoudness();
+	String getName();
 
-	/**
-	 * @return the name of the File
-	 */
-	String getFilename();
+	void setName(String name);
+
+	String getFileName();
+
+	String getPath();
+
+	void saveAs(File destination) throws IOException;
 
 	/**
 	 * @return the Amplitudedata of each Sample of the audiofile
@@ -61,6 +66,12 @@ public interface Track {
 	 * @return the length of the audiofile in Samples
 	 */
 	int getLength();
+
+	/**
+	 * @return in weighted Samples, so 48000Hz Files have the same length as
+	 *         441000Hz files
+	 */
+	int getLengthWeighted();
 
 	/**
 	 * @return the number of Channels of the audiofile
@@ -95,4 +106,10 @@ public interface Track {
 	void applyStartPointOffset();
 
 	void resetStartPointOffset();
+
+	long getStartPointOffset();
+
+	void registerCommentChangeListener(ChangeListener<? super String> listener);
+
+	float getSampleRate();
 }

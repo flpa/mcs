@@ -17,19 +17,19 @@
               <menus>
                 <Menu mnemonicParsing="false" text="%menuItem.file">
                   <items>
-                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.newProject" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.openProject" />
+                    <MenuItem fx:id="menuItemNewProject" mnemonicParsing="false" text="%menuItem.newProject" />
+                        <MenuItem fx:id="menuItemOpenProject" mnemonicParsing="false" text="%menuItem.openProject" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.closeProject" />
+                        <MenuItem fx:id="menuItemCloseProject" mnemonicParsing="false" text="%menuItem.closeProject" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProject" />
-                        <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.saveProjectAs" />
+                        <MenuItem fx:id="menuItemSaveProject" mnemonicParsing="false" text="%menuItem.saveProject" />
+                        <MenuItem fx:id="menuItemSaveProjectAs" mnemonicParsing="false" text="%menuItem.saveProjectAs" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" text="%menuItem.quit" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.edit">
-                  <CheckMenuItem fx:id="checkMenuItemSyncronizeStartPoints" mnemonicParsing="false" text="%checkMenuItem.syncronizeStartPoints"/>
+                  <CheckMenuItem fx:id="checkMenuItemSyncronizeStartPoints" mnemonicParsing="false" text="%checkMenuItem.syncronizeStartPoints" />
                   <items>
                         <Menu fx:id="menuOutputDevices" mnemonicParsing="false" text="%menu.outputDevices" />
                   </items>
@@ -65,6 +65,7 @@
                               <AnchorPane maxHeight="20.0" prefHeight="20.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                  <children>
                                     <ProgressBar fx:id="progressBarTime" prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                                    <Slider fx:id="sliderProgressBarTime" blendMode="SRC_ATOP" layoutY="2.0" prefHeight="16.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                                  </children>
                               </AnchorPane>
                               <Text fx:id="textCurrentTime" strokeType="OUTSIDE" strokeWidth="0.0" text="0:00" GridPane.rowIndex="1" />
@@ -73,7 +74,7 @@
                                  <children>
                                     <Label contentDisplay="RIGHT" maxHeight="22.0" prefHeight="22.0" text="%label.volume" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
                                        <graphic>
-                                          <Slider fx:id="sliderMasterVolume"/>
+                                          <Slider fx:id="sliderMasterVolume" />
                                        </graphic>
                                     </Label>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">

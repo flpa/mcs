@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.8
-version = 'v0.4.0'
+version = 'v0.5.0'
 
 mainClassName = "at.fhtw.mcs.Main"
 
@@ -41,6 +41,26 @@ buildscript {
     classpath "org.sonarqube.gradle:gradle-sonarqube-plugin:1.1"
   }
 }
+
+
+//for creating DMG file - BUG HAUPTKLASSE FEHLT
+apply plugin: "edu.sc.seis.macAppBundle"
+
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.edu.sc.seis:macAppBundle:2.1.5"
+  }
+}
+
+macAppBundle {
+    mainClassName = "at.fhtw.mcs.Main"
+}
+
 
 // include license in distribution package
 distZip {

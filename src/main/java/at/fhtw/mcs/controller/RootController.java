@@ -1,10 +1,13 @@
 package at.fhtw.mcs.controller;
 
 import static at.fhtw.mcs.util.NullSafety.emptyListIfNull;
+import static java.util.Comparator.comparing;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,9 +22,12 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
+import javax.xml.bind.JAXBException;
 
 import at.fhtw.mcs.model.Format;
+import at.fhtw.mcs.model.Project;
 import at.fhtw.mcs.model.Track;
+import at.fhtw.mcs.ui.LocalizedAlertBuilder;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
@@ -36,6 +42,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
@@ -52,6 +59,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -75,6 +83,16 @@ public class RootController implements Initializable {
 	@FXML
 	private MenuItem menuItemQuit;
 	@FXML
+	private MenuItem menuItemNewProject;
+	@FXML
+	private MenuItem menuItemOpenProject;
+	@FXML
+	private MenuItem menuItemSaveProject;
+	@FXML
+	private MenuItem menuItemSaveProjectAs;
+	@FXML
+	private MenuItem menuItemCloseProject;
+	@FXML
 	private MenuItem menuItemAddTracks;
 	@FXML
 	private MenuItem menuItemAbout;
@@ -91,6 +109,8 @@ public class RootController implements Initializable {
 	@FXML
 	private ProgressBar progressBarTime;
 	@FXML
+	private Slider sliderProgressBarTime;
+	@FXML
 	private ScrollPane scrollPaneTracks;
 	@FXML
 	private Rectangle rectangleSpacer;
@@ -101,16 +121,19 @@ public class RootController implements Initializable {
 	private ResourceBundle bundle;
 	private Stage stage;
 
-	private List<Track> tracks = new ArrayList<>();
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
 	private List<Button> deleteButtonList = new ArrayList<>();
 
-	// TODO: config parameter
+	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
-	private double masterLevel = 1;
 	private int longestTrackFrameLength;
 	private long longestTrackMicrosecondsLength;
+	private Project project;
+
+	// debug variables
+	Boolean trackChanged = false;
+	int trackChangedChecker = 0;
 
 	public RootController(Stage stage) {
 		this.stage = stage;
@@ -119,9 +142,15 @@ public class RootController implements Initializable {
 	@Override
 	public void initialize(URL viewSource, ResourceBundle translations) {
 		this.bundle = translations;
+		newProject();
 
-		// 'x -> functionCall' is a minimalistic Java8 lambda
-		menuItemQuit.setOnAction(e -> Platform.exit());
+		menuItemQuit.setOnAction(e -> afterUnsavedChangesAreHandledDo(Platform::exit));
+		menuItemNewProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::newProject));
+		menuItemOpenProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::openProject));
+		menuItemSaveProject.setOnAction(e -> this.save());
+		menuItemSaveProjectAs.setOnAction(e -> this.saveAs());
+		menuItemCloseProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::closeProject));
+
 		menuItemAddTracks.setOnAction(this::handleAddTracks);
 		menuItemAbout.setOnAction(this::handleAbout);
 
@@ -134,31 +163,18 @@ public class RootController implements Initializable {
 		buttonStop.setOnAction(this::handleStop);
 		buttonAddTracks.setOnAction(this::handleAddTracks);
 
-		// handle MasterVolumeChange
 		sliderMasterVolume.setMax(1);
 		sliderMasterVolume.setMin(0);
-		sliderMasterVolume.setValue(1);
-		sliderMasterVolume.valueProperty().addListener(new ChangeListener<Number>() {
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				masterLevel = (double) newValue;
-				for (Track track : tracks) {
-					track.changeVolume((double) newValue);
-				}
-			}
-		});
+		// TODO: check if Volume changes if you alter the value with clicking
+		// instead of dragging
 
-		checkMenuItemSyncronizeStartPoints.setSelected(true);
+		sliderMasterVolume.valueProperty()
+				.addListener((observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
+
 		checkMenuItemSyncronizeStartPoints.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				for (Track track : tracks) {
-					if (newValue) {
-						track.applyStartPointOffset();
-					} else {
-						track.resetStartPointOffset();
-					}
-				}
+				project.setSynchronizeStartPoints(newValue);
 				for (TrackController trackController : trackControllers) {
 					trackController.drawTrack();
 				}
@@ -187,7 +203,7 @@ public class RootController implements Initializable {
 				 */
 				if (newSelection != null) {
 					AudioOuput.setSelectedMixerInfo((Mixer.Info) newSelection.getUserData());
-					tracks.forEach(Track::reload);
+					project.getTracks().forEach(Track::reload);
 				}
 			}
 		});
@@ -198,12 +214,13 @@ public class RootController implements Initializable {
 
 				long currentMs = 0;
 				boolean wasPlaying = false;
+				trackChanged = true;
 
 				if (previousSelection != null) {
 					Track prevTrack = (Track) previousSelection.getUserData();
 					wasPlaying = prevTrack.isPlaying();
-					currentMs = prevTrack.getCurrentMicroseconds();
 					prevTrack.pause();
+					currentMs = prevTrack.getCurrentMicroseconds();
 				}
 
 				if (newSelection != null) {
@@ -221,6 +238,145 @@ public class RootController implements Initializable {
 		 * a track, deleting it, adding a track [...]
 		 */
 		startTimeUpdateThread();
+
+		// Eventlistener to change the Playbackpoint
+		// TODO fix bug, where timeline is set back when switching between
+		// tracks
+		sliderProgressBarTime.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if ((double) newValue - (double) oldValue > 2500000 || (double) newValue - (double) oldValue < 0) {
+					if (!trackChanged) {
+						for (Track track : project.getTracks()) {
+							long temp = Math.round((double) newValue);
+							track.setCurrentMicroseconds(temp + 250000);
+							// System.out.println("valuechange: " + newValue +
+							// ":" + oldValue);
+						}
+					}
+				}
+			}
+		});
+	}
+
+	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
+		if (project.hasUnsavedChanges() == false || letUserHandleUnsavedChanges()) {
+			callback.run();
+		}
+	}
+
+	private boolean letUserHandleUnsavedChanges() {
+		// ButtonData.YES means this is our default button
+		ButtonType save = new ButtonType(bundle.getString("alert.unsavedChanges.button.save"), ButtonData.YES);
+		ButtonType proceedWithoutSaving = new ButtonType(
+				bundle.getString("alert.unsavedChanges.button.proceedWithoutSaving"));
+
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.unsavedChanges.",
+				AlertType.CONFIRMATION);
+		builder.setButtons(proceedWithoutSaving, ButtonType.CANCEL, save);
+		builder.setHeaderFormatParameters(getProjectName());
+
+		Optional<ButtonType> result = builder.build().showAndWait();
+		return result.isPresent() && (result.get() == proceedWithoutSaving || (result.get() == save && save()));
+	}
+
+	private String getProjectName() {
+		String name = project.getName();
+		return name == null ? bundle.getString("project.unnamed") : name;
+	}
+
+	private boolean save() {
+		if (project.getDirectory() == null) {
+			return saveAs();
+		}
+		return saveAndCatchErrors();
+	}
+
+	private boolean saveAs() {
+		Optional<File> directory = letUserChooseProjectDirectory();
+
+		if (directory.isPresent()) {
+			project.setDirectory(directory.get());
+			return saveAndCatchErrors();
+		}
+		return false;
+	}
+
+	private Optional<File> letUserChooseProjectDirectory() {
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		return Optional.ofNullable(directoryChooser.showDialog(stage));
+	}
+
+	private boolean saveAndCatchErrors() {
+		boolean success = false;
+		try {
+			project.save();
+			updateApplicationTitle();
+			success = true;
+		} catch (IOException e) {
+			handleSaveError(e);
+		}
+		return success;
+	}
+
+	private void handleSaveError(IOException e) {
+		e.printStackTrace();
+		new LocalizedAlertBuilder(bundle, "alert.saveFailed.", AlertType.ERROR).build().showAndWait();
+	}
+
+	private void newProject() {
+		setProject(new Project());
+	}
+
+	private void setProject(Project project) {
+		removeAllTracks();
+		this.project = project;
+		updateApplicationTitle();
+		loadTrackUis(project.getTracks());
+		sliderMasterVolume.setValue(project.getMasterLevel());
+		checkMenuItemSyncronizeStartPoints.setSelected(project.isSynchronizeStartPoints());
+		project.unsavedChangesProperty().addListener((observable, oldValue, newValue) -> this.updateApplicationTitle());
+	}
+
+	private void removeAllTracks() {
+		if (this.project != null) {
+			int trackCount = this.project.getTracks().size();
+			for (int i = 0; i < trackCount; i++) {
+				// removing first track until all have been removed
+				removeTrack(0);
+			}
+		}
+	}
+
+	private void openProject() {
+		Optional<File> chosenDirectory = letUserChooseProjectDirectory();
+		if (chosenDirectory.isPresent()) {
+			try {
+				setProject(Project.load(chosenDirectory.get()));
+			} catch (FileNotFoundException | JAXBException e) {
+				handleOpenError(e);
+			}
+		}
+	}
+
+	private void handleOpenError(Exception e) {
+		e.printStackTrace();
+
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.loadFailed.", AlertType.ERROR);
+		builder.setContentKey(e instanceof FileNotFoundException ? "content.loadError" : "content.parseError");
+		builder.build().showAndWait();
+	}
+
+	private void closeProject() {
+		newProject();
+	}
+
+	private void updateApplicationTitle() {
+		String format = MessageFormat.format(bundle.getString("app.title"), getProjectName());
+		if (project.hasUnsavedChanges()) {
+			format += "*";
+		}
+		stage.setTitle(format);
 	}
 
 	private static boolean isOutputMixerInfo(Mixer.Info info) {
@@ -237,8 +393,15 @@ public class RootController implements Initializable {
 
 	private void updateTime() {
 		Optional<Track> selectedTrack = getSelectedTrack();
-		if (tracks.isEmpty() || selectedTrack.isPresent() == false) {
+		if (selectedTrack.isPresent() == false) {
 			return;
+		}
+
+		if (trackChanged && trackChangedChecker > 10) {
+			trackChanged = false;
+			trackChangedChecker = 0;
+		} else if (trackChanged) {
+			trackChangedChecker++;
 		}
 
 		Track currentTrack = selectedTrack.get();
@@ -258,11 +421,12 @@ public class RootController implements Initializable {
 
 		/*
 		 * This seems to ensure that the actual update is done on the Java FX
-		 * thread. Trying to update GUI components from another thread can lead
+		 * thread. Trying to update GUI components from another thrßead can lead
 		 * to IllegalStateExceptions.
 		 */
 		Platform.runLater(() -> {
 			progressBarTime.setProgress(progress);
+			sliderProgressBarTime.setValue(currentMicroseconds - 250000);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
 			if (currentTrackHasEnded) {
 				buttonPlayPause.setText(ICON_PLAY);
@@ -301,14 +465,20 @@ public class RootController implements Initializable {
 		 * Needs to be added before drawing so that the longest track can be
 		 * determined.
 		 */
-		tracks.add(track);
+		project.addTrack(track);
+		loadTrackUis(Arrays.asList(track));
+	}
+
+	private void loadTrackUis(List<Track> tracks) {
 		determineLongestTrackLengths();
 
-		loadTrackUi(track);
-		setPlaybackControlsDisable(false);
+		for (Track track : tracks) {
+			loadTrackUi(track);
+		}
+		setPlaybackControlsDisable(tracks.isEmpty());
 
 		addButtons();
-		setLoudnessLevel();
+		project.setLoudnessLevel();
 		// setMoveButtons();
 		setButtonsEventHandler();
 	}
@@ -319,13 +489,22 @@ public class RootController implements Initializable {
 	}
 
 	public void determineLongestTrackLengths() {
-		longestTrackFrameLength = tracks.stream().map(Track::getLength).max(Integer::compare).orElse(0);
-		longestTrackMicrosecondsLength = tracks.stream().map(Track::getTotalMicroseconds).max(Long::compare).orElse(0L);
+		if (project.getTracks().isEmpty()) {
+			return;
+		}
+		Track longestTrack = project.getTracks().stream().max(comparing(Track::getTotalMicroseconds)).get();
+
+		longestTrackFrameLength = longestTrack.getLengthWeighted();
+		longestTrackMicrosecondsLength = longestTrack.getTotalMicroseconds();
 
 		trackControllers.forEach(controller -> controller.setLongestTrackFrameLength(longestTrackFrameLength));
 
 		String timeString = formatTimeString(longestTrackMicrosecondsLength);
 		textTotalTime.setText(timeString);
+
+		// Set the Slider to the same length as the Progressbar
+		sliderProgressBarTime.setMin(0);
+		sliderProgressBarTime.setMax(longestTrackMicrosecondsLength - 250000);
 	}
 
 	private void loadTrackUi(Track track) {
@@ -338,8 +517,7 @@ public class RootController implements Initializable {
 
 			vboxTracks.getChildren().add(loader.load());
 		} catch (IOException e) {
-			// TODO: better exception handling
-			e.printStackTrace();
+			throw new RuntimeException("Error while loading track UI.", e);
 		}
 	}
 
@@ -380,10 +558,9 @@ public class RootController implements Initializable {
 	}
 
 	private void handleAbout(ActionEvent event) {
-		Alert alertAbout = new Alert(AlertType.INFORMATION);
-		alertAbout.setTitle(bundle.getString("about.title"));
-		alertAbout.setHeaderText(null);
-		alertAbout.setContentText(bundle.getString("about.contentText"));
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "about.", AlertType.CONFIRMATION);
+		builder.setHeaderText(null);
+		Alert alertAbout = builder.build();
 
 		((Label) alertAbout.getDialogPane().getChildren().get(1)).setWrapText(false);
 		alertAbout.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
@@ -394,13 +571,13 @@ public class RootController implements Initializable {
 	}
 
 	private void showErrorUnsupportedFormat(Format format, AudioFormat audioFormat) {
-		Alert alertError = new Alert(AlertType.ERROR);
-		alertError.setTitle(bundle.getString("errorUnsupportedFormat.title"));
-		alertError.setHeaderText(null);
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "errorUnsupportedFormat.", AlertType.ERROR);
+		builder.setHeaderText(null);
 
 		String errorText = bundle.getString(determineErrorDescriptionForFormat(format, audioFormat));
 		errorText += bundle.getString("errorUnsupportedFormat.supportedFormats");
-		alertError.setContentText(errorText);
+		builder.setContentText(errorText);
+		Alert alertError = builder.build();
 
 		alertError.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
 		alertError.getDialogPane().setPrefWidth(700);
@@ -439,23 +616,8 @@ public class RootController implements Initializable {
 		}
 	}
 
-	private void setLoudnessLevel() {
-		// anpassen der lautstärke
-		float min = 0;
-
-		for (Track trackiterator : tracks) {
-			if (min > trackiterator.getLoudness()) {
-				min = trackiterator.getLoudness();
-			}
-		}
-
-		for (Track track2 : tracks) {
-			track2.setVolume(min);
-			track2.changeVolume(masterLevel);
-		}
-	}
-
 	private void setMoveButtons() {
+		List<Track> tracks = project.getTracks();
 		for (int i = 0; i < tracks.size(); i++) {
 			if (i == 0) {
 				moveButtonList.get(i).get(0).setDisable(true);
@@ -490,34 +652,39 @@ public class RootController implements Initializable {
 	}
 
 	private void deleteTrack(int number) {
-		String trackName = tracks.get(number).getFilename();
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle(bundle.getString("alert.deleteTrackTitle"));
-		alert.setHeaderText(trackName + " " + bundle.getString("alert.deleteTrackHeader"));
-		alert.setContentText(bundle.getString("alert.deleteTrackContent"));
+		List<Track> tracks = project.getTracks();
 
-		Optional<ButtonType> result = alert.showAndWait();
+		String trackName = tracks.get(number).getName();
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.deleteTrack.", AlertType.CONFIRMATION);
+		builder.setHeaderFormatParameters(trackName);
+
+		Optional<ButtonType> result = builder.build().showAndWait();
 		if (result.get() == ButtonType.OK) {
-			handleStop(null);
-			vboxTracks.getChildren().remove(number);
-
-			Track removed = tracks.remove(number);
-			toggleGroupActiveTrack.getToggles().removeIf(toggle -> toggle.getUserData().equals(removed));
-
-			trackControllers.remove(number);
-			moveButtonList.remove(number);
-			deleteButtonList.remove(number);
-
-			addButtons();
-			// setMoveButtons();
-			setButtonsEventHandler();
-			setLoudnessLevel();
-			if (tracks.size() > 0) {
-				trackControllers.get(0).getRadioButtonActiveTrack().fire();
-			} else {
-				setPlaybackControlsDisable(true);
-			}
+			removeTrack(number);
 			determineLongestTrackLengths();
+		}
+	}
+
+	private void removeTrack(int number) {
+		List<Track> tracks = project.getTracks();
+		handleStop(null);
+		vboxTracks.getChildren().remove(number);
+
+		Track removed = tracks.remove(number);
+		toggleGroupActiveTrack.getToggles().removeIf(toggle -> toggle.getUserData().equals(removed));
+
+		trackControllers.remove(number);
+		moveButtonList.remove(number);
+		deleteButtonList.remove(number);
+
+		addButtons();
+		// setMoveButtons();
+		setButtonsEventHandler();
+		project.setLoudnessLevel();
+		if (tracks.size() > 0) {
+			trackControllers.get(0).getRadioButtonActiveTrack().fire();
+		} else {
+			setPlaybackControlsDisable(true);
 		}
 	}
 
@@ -528,6 +695,7 @@ public class RootController implements Initializable {
 			List<TrackController> tempTrackController = new ArrayList<>();
 			List<Track> tempTracks = new ArrayList<>();
 
+			List<Track> tracks = project.getTracks();
 			for (int i = 0; i < vboxTracks.getChildren().size(); i++) {
 				if (i == number - 1) {
 					tempVboxTracks.add(vboxTracks.getChildren().get(i + 1));
@@ -561,7 +729,7 @@ public class RootController implements Initializable {
 	}
 
 	private void moveDown(int number) {
-		// System.out.println("number: " + number);
+		List<Track> tracks = project.getTracks();
 		if (number != tracks.size() - 1) {
 			List<Node> tempVboxTracks = new ArrayList<>();
 			List<TrackController> tempTrackController = new ArrayList<>();

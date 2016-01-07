@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -20,6 +21,8 @@ import org.apache.commons.io.FilenameUtils;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
@@ -31,14 +34,15 @@ public class JavaxJavazoomTrack implements Track {
 	 */
 	private static final double EXPECTED_START_POINT_PERCENTAGE = 0.8;
 
-	private String path;
+	private String name;
+	private File file;
+	private SimpleObjectProperty<String> comment = new SimpleObjectProperty<String>("");
 	private Clip clip;
 	private float loudness;
 	private float dynamicRange;
 	private float deltaVolume = 0;
 	private float[] audioData;
 	private int numberOfChannels = 0;
-	private String comment;
 	private int startOffsetFrames;
 	private long startOffsetMicroseconds;
 
@@ -50,25 +54,28 @@ public class JavaxJavazoomTrack implements Track {
 	 */
 	public JavaxJavazoomTrack(FormatDetection formatDetection, String path) {
 		Format format = formatDetection.detectFormat(path);
+		name = FilenameUtils.getBaseName(path);
+		String pathToLoad;
 
 		switch (format) {
 			case AIFF:
 			case WAV:
-				this.path = path;
+				pathToLoad = path;
 				break;
 			case MP3:
-				this.path = convertMp3ToWav(path);
+				pathToLoad = convertMp3ToWav(path);
 				break;
 			default:
 				throw new UnsupportedFormatException(format);
 		}
+		file = new File(pathToLoad);
 
-		clip = AudioOuput.openClip(new File(this.path));
+		clip = AudioOuput.openClip(file);
 
 		numberOfChannels = this.setNumberOfChannels();
 
 		try {
-			storeAudioData(this.path);
+			storeAudioData();
 			calculateLoudness();
 			calculateDynamicRange();
 		} catch (UnsupportedAudioFileException | IOException e) {
@@ -139,9 +146,8 @@ public class JavaxJavazoomTrack implements Track {
 		return newPath;
 	}
 
-	private void storeAudioData(String path) throws UnsupportedAudioFileException, IOException {
-		File sourceFile = new File(path);
-		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
+	private void storeAudioData() throws UnsupportedAudioFileException, IOException {
+		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(file);
 		AudioFormat audioFormat = fileFormat.getFormat();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
@@ -149,7 +155,7 @@ public class JavaxJavazoomTrack implements Track {
 		final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
 		byte[] bytes = new byte[nBufferSize];
 
-		AudioInputStream inputAIS = AudioSystem.getAudioInputStream(sourceFile);
+		AudioInputStream inputAIS = AudioSystem.getAudioInputStream(file);
 
 		int bytesRead;
 
@@ -214,8 +220,8 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	@Override
-	public String getFilename() {
-		return FilenameUtils.getName(path);
+	public String getName() {
+		return name;
 	}
 
 	/**
@@ -338,7 +344,11 @@ public class JavaxJavazoomTrack implements Track {
 		if (startOffsetFrames > 0) {
 			/*
 			 * TODO: temporarily, this means that there's another copy of the
-			 * audiodata in memory. is that a problem?
+			 * audiodata in memory. is that a problem? We could write a custom
+			 * wrapper class ('FloatArraySlice') or maybe there's something in
+			 * this thread:
+			 * https://stackoverflow.com/questions/1100371/grab-a-segment-of-an-
+			 * array-in-java-without-creating-a-new-array-on-heap
 			 */
 			return Arrays.copyOfRange(audioData, startOffsetFrames * 2, audioData.length);
 		}
@@ -347,7 +357,12 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public int getLength() {
-		return clip.getFrameLength() - startOffsetFrames;
+		return (clip.getFrameLength() - startOffsetFrames);
+	}
+
+	@Override
+	public int getLengthWeighted() {
+		return (int) ((clip.getFrameLength() - startOffsetFrames) * (44100 / clip.getFormat().getSampleRate()));
 	}
 
 	/**
@@ -380,8 +395,7 @@ public class JavaxJavazoomTrack implements Track {
 		return sample;
 	}
 
-	@Override
-	public void calculateLoudness() {
+	private void calculateLoudness() {
 		float loudnessFloat = 0;
 		AudioFormat audioFormat = clip.getFormat();
 		int channels = audioFormat.getChannels();
@@ -410,10 +424,9 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	private int setNumberOfChannels() {
-		File sourceFile = new File(this.path);
 		AudioFileFormat fileFormat;
 		try {
-			fileFormat = AudioSystem.getAudioFileFormat(sourceFile);
+			fileFormat = AudioSystem.getAudioFileFormat(file);
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new UnsupportedFormatException(Format.MP3,
 					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
@@ -440,7 +453,7 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * Open a new clip with the same properties as the old one.
 		 */
-		Clip newClip = AudioOuput.openClip(new File(path));
+		Clip newClip = AudioOuput.openClip(file);
 		newClip.setFramePosition(framePosition);
 		if (wasRunning) {
 			newClip.start();
@@ -541,17 +554,51 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	@Override
+	public void registerCommentChangeListener(ChangeListener<? super String> listener) {
+		this.comment.addListener(listener);
+	}
+
+	@Override
 	public float getDynamicRange() {
 		return this.dynamicRange;
 	}
 
 	@Override
 	public String getComment() {
-		return comment;
+		return comment.get();
 	}
 
 	@Override
 	public void setComment(String comment) {
-		this.comment = comment;
+		this.comment.set(comment);
+	}
+
+	@Override
+	public String getPath() {
+		return file.getAbsolutePath();
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getFileName() {
+		return String.format("%s.%s", name, FilenameUtils.getExtension(file.getPath()));
+	}
+
+	public void saveAs(File destination) throws IOException {
+		Files.copy(file.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		file = destination;
+	}
+
+	@Override
+	public long getStartPointOffset() {
+		return startOffsetMicroseconds;
+	}
+
+	@Override
+	public float getSampleRate() {
+		return clip.getFormat().getSampleRate();
 	}
 }
