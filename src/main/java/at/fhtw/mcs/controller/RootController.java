@@ -39,6 +39,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -55,6 +56,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -148,6 +152,7 @@ public class RootController implements Initializable {
 		menuItemNewProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::newProject));
 		menuItemOpenProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::openProject));
 		menuItemSaveProject.setOnAction(e -> this.save());
+		menuItemSaveProject.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
 		menuItemSaveProjectAs.setOnAction(e -> this.saveAs());
 		menuItemCloseProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::closeProject));
 
