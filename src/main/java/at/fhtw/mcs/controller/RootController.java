@@ -236,7 +236,10 @@ public class RootController implements Initializable {
 						newTrack.play();
 					}
 				}
+
+				setStylesheetsForTracks();
 			}
+
 		});
 
 		/*
@@ -488,6 +491,7 @@ public class RootController implements Initializable {
 		// setMoveButtons();
 		setButtonsEventHandler();
 		setLineChartEventHandler();
+		setStylesheetsForTracks();
 	}
 
 	public void setPlaybackControlsDisable(boolean disable) {
@@ -666,6 +670,8 @@ public class RootController implements Initializable {
 			final int trackNumber = i;
 			lineChartList.get(i).setOnMouseClicked(e -> {
 				trackControllers.get(trackNumber).setRadioButtonActive();
+				trackControllers.get(trackNumber).getChart().getStylesheets()
+						.add(getClass().getResource("ActiveTrack.css").toExternalForm());
 			});
 		}
 	}
@@ -699,6 +705,8 @@ public class RootController implements Initializable {
 		addButtonsAndChart();
 		// setMoveButtons();
 		setButtonsEventHandler();
+		setLineChartEventHandler();
+		setStylesheetsForTracks();
 		project.setLoudnessLevel();
 		if (tracks.size() > 0) {
 			trackControllers.get(0).getRadioButtonActiveTrack().fire();
@@ -744,6 +752,8 @@ public class RootController implements Initializable {
 			addButtonsAndChart();
 			// setMoveButtons();
 			setButtonsEventHandler();
+			setLineChartEventHandler();
+			setStylesheetsForTracks();
 		}
 	}
 
@@ -783,6 +793,22 @@ public class RootController implements Initializable {
 			addButtonsAndChart();
 			// setMoveButtons();
 			setButtonsEventHandler();
+			setLineChartEventHandler();
+			setStylesheetsForTracks();
+		}
+	}
+
+	private void setStylesheetsForTracks() {
+		for (TrackController trackController : trackControllers) {
+			trackController.getChart().getStylesheets().clear();
+			if (trackController.getRadioButtonActiveTrack().isSelected()) {
+				trackController.getChart().getStylesheets()
+						.add(getClass().getResource("ActiveTrack.css").toExternalForm());
+
+			} else {
+				trackController.getChart().getStylesheets()
+						.add(getClass().getResource("NotActiveTrack.css").toExternalForm());
+			}
 		}
 	}
 }
