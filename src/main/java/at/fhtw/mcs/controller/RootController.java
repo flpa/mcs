@@ -39,6 +39,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -268,7 +269,6 @@ public class RootController implements Initializable {
 				}
 			}
 		});
-
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
@@ -735,8 +735,6 @@ public class RootController implements Initializable {
 	}
 
 	private void moveUp(int number) {
-		System.out.println(stage.getScene());
-		// System.out.println("number: " + number);
 		if (number != 0) {
 			List<Node> tempVboxTracks = new ArrayList<>();
 			List<TrackController> tempTrackController = new ArrayList<>();
@@ -833,12 +831,9 @@ public class RootController implements Initializable {
 	}
 
 	public void sceneInitialization(Scene scene) {
-		// auch in track views, auch wenn man am add.. button ist
-		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.SPACE), new Runnable() {
-			@Override
-			public void run() {
-				buttonPlayPause.fire();
-			}
-		});
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.SPACE), buttonPlayPause::fire);
+
+		// To unfocus the comment text field
+		scene.setOnMouseClicked(event -> scene.getRoot().requestFocus());
 	}
 }

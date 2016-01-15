@@ -7,6 +7,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import at.fhtw.mcs.ui.*?>
 
 <AnchorPane prefHeight="220.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -23,9 +24,9 @@
             <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <RadioButton fx:id="radioButtonActiveTrack" alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-            <Button fx:id="buttonMoveUp" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <Button fx:id="buttonMoveDown" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <UnfocusableRadioButton fx:id="radioButtonActiveTrack" alignment="center" mnemonicParsing="false" GridPane.rowIndex="1" GridPane.rowSpan="2" />
+            <UnfocusableButton fx:id="buttonMoveUp" mnemonicParsing="false" text="⇧" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <UnfocusableButton fx:id="buttonMoveDown" mnemonicParsing="false" text="⇩" GridPane.columnIndex="2" GridPane.rowIndex="2" />
             <LineChart fx:id="lineChartWaveform" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" style="-fx-padding: -10;" verticalGridLinesVisible="false" GridPane.columnIndex="1" GridPane.rowSpan="3">
               <xAxis>
                 <NumberAxis opacity="0" prefHeight="0.0" side="BOTTOM" tickLabelsVisible="false" />
@@ -51,6 +52,6 @@
             <TextArea fx:id="textAreaComment" promptText="%textArea.commentPromptText" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
-      <Button fx:id="buttonDelete" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <UnfocusableButton fx:id="buttonDelete" mnemonicParsing="false" text="x" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>
