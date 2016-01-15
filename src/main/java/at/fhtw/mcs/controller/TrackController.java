@@ -145,4 +145,12 @@ public class TrackController implements Initializable {
 	public Track getTrack() {
 		return this.track;
 	}
+
+	public LineChart<Number, Number> getChart() {
+		return this.lineChartWaveform;
+	}
+
+	public void setRadioButtonActive() {
+		this.radioButtonActiveTrack.fire();
+	}
 }

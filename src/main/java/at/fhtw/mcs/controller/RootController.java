@@ -39,7 +39,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -128,6 +128,7 @@ public class RootController implements Initializable {
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
 	private List<Button> deleteButtonList = new ArrayList<>();
+	private List<LineChart<Number, Number>> lineChartList = new ArrayList<>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -482,10 +483,11 @@ public class RootController implements Initializable {
 		}
 		setPlaybackControlsDisable(tracks.isEmpty());
 
-		addButtons();
+		addButtonsAndChart();
 		project.setLoudnessLevel();
 		// setMoveButtons();
 		setButtonsEventHandler();
+		setLineChartEventHandler();
 	}
 
 	public void setPlaybackControlsDisable(boolean disable) {
@@ -503,7 +505,6 @@ public class RootController implements Initializable {
 		longestTrackMicrosecondsLength = longestTrack.getTotalMicroseconds();
 
 		trackControllers.forEach(controller -> controller.setLongestTrackFrameLength(longestTrackFrameLength));
-
 		String timeString = formatTimeString(longestTrackMicrosecondsLength);
 		textTotalTime.setText(timeString);
 
@@ -606,9 +607,10 @@ public class RootController implements Initializable {
 		}
 	}
 
-	private void addButtons() {
+	private void addButtonsAndChart() {
 		moveButtonList.clear();
 		deleteButtonList.clear();
+		lineChartList.clear();
 		for (int i = 0; i < trackControllers.size(); i++) {
 			// deleteButton
 			deleteButtonList.add(trackControllers.get(i).getButtonDelete());
@@ -618,6 +620,9 @@ public class RootController implements Initializable {
 			tempList.add(trackControllers.get(i).getButtonMoveUp());
 			tempList.add(trackControllers.get(i).getButtonMoveDown());
 			moveButtonList.add(tempList);
+
+			// Linechart Waveform
+			lineChartList.add(trackControllers.get(i).getChart());
 		}
 	}
 
@@ -656,6 +661,15 @@ public class RootController implements Initializable {
 		}
 	}
 
+	private void setLineChartEventHandler() {
+		for (int i = 0; i < lineChartList.size(); i++) {
+			final int trackNumber = i;
+			lineChartList.get(i).setOnMouseClicked(e -> {
+				trackControllers.get(trackNumber).setRadioButtonActive();
+			});
+		}
+	}
+
 	private void deleteTrack(int number) {
 		List<Track> tracks = project.getTracks();
 
@@ -682,7 +696,7 @@ public class RootController implements Initializable {
 		moveButtonList.remove(number);
 		deleteButtonList.remove(number);
 
-		addButtons();
+		addButtonsAndChart();
 		// setMoveButtons();
 		setButtonsEventHandler();
 		project.setLoudnessLevel();
@@ -727,7 +741,7 @@ public class RootController implements Initializable {
 				tracks.add(tempTracks.get(i));
 			}
 
-			addButtons();
+			addButtonsAndChart();
 			// setMoveButtons();
 			setButtonsEventHandler();
 		}
@@ -766,7 +780,7 @@ public class RootController implements Initializable {
 				tracks.add(tempTracks.get(i));
 			}
 
-			addButtons();
+			addButtonsAndChart();
 			// setMoveButtons();
 			setButtonsEventHandler();
 		}
