@@ -465,6 +465,9 @@ public class RootController implements Initializable {
 		} catch (UnsupportedFormatException e) {
 			this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
 			return;
+		} catch (OutOfMemoryError e) {
+			this.showErrorOutOfMemory();
+			return;
 		}
 
 		if (checkMenuItemSyncronizeStartPoints.isSelected()) {
@@ -609,6 +612,18 @@ public class RootController implements Initializable {
 			default:
 				return "errorUnsupportedFormat.contentDefault";
 		}
+	}
+
+	private void showErrorOutOfMemory() {
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "errorOutOfMemory.", AlertType.ERROR);
+		builder.setHeaderText(null);
+
+		Alert alertError = builder.build();
+
+		alertError.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+		alertError.getDialogPane().setPrefWidth(700);
+
+		alertError.showAndWait();
 	}
 
 	private void addButtonsAndChart() {
