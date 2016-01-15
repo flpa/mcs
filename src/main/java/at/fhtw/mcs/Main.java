@@ -38,6 +38,7 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.setMinWidth(800);
 			primaryStage.setMinHeight(550);
+			// rootController.sceneInitialization(scene);
 			primaryStage.show();
 
 			// Files named on the commandline are added immediately
