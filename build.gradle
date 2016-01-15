@@ -7,6 +7,8 @@ version = 'v0.5.1'
 
 mainClassName = "at.fhtw.mcs.Main"
 
+applicationDefaultJvmArgs = ["-Xmx2g"]
+
 repositories {
     mavenCentral()
 }
