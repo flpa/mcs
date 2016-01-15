@@ -245,7 +245,7 @@ public class RootController implements Initializable {
 		sliderProgressBarTime.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				if ((double) newValue - (double) oldValue > 2500000 || (double) newValue - (double) oldValue < 0) {
+				if ((double) newValue - (double) oldValue > 2_500_000 || (double) newValue - (double) oldValue < 0) {
 					if (!trackChanged) {
 						for (Track track : project.getTracks()) {
 							long temp = Math.round((double) newValue);
