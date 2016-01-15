@@ -165,14 +165,15 @@ public class RootController implements Initializable {
 
 			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
+
 		buttonStop.setOnAction(this::handleStop);
 		buttonAddTracks.setOnAction(this::handleAddTracks);
 
 		sliderMasterVolume.setMax(1);
 		sliderMasterVolume.setMin(0);
+
 		// TODO: check if Volume changes if you alter the value with clicking
 		// instead of dragging
-
 		sliderMasterVolume.valueProperty()
 				.addListener((observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
 
@@ -224,6 +225,7 @@ public class RootController implements Initializable {
 				if (previousSelection != null) {
 					Track prevTrack = (Track) previousSelection.getUserData();
 					wasPlaying = prevTrack.isPlaying();
+
 					prevTrack.pause();
 					currentMs = prevTrack.getCurrentMicroseconds();
 				}
@@ -262,6 +264,7 @@ public class RootController implements Initializable {
 				}
 			}
 		});
+
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
@@ -452,6 +455,7 @@ public class RootController implements Initializable {
 		for (File file : files) {
 			addFile(file);
 		}
+
 	}
 
 	public void addFile(File file) {
@@ -694,6 +698,7 @@ public class RootController implements Initializable {
 	}
 
 	private void moveUp(int number) {
+		System.out.println(stage.getScene());
 		// System.out.println("number: " + number);
 		if (number != 0) {
 			List<Node> tempVboxTracks = new ArrayList<>();
@@ -770,5 +775,15 @@ public class RootController implements Initializable {
 			// setMoveButtons();
 			setButtonsEventHandler();
 		}
+	}
+
+	public void sceneInitialization(Scene scene) {
+		// auch in track views, auch wenn man am add.. button ist
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.SPACE), new Runnable() {
+			@Override
+			public void run() {
+				buttonPlayPause.fire();
+			}
+		});
 	}
 }
