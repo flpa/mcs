@@ -613,6 +613,9 @@ public class RootController implements Initializable {
 	}
 
 	private String determineErrorDescriptionForFormat(Format format, AudioFormat audioFormat) {
+		if (audioFormat == null) {
+			return "errorUnsupportedFormat.contentDefault";
+		}
 		switch (format) {
 			case AIFF:
 			case WAV:

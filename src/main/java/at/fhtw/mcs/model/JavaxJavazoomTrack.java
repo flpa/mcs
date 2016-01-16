@@ -71,6 +71,7 @@ public class JavaxJavazoomTrack implements Track {
 		file = new File(pathToLoad);
 
 		numberOfChannels = this.setNumberOfChannels();
+		System.out.println(numberOfChannels);
 		clip = AudioOuput.openClip(file);
 
 		try {
@@ -149,11 +150,6 @@ public class JavaxJavazoomTrack implements Track {
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(file);
 		AudioFormat audioFormat = fileFormat.getFormat();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-		if (audioFormat.getSampleSizeInBits() > 16) {
-			System.out.println(audioFormat.getSampleSizeInBits());
-			throw new UnsupportedFormatException(Format.WAV, audioFormat);
-		}
 
 		int nBufferSize = BUFFER_LENGTH * audioFormat.getFrameSize();
 		final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
@@ -432,8 +428,7 @@ public class JavaxJavazoomTrack implements Track {
 		try {
 			fileFormat = AudioSystem.getAudioFileFormat(file);
 		} catch (UnsupportedAudioFileException | IOException e) {
-			throw new UnsupportedFormatException(Format.MP3,
-					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
+			throw new UnsupportedFormatException(Format.WAV);
 		}
 		AudioFormat audioFormat = fileFormat.getFormat();
 		return audioFormat.getChannels();
