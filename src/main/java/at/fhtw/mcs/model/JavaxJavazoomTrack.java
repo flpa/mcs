@@ -145,10 +145,15 @@ public class JavaxJavazoomTrack implements Track {
 		return newPath;
 	}
 
-	private void storeAudioData() throws UnsupportedAudioFileException, IOException {
+	private void storeAudioData() throws UnsupportedAudioFileException, IOException, UnsupportedFormatException {
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(file);
 		AudioFormat audioFormat = fileFormat.getFormat();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+		if (audioFormat.getSampleSizeInBits() > 16) {
+			System.out.println(audioFormat.getSampleSizeInBits());
+			throw new UnsupportedFormatException(Format.WAV, audioFormat);
+		}
 
 		int nBufferSize = BUFFER_LENGTH * audioFormat.getFrameSize();
 		final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
