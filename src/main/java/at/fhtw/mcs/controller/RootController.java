@@ -699,8 +699,10 @@ public class RootController implements Initializable {
 			final int trackNumber = i;
 			lineChartList.get(i).setOnMouseClicked(e -> {
 				trackControllers.get(trackNumber).setRadioButtonActive();
-				trackControllers.get(trackNumber).getChart().getStylesheets()
-						.add(getClass().getResource("ActiveTrack.css").toExternalForm());
+				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
+					trackControllers.get(trackNumber).getChart().getStylesheets()
+							.add(getClass().getResource("ActiveTrack.css").toExternalForm());
+				}
 			});
 		}
 	}

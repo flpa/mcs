@@ -45,7 +45,7 @@ buildscript {
 }
 
 
-//for creating DMG file - BUG HAUPTKLASSE FEHLT
+//for creating DMG file
 apply plugin: "edu.sc.seis.macAppBundle"
 
 buildscript {
