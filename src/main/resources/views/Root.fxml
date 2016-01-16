@@ -42,7 +42,7 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.help">
                   <items>
-                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.manual" />
+                    <MenuItem fx:id="menuItemManual" mnemonicParsing="false" text="%menuItem.manual" />
                         <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="%menuItem.about" />
                   </items>
                 </Menu>

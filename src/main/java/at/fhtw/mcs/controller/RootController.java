@@ -31,6 +31,7 @@ import at.fhtw.mcs.ui.LocalizedAlertBuilder;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -78,6 +79,7 @@ public class RootController implements Initializable {
 	 */
 	private static final String ICON_PAUSE = "||";
 	private static final String ICON_PLAY = "▶";
+	private static final String URL_MANUAL = "https://github.com/flpa/mcs/wiki";
 
 	@FXML
 	private VBox vboxTracks;
@@ -99,6 +101,8 @@ public class RootController implements Initializable {
 	private MenuItem menuItemCloseProject;
 	@FXML
 	private MenuItem menuItemAddTracks;
+	@FXML
+	private MenuItem menuItemManual;
 	@FXML
 	private MenuItem menuItemAbout;
 	@FXML
@@ -125,6 +129,7 @@ public class RootController implements Initializable {
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
 	private Stage stage;
+	private HostServices hostServices;
 
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
@@ -141,8 +146,9 @@ public class RootController implements Initializable {
 	Boolean trackChanged = false;
 	int trackChangedChecker = 0;
 
-	public RootController(Stage stage) {
+	public RootController(Stage stage, HostServices hostServices) {
 		this.stage = stage;
+		this.hostServices = hostServices;
 	}
 
 	@Override
@@ -160,6 +166,10 @@ public class RootController implements Initializable {
 
 		menuItemAddTracks.setOnAction(this::handleAddTracks);
 		menuItemAbout.setOnAction(this::handleAbout);
+
+		menuItemManual.setOnAction(e -> {
+			hostServices.showDocument(URL_MANUAL);
+		});
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
