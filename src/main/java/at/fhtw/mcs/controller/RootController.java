@@ -6,6 +6,7 @@ import static java.util.Comparator.comparing;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import at.fhtw.mcs.ui.LocalizedAlertBuilder;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
-import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -48,7 +48,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
@@ -129,7 +128,6 @@ public class RootController implements Initializable {
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
 	private Stage stage;
-	private HostServices hostServices;
 
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
@@ -146,9 +144,8 @@ public class RootController implements Initializable {
 	Boolean trackChanged = false;
 	int trackChangedChecker = 0;
 
-	public RootController(Stage stage, HostServices hostServices) {
+	public RootController(Stage stage) {
 		this.stage = stage;
-		this.hostServices = hostServices;
 	}
 
 	@Override
@@ -167,9 +164,7 @@ public class RootController implements Initializable {
 		menuItemAddTracks.setOnAction(this::handleAddTracks);
 		menuItemAbout.setOnAction(this::handleAbout);
 
-		menuItemManual.setOnAction(e -> {
-			hostServices.showDocument(URL_MANUAL);
-		});
+		menuItemManual.setOnAction(this::handleManual);
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
@@ -585,16 +580,38 @@ public class RootController implements Initializable {
 	}
 
 	private void handleAbout(ActionEvent event) {
-		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "about.", AlertType.CONFIRMATION);
-		builder.setHeaderText(null);
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "about.", AlertType.INFORMATION);
 		Alert alertAbout = builder.build();
 
-		((Label) alertAbout.getDialogPane().getChildren().get(1)).setWrapText(false);
 		alertAbout.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
 		// TODO: auto-resize to content
 		alertAbout.getDialogPane().setPrefWidth(700);
 
 		alertAbout.showAndWait();
+	}
+
+	private void handleManual(ActionEvent event) {
+		if (java.awt.Desktop.isDesktopSupported()) {
+			new Thread(() -> {
+				try {
+					java.awt.Desktop.getDesktop().browse(new java.net.URI(URL_MANUAL));
+				} catch (IOException | URISyntaxException e) {
+					System.err.println("Error while opening manual webpage.");
+					e.printStackTrace();
+				}
+			}).start();
+		} else {
+			LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "manual.", AlertType.INFORMATION);
+			String contentText = bundle.getString("manual.content");
+			contentText += URL_MANUAL;
+			builder.setContentText(contentText);
+			Alert alertManual = builder.build();
+
+			alertManual.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+			alertManual.getDialogPane().setPrefWidth(700);
+
+			alertManual.showAndWait();
+		}
 	}
 
 	private void showErrorUnsupportedFormat(Format format, AudioFormat audioFormat) {
