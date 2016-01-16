@@ -21,7 +21,7 @@ import javafx.scene.text.Text;
  * Controller class for Track.fxml
  */
 public class TrackController implements Initializable {
-	private static final int GRAPH_POINT_COUNT = 2000;
+	private static final int GRAPH_POINT_COUNT = 1750;
 	@FXML
 	private Text textTrackName;
 	@FXML
