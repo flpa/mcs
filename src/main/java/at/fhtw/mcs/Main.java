@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import at.fhtw.mcs.controller.RootController;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -15,10 +16,12 @@ public class Main extends Application {
 
 	private Stage primaryStage;
 	private BorderPane rootLayout;
+	private HostServices hostServices;
 
 	@Override
 	public void start(Stage primaryStage) {
 		this.primaryStage = primaryStage;
+		this.hostServices = getHostServices();
 		initRootLayout();
 	}
 
@@ -28,7 +31,7 @@ public class Main extends Application {
 	public void initRootLayout() {
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			RootController rootController = new RootController(primaryStage);
+			RootController rootController = new RootController(primaryStage, hostServices);
 			loader.setController(rootController);
 			loader.setLocation(getClass().getClassLoader().getResource("views/Root.fxml"));
 			ResourceBundle bundle = ResourceBundle.getBundle("bundles.mcs");
