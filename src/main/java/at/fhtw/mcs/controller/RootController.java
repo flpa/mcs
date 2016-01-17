@@ -77,7 +77,7 @@ public class RootController implements Initializable {
 	 * Where to move those? ResourceBundles?
 	 */
 	private static final String ICON_PAUSE = "||";
-	private static final String ICON_PLAY = "▶";
+	private static final String ICON_PLAY = "\u25B6";
 	private static final String URL_MANUAL = "https://github.com/flpa/mcs/wiki";
 
 	@FXML
@@ -455,11 +455,12 @@ public class RootController implements Initializable {
 		FileChooser chooser = new FileChooser();
 
 		/*
-		 * TODO: should restrict file types! but maybe don't hardcode, rather
-		 * 'ask' a responsible class what file types are allowed?
+		 * TODO: change filter from hardcoded to a responsible class
 		 */
+		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
+				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
+		chooser.getExtensionFilters().add(filter);
 
-		chooser.setTitle("TRANSLATE ME");
 		List<File> files = emptyListIfNull(chooser.showOpenMultipleDialog(stage));
 		for (File file : files) {
 			addFile(file);

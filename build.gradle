@@ -19,6 +19,7 @@ dependencies {
 	testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
+// To get more test ouptut from Travis
 test {
     testLogging {
         exceptionFormat "full" // default is "short"
@@ -44,7 +45,6 @@ buildscript {
   }
 }
 
-
 //for creating DMG file
 apply plugin: "edu.sc.seis.macAppBundle"
 
@@ -63,13 +63,25 @@ macAppBundle {
     mainClassName = "at.fhtw.mcs.Main"
 }
 
-
-// include license in distribution package
+// include license and README in distribution package
 distZip {
     into(project.name + "-" + version) {
         from '.'
         include 'LICENSE.txt'
         include 'LICENSE-3RD-PARTY.txt'
-        include 'README.txt'
+    }
+
+    // README.md is renamed to README.txt and Images are filtered
+    into(project.name + "-" + version) {
+    	from '.'
+    	include 'README.md'
+
+    	filter { String line ->
+	    line.replaceAll('!?\\[.*\\]\\(.*\\)', '')
+    	}
+
+    	rename { String fileName ->
+    	    fileName.replace('.md', '.txt')
+    	}
     }
 }
