@@ -73,3 +73,19 @@ distZip {
         include 'README.txt'
     }
 }
+
+
+task filter(type: Copy) {
+    from '.'
+    include 'README.md'
+    into 'build/testo'
+
+    // Use a closure to remove lines
+    filter { String line ->
+        line.startsWith('[!') ? null : line
+    }
+
+    rename { String fileName ->
+        fileName.replace('.md', '.txt')
+    }
+}
