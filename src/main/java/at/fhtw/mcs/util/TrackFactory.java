@@ -34,7 +34,8 @@ public class TrackFactory {
 			this.format = format;
 		}
 
-		public UnsupportedFormatException(Format format, AudioFormat audioFormat) {
+		public UnsupportedFormatException(Format format, AudioFormat audioFormat, Throwable e) {
+			super(e);
 			this.format = format;
 			this.audioFormat = audioFormat;
 		}

@@ -34,7 +34,7 @@ public class AudioOuput {
 			clip.open(audioIn);
 			return clip;
 		} catch (UnsupportedAudioFileException | LineUnavailableException e) {
-			throw new UnsupportedFormatException(Format.WAV, audioIn.getFormat());
+			throw new UnsupportedFormatException(Format.WAV, audioIn.getFormat(), e);
 		} catch (IOException e) {
 			throw new RuntimeException("Error while opening clip", e);
 		}
