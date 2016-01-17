@@ -1,8 +1,6 @@
 # MCS - Mixdown Comparison Software
 MCS is a tool to help musicians compare different mixdowns of a recording.
-
 ![MCS Sample Screenshot](http://stud14.technikum-wien.at/~if14b038/mcs/mcs.PNG)
-
 [![Build Status](https://travis-ci.org/flpa/mcs.svg?branch=develop)](https://travis-ci.org/flpa/mcs)
 
 # Starting it
@@ -18,7 +16,7 @@ MCS is a tool to help musicians compare different mixdowns of a recording.
 ## Getting started
 
 - Clone repository
-- run ``gradle eclipse``
+- run `gradle eclipse`
 - import project into Eclipse
 
 # License
