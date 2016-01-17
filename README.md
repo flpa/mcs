@@ -2,11 +2,12 @@
 MCS is a tool to help musicians compare different mixdowns of a recording.  
 
 ![MCS Sample Screenshot](/../screenshots/docs/screenshots/readme-sample-screen.png?raw=true "MCS Main Window")  
-
 After adding an audio track to MCS, the track is automatically normalized:  
 The loudness level is adjusted and the start point of the actual recording is determined.
 By using the integrated playback functionality, these normalizations enable objective comparison of two or more audio tracks.  
 In addition, tracks are visualized as waveforms to aid visual comparison and ease jumping to a specific section of an audio track.
+
+A more detailed description of features can be found in our manual: https://github.com/flpa/mcs/wiki
 
 ## System requirements
 
@@ -14,23 +15,28 @@ In addition, tracks are visualized as waveforms to aid visual comparison and eas
 - An installation of Java SE 8 Update 60 or newer
 
 ## Starting the application
+
 MCS releases contain executable files for Microsoft Windows, Mac OSX and Linux.  
 You'll find the latest relase at https://github.com/flpa/mcs/releases .  
 After unpacking the release, the executable files are located in the `bin` directory.
 
 ### ![](/../screenshots/docs/icons/windows.png?raw=true) Windows
+
 MCS can be started using the executable batch file `mcs.bat` by double-clicking the file in Windows Explorer. 
 Alternatively, it can be launched from a command-prompt.
 
 ### ![](/../screenshots/docs/icons/mac.png?raw=true) Mac
+
 MCS can be started from the commandline using the executable shell script `mcs`.  
 For more convenience, our release page also contains standard OSX DMG files, e.g. `mcs-v0.5.0.dmg`. 
 These can be integrated into the system easily.
 
 ### ![](/../screenshots/docs/icons/linux.png?raw=true) Linux
+
 MCS can be started from the commandline using the executable shell script `mcs`.  
 
 ## Bugs and questions
+
 Bugs and questions are collected as issues in our Github repository at https://github.com/flpa/mcs/issues/ .
 Feel free to create new issues for any problems or questions you encounter while using MCS.  
 

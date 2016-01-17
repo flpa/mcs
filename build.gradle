@@ -77,7 +77,7 @@ distZip {
     	include 'README.md'
 
     	filter { String line ->
-    	    (line.startsWith('[!') || line.startsWith('![')) ? null : line
+	    line.replaceAll('!?\\[.*\\]\\(.*\\)', '')
     	}
 
     	rename { String fileName ->
