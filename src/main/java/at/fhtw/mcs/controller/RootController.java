@@ -721,7 +721,7 @@ public class RootController implements Initializable {
 				trackControllers.get(trackNumber).setRadioButtonActive();
 				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
 					trackControllers.get(trackNumber).getChart().getStylesheets()
-							.add(getClass().getResource("ActiveTrack.css").toExternalForm());
+							.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
 				}
 			});
 		}
@@ -853,11 +853,11 @@ public class RootController implements Initializable {
 			trackController.getChart().getStylesheets().clear();
 			if (trackController.getRadioButtonActiveTrack().isSelected()) {
 				trackController.getChart().getStylesheets()
-						.add(getClass().getResource("ActiveTrack.css").toExternalForm());
+						.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
 
 			} else {
 				trackController.getChart().getStylesheets()
-						.add(getClass().getResource("NotActiveTrack.css").toExternalForm());
+						.add(getClass().getClassLoader().getResource("css/NotActiveTrack.css").toExternalForm());
 			}
 		}
 	}
