@@ -71,7 +71,6 @@ public class JavaxJavazoomTrack implements Track {
 		file = new File(pathToLoad);
 
 		numberOfChannels = this.setNumberOfChannels();
-		System.out.println(numberOfChannels);
 		clip = AudioOuput.openClip(file);
 
 		try {
