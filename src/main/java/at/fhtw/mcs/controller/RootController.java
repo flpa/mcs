@@ -6,6 +6,7 @@ import static java.util.Comparator.comparing;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -39,13 +40,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
@@ -55,6 +57,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -72,7 +77,8 @@ public class RootController implements Initializable {
 	 * Where to move those? ResourceBundles?
 	 */
 	private static final String ICON_PAUSE = "||";
-	private static final String ICON_PLAY = "▶";
+	private static final String ICON_PLAY = "\u25B6";
+	private static final String URL_MANUAL = "https://github.com/flpa/mcs/wiki";
 
 	@FXML
 	private VBox vboxTracks;
@@ -94,6 +100,8 @@ public class RootController implements Initializable {
 	private MenuItem menuItemCloseProject;
 	@FXML
 	private MenuItem menuItemAddTracks;
+	@FXML
+	private MenuItem menuItemManual;
 	@FXML
 	private MenuItem menuItemAbout;
 	@FXML
@@ -124,6 +132,7 @@ public class RootController implements Initializable {
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
 	private List<Button> deleteButtonList = new ArrayList<>();
+	private List<LineChart<Number, Number>> lineChartList = new ArrayList<>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -148,11 +157,14 @@ public class RootController implements Initializable {
 		menuItemNewProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::newProject));
 		menuItemOpenProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::openProject));
 		menuItemSaveProject.setOnAction(e -> this.save());
+		menuItemSaveProject.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
 		menuItemSaveProjectAs.setOnAction(e -> this.saveAs());
 		menuItemCloseProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::closeProject));
 
 		menuItemAddTracks.setOnAction(this::handleAddTracks);
 		menuItemAbout.setOnAction(this::handleAbout);
+
+		menuItemManual.setOnAction(this::handleManual);
 
 		// TODO: inline lambdas vs methods?
 		buttonPlayPause.setOnAction(e -> {
@@ -160,14 +172,15 @@ public class RootController implements Initializable {
 
 			buttonPlayPause.setText(ICON_PLAY.equals(buttonPlayPause.getText()) ? ICON_PAUSE : ICON_PLAY);
 		});
+
 		buttonStop.setOnAction(this::handleStop);
 		buttonAddTracks.setOnAction(this::handleAddTracks);
 
 		sliderMasterVolume.setMax(1);
 		sliderMasterVolume.setMin(0);
+
 		// TODO: check if Volume changes if you alter the value with clicking
 		// instead of dragging
-
 		sliderMasterVolume.valueProperty()
 				.addListener((observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
 
@@ -219,6 +232,7 @@ public class RootController implements Initializable {
 				if (previousSelection != null) {
 					Track prevTrack = (Track) previousSelection.getUserData();
 					wasPlaying = prevTrack.isPlaying();
+
 					prevTrack.pause();
 					currentMs = prevTrack.getCurrentMicroseconds();
 				}
@@ -230,7 +244,10 @@ public class RootController implements Initializable {
 						newTrack.play();
 					}
 				}
+
+				setStylesheetsForTracks();
 			}
+
 		});
 
 		/*
@@ -245,7 +262,7 @@ public class RootController implements Initializable {
 		sliderProgressBarTime.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				if ((double) newValue - (double) oldValue > 2500000 || (double) newValue - (double) oldValue < 0) {
+				if ((double) newValue - (double) oldValue > 2_500_000 || (double) newValue - (double) oldValue < 0) {
 					if (!trackChanged) {
 						for (Track track : project.getTracks()) {
 							long temp = Math.round((double) newValue);
@@ -438,15 +455,17 @@ public class RootController implements Initializable {
 		FileChooser chooser = new FileChooser();
 
 		/*
-		 * TODO: should restrict file types! but maybe don't hardcode, rather
-		 * 'ask' a responsible class what file types are allowed?
+		 * TODO: change filter from hardcoded to a responsible class
 		 */
+		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
+				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
+		chooser.getExtensionFilters().add(filter);
 
-		chooser.setTitle("TRANSLATE ME");
 		List<File> files = emptyListIfNull(chooser.showOpenMultipleDialog(stage));
 		for (File file : files) {
 			addFile(file);
 		}
+
 	}
 
 	public void addFile(File file) {
@@ -455,6 +474,9 @@ public class RootController implements Initializable {
 			track = TrackFactory.loadTrack(file.getAbsolutePath());
 		} catch (UnsupportedFormatException e) {
 			this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
+			return;
+		} catch (OutOfMemoryError e) {
+			this.showErrorOutOfMemory();
 			return;
 		}
 
@@ -477,10 +499,12 @@ public class RootController implements Initializable {
 		}
 		setPlaybackControlsDisable(tracks.isEmpty());
 
-		addButtons();
+		addButtonsAndChart();
 		project.setLoudnessLevel();
 		// setMoveButtons();
 		setButtonsEventHandler();
+		setLineChartEventHandler();
+		setStylesheetsForTracks();
 	}
 
 	public void setPlaybackControlsDisable(boolean disable) {
@@ -498,7 +522,6 @@ public class RootController implements Initializable {
 		longestTrackMicrosecondsLength = longestTrack.getTotalMicroseconds();
 
 		trackControllers.forEach(controller -> controller.setLongestTrackFrameLength(longestTrackFrameLength));
-
 		String timeString = formatTimeString(longestTrackMicrosecondsLength);
 		textTotalTime.setText(timeString);
 
@@ -558,16 +581,38 @@ public class RootController implements Initializable {
 	}
 
 	private void handleAbout(ActionEvent event) {
-		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "about.", AlertType.CONFIRMATION);
-		builder.setHeaderText(null);
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "about.", AlertType.INFORMATION);
 		Alert alertAbout = builder.build();
 
-		((Label) alertAbout.getDialogPane().getChildren().get(1)).setWrapText(false);
 		alertAbout.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
 		// TODO: auto-resize to content
 		alertAbout.getDialogPane().setPrefWidth(700);
 
 		alertAbout.showAndWait();
+	}
+
+	private void handleManual(ActionEvent event) {
+		if (java.awt.Desktop.isDesktopSupported()) {
+			new Thread(() -> {
+				try {
+					java.awt.Desktop.getDesktop().browse(new java.net.URI(URL_MANUAL));
+				} catch (IOException | URISyntaxException e) {
+					System.err.println("Error while opening manual webpage.");
+					e.printStackTrace();
+				}
+			}).start();
+		} else {
+			LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "manual.", AlertType.INFORMATION);
+			String contentText = bundle.getString("manual.content");
+			contentText += URL_MANUAL;
+			builder.setContentText(contentText);
+			Alert alertManual = builder.build();
+
+			alertManual.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+			alertManual.getDialogPane().setPrefWidth(700);
+
+			alertManual.showAndWait();
+		}
 	}
 
 	private void showErrorUnsupportedFormat(Format format, AudioFormat audioFormat) {
@@ -586,6 +631,9 @@ public class RootController implements Initializable {
 	}
 
 	private String determineErrorDescriptionForFormat(Format format, AudioFormat audioFormat) {
+		if (audioFormat == null) {
+			return "errorUnsupportedFormat.contentDefault";
+		}
 		switch (format) {
 			case AIFF:
 			case WAV:
@@ -601,9 +649,22 @@ public class RootController implements Initializable {
 		}
 	}
 
-	private void addButtons() {
+	private void showErrorOutOfMemory() {
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "errorOutOfMemory.", AlertType.ERROR);
+		builder.setHeaderText(null);
+
+		Alert alertError = builder.build();
+
+		alertError.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+		alertError.getDialogPane().setPrefWidth(700);
+
+		alertError.showAndWait();
+	}
+
+	private void addButtonsAndChart() {
 		moveButtonList.clear();
 		deleteButtonList.clear();
+		lineChartList.clear();
 		for (int i = 0; i < trackControllers.size(); i++) {
 			// deleteButton
 			deleteButtonList.add(trackControllers.get(i).getButtonDelete());
@@ -613,6 +674,9 @@ public class RootController implements Initializable {
 			tempList.add(trackControllers.get(i).getButtonMoveUp());
 			tempList.add(trackControllers.get(i).getButtonMoveDown());
 			moveButtonList.add(tempList);
+
+			// Linechart Waveform
+			lineChartList.add(trackControllers.get(i).getChart());
 		}
 	}
 
@@ -651,6 +715,19 @@ public class RootController implements Initializable {
 		}
 	}
 
+	private void setLineChartEventHandler() {
+		for (int i = 0; i < lineChartList.size(); i++) {
+			final int trackNumber = i;
+			lineChartList.get(i).setOnMouseClicked(e -> {
+				trackControllers.get(trackNumber).setRadioButtonActive();
+				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
+					trackControllers.get(trackNumber).getChart().getStylesheets()
+							.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
+				}
+			});
+		}
+	}
+
 	private void deleteTrack(int number) {
 		List<Track> tracks = project.getTracks();
 
@@ -677,9 +754,11 @@ public class RootController implements Initializable {
 		moveButtonList.remove(number);
 		deleteButtonList.remove(number);
 
-		addButtons();
+		addButtonsAndChart();
 		// setMoveButtons();
 		setButtonsEventHandler();
+		setLineChartEventHandler();
+		setStylesheetsForTracks();
 		project.setLoudnessLevel();
 		if (tracks.size() > 0) {
 			trackControllers.get(0).getRadioButtonActiveTrack().fire();
@@ -689,7 +768,6 @@ public class RootController implements Initializable {
 	}
 
 	private void moveUp(int number) {
-		// System.out.println("number: " + number);
 		if (number != 0) {
 			List<Node> tempVboxTracks = new ArrayList<>();
 			List<TrackController> tempTrackController = new ArrayList<>();
@@ -722,9 +800,11 @@ public class RootController implements Initializable {
 				tracks.add(tempTracks.get(i));
 			}
 
-			addButtons();
+			addButtonsAndChart();
 			// setMoveButtons();
 			setButtonsEventHandler();
+			setLineChartEventHandler();
+			setStylesheetsForTracks();
 		}
 	}
 
@@ -761,9 +841,32 @@ public class RootController implements Initializable {
 				tracks.add(tempTracks.get(i));
 			}
 
-			addButtons();
+			addButtonsAndChart();
 			// setMoveButtons();
 			setButtonsEventHandler();
+			setLineChartEventHandler();
+			setStylesheetsForTracks();
 		}
+	}
+
+	private void setStylesheetsForTracks() {
+		for (TrackController trackController : trackControllers) {
+			trackController.getChart().getStylesheets().clear();
+			if (trackController.getRadioButtonActiveTrack().isSelected()) {
+				trackController.getChart().getStylesheets()
+						.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
+
+			} else {
+				trackController.getChart().getStylesheets()
+						.add(getClass().getClassLoader().getResource("css/NotActiveTrack.css").toExternalForm());
+			}
+		}
+	}
+
+	public void sceneInitialization(Scene scene) {
+		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.SPACE), buttonPlayPause::fire);
+
+		// To unfocus the comment text field
+		scene.setOnMouseClicked(event -> scene.getRoot().requestFocus());
 	}
 }

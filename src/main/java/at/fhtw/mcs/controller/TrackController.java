@@ -21,7 +21,7 @@ import javafx.scene.text.Text;
  * Controller class for Track.fxml
  */
 public class TrackController implements Initializable {
-	private static final int GRAPH_POINT_COUNT = 2000;
+	private static final int GRAPH_POINT_COUNT = 1750;
 	@FXML
 	private Text textTrackName;
 	@FXML
@@ -144,5 +144,13 @@ public class TrackController implements Initializable {
 
 	public Track getTrack() {
 		return this.track;
+	}
+
+	public LineChart<Number, Number> getChart() {
+		return this.lineChartWaveform;
+	}
+
+	public void setRadioButtonActive() {
+		this.radioButtonActiveTrack.fire();
 	}
 }

@@ -23,6 +23,7 @@ public class MimeTypeFormatDetection implements FormatDetection {
 				case "audio/x-wav":
 					return Format.WAV;
 				case "audio/mpeg3":
+				case "audio/mpeg":
 				case "audio/x-mpeg-3":
 					return Format.MP3;
 				default:

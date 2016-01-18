@@ -8,6 +8,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import at.fhtw.mcs.ui.*?>
 
 <BorderPane prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <top>
@@ -41,7 +42,7 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="%menuItem.help">
                   <items>
-                    <MenuItem disable="true" mnemonicParsing="false" text="%menuItem.manual" />
+                    <MenuItem fx:id="menuItemManual" mnemonicParsing="false" text="%menuItem.manual" />
                         <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="%menuItem.about" />
                   </items>
                 </Menu>
@@ -79,8 +80,8 @@
                                     </Label>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="230.0">
                                       <buttons>
-                                        <Button fx:id="buttonPlayPause" disable="true" mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
-                                          <Button fx:id="buttonStop" disable="true" mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
+                                        <UnfocusableButton fx:id="buttonPlayPause" disable="true" mnemonicParsing="false" text="▶" ButtonBar.buttonData="LEFT" />
+                                        <UnfocusableButton fx:id="buttonStop" disable="true" mnemonicParsing="false" text="■" ButtonBar.buttonData="LEFT" />
                                       </buttons>
                                     </ButtonBar>
                                  </children>
@@ -112,15 +113,15 @@
          </rowConstraints>
          <children>
             <Label text="%button.addTracks" GridPane.columnIndex="1" />
-            <Button fx:id="buttonAddTracks" mnemonicParsing="false" text="+" />
+            <UnfocusableButton fx:id="buttonAddTracks" mnemonicParsing="false" text="+" />
          </children>
       </GridPane>
    </bottom>
    <center>
-      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-padding: 0;" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
+      <UnfocusableScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-padding: 0;" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
          <content>
             <VBox fx:id="vboxTracks" spacing="10.0" />
          </content>
-      </ScrollPane>
+      </UnfocusableScrollPane>
    </center>
 </BorderPane>
