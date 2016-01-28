@@ -131,6 +131,7 @@ public class RootController implements Initializable {
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
 	private Stage stage;
+	private FileChooser fileChooser = new FileChooser();
 
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
@@ -160,6 +161,9 @@ public class RootController implements Initializable {
 	@Override
 	public void initialize(URL viewSource, ResourceBundle translations) {
 		this.bundle = translations;
+		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
+				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
+		fileChooser.getExtensionFilters().add(filter);
 		newProject();
 
 		menuItemQuit.setOnAction(e -> afterUnsavedChangesAreHandledDo(Platform::exit));
@@ -465,18 +469,10 @@ public class RootController implements Initializable {
 	}
 
 	private void handleAddTracks(ActionEvent event) {
-		FileChooser chooser = new FileChooser();
-
-		/*
-		 * TODO: change filter from hardcoded to a responsible class
-		 */
-		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
-				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
-		chooser.getExtensionFilters().add(filter);
-
-		List<File> files = emptyListIfNull(chooser.showOpenMultipleDialog(stage));
+		List<File> files = emptyListIfNull(fileChooser.showOpenMultipleDialog(stage));
 		for (File file : files) {
 			addFile(file);
+			fileChooser.setInitialDirectory(file.getParentFile());
 		}
 
 	}
