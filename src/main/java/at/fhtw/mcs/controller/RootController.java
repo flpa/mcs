@@ -146,6 +146,12 @@ public class RootController implements Initializable {
 
 	public RootController(Stage stage) {
 		this.stage = stage;
+
+		stage.setOnCloseRequest(event -> {
+			if (handleUnsavedChanges() == false) {
+				event.consume();
+			}
+		});
 	}
 
 	@Override
@@ -277,9 +283,13 @@ public class RootController implements Initializable {
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
-		if (project.hasUnsavedChanges() == false || letUserHandleUnsavedChanges()) {
+		if (handleUnsavedChanges()) {
 			callback.run();
 		}
+	}
+
+	private boolean handleUnsavedChanges() {
+		return project.hasUnsavedChanges() == false || letUserHandleUnsavedChanges();
 	}
 
 	private boolean letUserHandleUnsavedChanges() {
