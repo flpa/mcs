@@ -3,9 +3,12 @@ package at.fhtw.mcs.controller;
 import static at.fhtw.mcs.util.NullSafety.emptyListIfNull;
 import static java.util.Comparator.comparing;
 
+import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -602,10 +605,10 @@ public class RootController implements Initializable {
 	}
 
 	private void handleManual(ActionEvent event) {
-		if (java.awt.Desktop.isDesktopSupported()) {
+		if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE)) {
 			new Thread(() -> {
 				try {
-					java.awt.Desktop.getDesktop().browse(new java.net.URI(URL_MANUAL));
+					Desktop.getDesktop().browse(new URI(URL_MANUAL));
 				} catch (IOException | URISyntaxException e) {
 					System.err.println("Error while opening manual webpage.");
 					e.printStackTrace();
