@@ -201,7 +201,7 @@ public class Project {
 		String name = originalName;
 
 		while (existingNames.contains(name)) {
-			name = String.format("%s(%d)", name, i);
+			name = String.format("%s(%d)", originalName, i);
 			i++;
 		}
 

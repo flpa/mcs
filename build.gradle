@@ -19,7 +19,7 @@ dependencies {
 	testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
-// To get more test ouptut from Travis
+// To get more test output from Travis
 test {
     testLogging {
         exceptionFormat "full" // default is "short"
