@@ -32,6 +32,7 @@ import at.fhtw.mcs.model.Format;
 import at.fhtw.mcs.model.Project;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.ui.LocalizedAlertBuilder;
+import at.fhtw.mcs.ui.ProgressOverlay;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
@@ -64,6 +65,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -83,6 +85,8 @@ public class RootController implements Initializable {
 	private static final String ICON_PLAY = "\u25B6";
 	private static final String URL_MANUAL = "https://github.com/flpa/mcs/wiki";
 
+	@FXML
+	private StackPane stackPaneRoot;
 	@FXML
 	private VBox vboxTracks;
 	@FXML
@@ -132,6 +136,7 @@ public class RootController implements Initializable {
 	private ResourceBundle bundle;
 	private Stage stage;
 	private FileChooser fileChooser = new FileChooser();
+	private ProgressOverlay progressOverlay;
 
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
@@ -287,6 +292,8 @@ public class RootController implements Initializable {
 				}
 			}
 		});
+
+		progressOverlay = new ProgressOverlay(this.stackPaneRoot, bundle.getString("label.addTracks.progress"));
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
@@ -406,11 +413,9 @@ public class RootController implements Initializable {
 	}
 
 	private void updateApplicationTitle() {
-		String format = MessageFormat.format(bundle.getString("app.title"), getProjectName());
-		if (project.hasUnsavedChanges()) {
-			format += "*";
-		}
-		stage.setTitle(format);
+		String format = MessageFormat.format(bundle.getString("app.title") + "{1}", getProjectName(),
+				project.hasUnsavedChanges() ? "*" : "");
+		Platform.runLater(() -> stage.setTitle(format));
 	}
 
 	private static boolean isOutputMixerInfo(Mixer.Info info) {
@@ -470,22 +475,43 @@ public class RootController implements Initializable {
 
 	private void handleAddTracks(ActionEvent event) {
 		List<File> files = emptyListIfNull(fileChooser.showOpenMultipleDialog(stage));
-		for (File file : files) {
-			addFile(file);
-			fileChooser.setInitialDirectory(file.getParentFile());
+		addFiles(files);
+		if (files.isEmpty() == false) {
+			fileChooser.setInitialDirectory(files.get(files.size() - 1).getParentFile());
 		}
-
 	}
 
-	public void addFile(File file) {
+	public void addFiles(File... files) {
+		addFiles(Arrays.asList(files));
+	}
+
+	public void addFiles(List<File> files) {
+		if (files.isEmpty()) {
+			return;
+		}
+
+		progressOverlay.show();
+
+		new Thread(() -> {
+			try {
+				files.forEach(this::addFile);
+			} finally {
+				Platform.runLater(progressOverlay::hide);
+			}
+		}).start();
+	}
+
+	private void addFile(File file) {
 		Track track;
 		try {
 			track = TrackFactory.loadTrack(file.getAbsolutePath());
 		} catch (UnsupportedFormatException e) {
-			this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
+			Platform.runLater(() -> {
+				this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
+			});
 			return;
 		} catch (OutOfMemoryError e) {
-			this.showErrorOutOfMemory();
+			Platform.runLater(this::showErrorOutOfMemory);
 			return;
 		}
 
@@ -501,19 +527,21 @@ public class RootController implements Initializable {
 	}
 
 	private void loadTrackUis(List<Track> tracks) {
-		determineLongestTrackLengths();
+		Platform.runLater(() -> {
+			determineLongestTrackLengths();
 
-		for (Track track : tracks) {
-			loadTrackUi(track);
-		}
-		setPlaybackControlsDisable(tracks.isEmpty());
+			for (Track track : tracks) {
+				loadTrackUi(track);
+			}
+			setPlaybackControlsDisable(tracks.isEmpty());
 
-		addButtonsAndChart();
-		project.setLoudnessLevel();
-		// setMoveButtons();
-		setButtonsEventHandler();
-		setLineChartEventHandler();
-		setStylesheetsForTracks();
+			addButtonsAndChart();
+			project.setLoudnessLevel();
+			// setMoveButtons();
+			setButtonsEventHandler();
+			setLineChartEventHandler();
+			setStylesheetsForTracks();
+		});
 	}
 
 	public void setPlaybackControlsDisable(boolean disable) {
@@ -540,13 +568,12 @@ public class RootController implements Initializable {
 	}
 
 	private void loadTrackUi(Track track) {
+		FXMLLoader loader = new FXMLLoader();
+		loader.setController(new TrackController(track, toggleGroupActiveTrack, longestTrackFrameLength));
+		loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
+		loader.setResources(bundle);
+		trackControllers.add(loader.getController());
 		try {
-			FXMLLoader loader = new FXMLLoader();
-			loader.setController(new TrackController(track, toggleGroupActiveTrack, longestTrackFrameLength));
-			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
-			loader.setResources(bundle);
-			trackControllers.add(loader.getController());
-
 			vboxTracks.getChildren().add(loader.load());
 		} catch (IOException e) {
 			throw new RuntimeException("Error while loading track UI.", e);
