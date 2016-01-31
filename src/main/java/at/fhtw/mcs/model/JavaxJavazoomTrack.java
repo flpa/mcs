@@ -150,6 +150,11 @@ public class JavaxJavazoomTrack implements Track {
 		AudioFormat audioFormat = fileFormat.getFormat();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
+		if (audioFormat.getSampleSizeInBits() > 16) {
+			System.out.println(audioFormat.getSampleSizeInBits());
+			throw new UnsupportedFormatException(Format.WAV);
+		}
+
 		int nBufferSize = BUFFER_LENGTH * audioFormat.getFrameSize();
 		final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
 		byte[] bytes = new byte[nBufferSize];
