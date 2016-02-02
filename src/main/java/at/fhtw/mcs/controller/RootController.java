@@ -36,6 +36,7 @@ import at.fhtw.mcs.ui.ProgressOverlay;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import at.fhtw.mcs.util.VersionCompare;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -294,6 +295,9 @@ public class RootController implements Initializable {
 		});
 
 		progressOverlay = new ProgressOverlay(this.stackPaneRoot, bundle.getString("label.addTracks.progress"));
+
+		Platform.runLater(new VersionCompare(bundle) {
+		});
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
