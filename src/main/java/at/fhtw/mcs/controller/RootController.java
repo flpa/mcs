@@ -296,8 +296,8 @@ public class RootController implements Initializable {
 
 		progressOverlay = new ProgressOverlay(this.stackPaneRoot, bundle.getString("label.addTracks.progress"));
 
-		Platform.runLater(new VersionCompare(bundle) {
-		});
+		VersionCompare versionCompare = new VersionCompare(bundle);
+		(new Thread(versionCompare)).start();
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
