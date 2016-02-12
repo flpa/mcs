@@ -3,6 +3,7 @@ package at.fhtw.mcs.model;
 import java.io.File;
 import java.io.IOException;
 
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 
 /**
@@ -112,4 +113,6 @@ public interface Track {
 	void registerCommentChangeListener(ChangeListener<? super String> listener);
 
 	float getSampleRate();
+
+	Property<String> commentProperty();
 }

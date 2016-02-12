@@ -18,7 +18,7 @@ import javafx.scene.control.ButtonType;
  * <h5>Example</h5>
  * 
  * <pre>
- * new LocalizedAlertBuilder(bundle, "alert.myWarning.", AlertType.WARNING).build().showAndWait();
+ * new LocalizedAlertBuilder(bundle, &quot;alert.myWarning.&quot;, AlertType.WARNING).build().showAndWait();
  * </pre>
  * 
  * This line show a modal Alert of Type WARNING. Title, headerText and
@@ -84,8 +84,8 @@ public class LocalizedAlertBuilder {
 	}
 
 	private String givenTextOrMessage(String text, String messageKey, Object[] formatParameters) {
-		return text != NOT_SET ? text
-				: MessageFormat.format(translations.getString(messagePrefix + messageKey), formatParameters);
+		return text != NOT_SET ? text : MessageFormat.format(translations.getString(messagePrefix + messageKey),
+				formatParameters);
 	}
 
 	public void setButtons(ButtonType... buttons) {

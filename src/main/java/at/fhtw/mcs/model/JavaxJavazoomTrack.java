@@ -8,6 +8,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -16,15 +20,14 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import javazoom.jl.converter.Converter;
+import javazoom.jl.decoder.JavaLayerException;
+
 import org.apache.commons.io.FilenameUtils;
 
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javazoom.jl.converter.Converter;
-import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
 	private static final int BUFFER_LENGTH = 1024;
@@ -36,7 +39,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	private String name;
 	private File file;
-	private SimpleObjectProperty<String> comment = new SimpleObjectProperty<String>("");
+	private Property<String> comment = new SimpleObjectProperty<String>("");
 	private Clip clip;
 	private float loudness;
 	private float dynamicRange;
@@ -285,7 +288,6 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * the OR is not quite enough to convert, the signage needs to be
 		 * corrected.
-		 * 
 		 */
 
 		if (fmt.getEncoding() == AudioFormat.Encoding.PCM_SIGNED) {
@@ -313,7 +315,6 @@ public class JavaxJavazoomTrack implements Track {
 			 * and the right shift now fills with 1's:
 			 * 
 			 * 10110000 >> (8 - 4) =========== 11111011
-			 * 
 			 */
 
 			final long signShift = 64L - bitsPerSample;
@@ -328,7 +329,6 @@ public class JavaxJavazoomTrack implements Track {
 			 * to the long.
 			 * 
 			 * so just sign them: subtract 2^(bits - 1) so the center is 0.
-			 * 
 			 */
 
 			for (int i = 0; i < transfer.length; i++) {
@@ -574,12 +574,12 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public String getComment() {
-		return comment.get();
+		return comment.getValue();
 	}
 
 	@Override
 	public void setComment(String comment) {
-		this.comment.set(comment);
+		this.comment.setValue(comment);
 	}
 
 	@Override
@@ -609,5 +609,10 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public float getSampleRate() {
 		return clip.getFormat().getSampleRate();
+	}
+
+	@Override
+	public Property<String> commentProperty() {
+		return comment;
 	}
 }

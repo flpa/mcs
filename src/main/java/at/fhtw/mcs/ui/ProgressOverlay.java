@@ -14,7 +14,8 @@ import javafx.scene.layout.StackPane;
  * during the overlay. <br/>
  * <br/>
  * <img src=
- * "https://raw.githubusercontent.com/flpa/mcs/screenshots/docs/screenshots/progress-overlay.png"/>
+ * "https://raw.githubusercontent.com/flpa/mcs/screenshots/docs/screenshots/progress-overlay.png"
+ * />
  *
  */
 public class ProgressOverlay {

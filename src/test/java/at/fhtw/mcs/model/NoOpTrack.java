@@ -3,6 +3,7 @@ package at.fhtw.mcs.model;
 import java.io.File;
 import java.io.IOException;
 
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 
 /**
@@ -14,7 +15,6 @@ public class NoOpTrack implements Track {
 
 	@Override
 	public void play() {
-		// no op
 		// no op
 
 	}
@@ -185,6 +185,12 @@ public class NoOpTrack implements Track {
 	public float getSampleRate() {
 		// no op
 		return 0;
+	}
+
+	@Override
+	public Property<String> commentProperty() {
+		// no op
+		return null;
 	}
 
 }

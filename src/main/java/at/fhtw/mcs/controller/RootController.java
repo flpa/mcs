@@ -8,6 +8,7 @@ import java.awt.Desktop.Action;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -21,21 +22,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.Mixer;
-import javax.xml.bind.JAXBException;
-
-import at.fhtw.mcs.model.Format;
-import at.fhtw.mcs.model.Project;
-import at.fhtw.mcs.model.Track;
-import at.fhtw.mcs.ui.LocalizedAlertBuilder;
-import at.fhtw.mcs.ui.ProgressOverlay;
-import at.fhtw.mcs.util.AudioOuput;
-import at.fhtw.mcs.util.TrackFactory;
-import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -72,6 +58,22 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
+import javax.xml.bind.JAXBException;
+
+import at.fhtw.mcs.model.Format;
+import at.fhtw.mcs.model.Project;
+import at.fhtw.mcs.model.Track;
+import at.fhtw.mcs.ui.LocalizedAlertBuilder;
+import at.fhtw.mcs.ui.ProgressOverlay;
+import at.fhtw.mcs.util.AudioOuput;
+import at.fhtw.mcs.util.TrackFactory;
+import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
 
 /**
  * Controller class for Root.fxml
@@ -199,8 +201,8 @@ public class RootController implements Initializable {
 
 		// TODO: check if Volume changes if you alter the value with clicking
 		// instead of dragging
-		sliderMasterVolume.valueProperty()
-				.addListener((observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
+		sliderMasterVolume.valueProperty().addListener(
+				(observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
 
 		checkMenuItemSyncronizeStartPoints.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -226,8 +228,7 @@ public class RootController implements Initializable {
 		// @formatter:on
 
 		toggleGroupOutputDevice.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
-					Toggle newSelection) {
+			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection, Toggle newSelection) {
 				/*
 				 * When modifying grouped RadioMenuItems, this is invoked twice:
 				 * 1) oldValue and null 2) null and newValue
@@ -240,15 +241,14 @@ public class RootController implements Initializable {
 		});
 
 		toggleGroupActiveTrack.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
-					Toggle newSelection) {
+			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection, Toggle newSelection) {
 
 				long currentMs = 0;
 				boolean wasPlaying = false;
 				trackChanged = true;
 
 				if (previousSelection != null) {
-					Track prevTrack = (Track) previousSelection.getUserData();
+					Track prevTrack = getToggleTrack(previousSelection);
 					wasPlaying = prevTrack.isPlaying();
 
 					prevTrack.pause();
@@ -256,7 +256,7 @@ public class RootController implements Initializable {
 				}
 
 				if (newSelection != null) {
-					Track newTrack = (Track) newSelection.getUserData();
+					Track newTrack = getToggleTrack(newSelection);
 					newTrack.setCurrentMicroseconds(currentMs);
 					if (wasPlaying) {
 						newTrack.play();
@@ -427,7 +427,7 @@ public class RootController implements Initializable {
 		if (selectedToggle == null) {
 			return Optional.empty();
 		}
-		return Optional.of((Track) selectedToggle.getUserData());
+		return Optional.of(getToggleTrack(selectedToggle));
 	}
 
 	private void updateTime() {
@@ -454,7 +454,7 @@ public class RootController implements Initializable {
 		 */
 		for (Toggle toggle : toggleGroupActiveTrack.getToggles()) {
 			RadioButton radio = (RadioButton) toggle;
-			Track track = (Track) radio.getUserData();
+			Track track = getToggleTrack(toggle);
 			radio.setDisable(track != currentTrack && currentMicroseconds > track.getTotalMicroseconds());
 		}
 
@@ -596,9 +596,9 @@ public class RootController implements Initializable {
 				long elapsedMs = System.currentTimeMillis() - prevMillis;
 
 				if (elapsedMs >= updateFrequencyMs) {
-					System.err.println(
-							String.format("Warning: Time update (%dms) took longer than the update frequency (%dms).",
-									elapsedMs, updateFrequencyMs));
+					System.err.println(String.format(
+							"Warning: Time update (%dms) took longer than the update frequency (%dms).", elapsedMs,
+							updateFrequencyMs));
 				}
 			}
 		}, 0, updateFrequencyMs);
@@ -754,13 +754,18 @@ public class RootController implements Initializable {
 	private void setLineChartEventHandler() {
 		for (int i = 0; i < lineChartList.size(); i++) {
 			final int trackNumber = i;
-			lineChartList.get(i).setOnMouseClicked(e -> {
-				trackControllers.get(trackNumber).setRadioButtonActive();
-				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
-					trackControllers.get(trackNumber).getChart().getStylesheets()
-							.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
-				}
-			});
+			lineChartList.get(i).setOnMouseClicked(
+					e -> {
+						trackControllers.get(trackNumber).setRadioButtonActive();
+						if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
+							trackControllers
+									.get(trackNumber)
+									.getChart()
+									.getStylesheets()
+									.add(getClass().getClassLoader().getResource("css/ActiveTrack.css")
+											.toExternalForm());
+						}
+					});
 		}
 	}
 
@@ -784,7 +789,7 @@ public class RootController implements Initializable {
 		vboxTracks.getChildren().remove(number);
 
 		Track removed = tracks.remove(number);
-		toggleGroupActiveTrack.getToggles().removeIf(toggle -> toggle.getUserData().equals(removed));
+		toggleGroupActiveTrack.getToggles().removeIf(toggle -> removed.equals(getToggleTrack(toggle)));
 
 		trackControllers.remove(number);
 		moveButtonList.remove(number);
@@ -801,6 +806,11 @@ public class RootController implements Initializable {
 		} else {
 			setPlaybackControlsDisable(true);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Track getToggleTrack(Toggle toggle) {
+		return ((WeakReference<Track>) toggle.getUserData()).get();
 	}
 
 	private void moveUp(int number) {
