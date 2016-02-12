@@ -149,6 +149,7 @@ public class RootController implements Initializable {
 	private int longestTrackFrameLength;
 	private long longestTrackMicrosecondsLength;
 	private Project project;
+	private Boolean startOfProject = true;
 
 	// debug variables
 	Boolean trackChanged = false;
@@ -171,18 +172,9 @@ public class RootController implements Initializable {
 				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
 		fileChooser.getExtensionFilters().add(filter);
 
-		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.OpenOrNew.", AlertType.CONFIRMATION);
-		ButtonType newProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.new"), ButtonData.YES);
-		ButtonType openProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.open"), ButtonData.NO);
-		builder.setButtons(newProject, openProject);
+		startUpDialog();
 
-		Optional<ButtonType> result = builder.build().showAndWait();
-
-		if (result.equals(newProject)) {
-			newProject();
-		} else {
-			openProject();
-		}
+		startOfProject = false;
 
 		menuItemQuit.setOnAction(e -> afterUnsavedChangesAreHandledDo(Platform::exit));
 		menuItemNewProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::newProject));
@@ -312,6 +304,27 @@ public class RootController implements Initializable {
 		(new Thread(versionCompare)).start();
 	}
 
+	private void startUpDialog() {
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.OpenOrNew.", AlertType.CONFIRMATION);
+		ButtonType newProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.new"), ButtonData.YES);
+		ButtonType openProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.open"), ButtonData.NO);
+		builder.setButtons(newProject, openProject);
+
+		Optional<ButtonType> result = builder.build().showAndWait();
+
+		if (!result.isPresent()) {
+			Platform.exit();
+		} else {
+			if (result.get().equals(newProject)) {
+				newProject();
+			} else if (result.get().equals(openProject)) {
+				openProject();
+			} else {
+				Platform.exit();
+			}
+		}
+	}
+
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
 		if (handleUnsavedChanges()) {
 			callback.run();
@@ -385,8 +398,12 @@ public class RootController implements Initializable {
 		setProject(new Project());
 		FileChooser fileChooser = new FileChooser();
 		File f = fileChooser.showSaveDialog(stage);
-		project.setDirectory(f);
-		save();
+		if (f != null) {
+			project.setDirectory(f);
+			save();
+		} else if (startOfProject) {
+			startUpDialog();
+		}
 	}
 
 	private void setProject(Project project) {
@@ -416,7 +433,10 @@ public class RootController implements Initializable {
 				setProject(Project.load(chosenDirectory.get()));
 			} catch (FileNotFoundException | JAXBException e) {
 				handleOpenError(e);
+				openProject();
 			}
+		} else if (startOfProject) {
+			startUpDialog();
 		}
 	}
 
