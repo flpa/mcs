@@ -20,8 +20,8 @@ public class TrackFactory {
 	 * @throws UnsupportedFormatException
 	 *             In case the format of the track is not supported.
 	 */
-	public static Track loadTrack(String path) throws UnsupportedFormatException {
-		return new JavaxJavazoomTrack(new ExtensionFormatDetection(), path);
+	public static Track loadTrack(String path, String projectDirectory) throws UnsupportedFormatException {
+		return new JavaxJavazoomTrack(new ExtensionFormatDetection(), path, projectDirectory);
 	}
 
 	public static class UnsupportedFormatException extends IllegalArgumentException {

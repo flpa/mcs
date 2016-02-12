@@ -170,7 +170,19 @@ public class RootController implements Initializable {
 		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
 				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
 		fileChooser.getExtensionFilters().add(filter);
-		newProject();
+
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.OpenOrNew.", AlertType.CONFIRMATION);
+		ButtonType newProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.new"), ButtonData.YES);
+		ButtonType openProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.open"), ButtonData.NO);
+		builder.setButtons(newProject, openProject);
+
+		Optional<ButtonType> result = builder.build().showAndWait();
+
+		if (result.equals(newProject)) {
+			newProject();
+		} else {
+			openProject();
+		}
 
 		menuItemQuit.setOnAction(e -> afterUnsavedChangesAreHandledDo(Platform::exit));
 		menuItemNewProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::newProject));
@@ -371,6 +383,10 @@ public class RootController implements Initializable {
 
 	private void newProject() {
 		setProject(new Project());
+		FileChooser fileChooser = new FileChooser();
+		File f = fileChooser.showSaveDialog(stage);
+		project.setDirectory(f);
+		save();
 	}
 
 	private void setProject(Project project) {
@@ -508,7 +524,7 @@ public class RootController implements Initializable {
 	private void addFile(File file) {
 		Track track;
 		try {
-			track = TrackFactory.loadTrack(file.getAbsolutePath());
+			track = TrackFactory.loadTrack(file.getAbsolutePath(), project.getDirectory().toString());
 		} catch (UnsupportedFormatException e) {
 			Platform.runLater(() -> {
 				this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
