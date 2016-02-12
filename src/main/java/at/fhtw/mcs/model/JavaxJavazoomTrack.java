@@ -174,7 +174,7 @@ public class JavaxJavazoomTrack implements Track {
 
 		byte[] byteAudioData = byteArrayOutputStream.toByteArray();
 
-		float[] samples = new float[(byteAudioData.length / normalBytes) * audioFormat.getChannels()];
+		float[] samples = new float[(byteAudioData.length / normalBytes)];
 
 		unpack(byteAudioData, samples, byteAudioData.length, audioFormat);
 		audioData = samples;
