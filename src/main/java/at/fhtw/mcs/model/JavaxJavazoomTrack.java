@@ -87,10 +87,10 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	private String copyFile(String source, String projectDirectory) {
-		String fullname = name + ".wav";
+		File s = new File(source);
+		String fullname = s.getName();
 		fullname = filenameWithExtension(fullname, projectDirectory);
 		File d = new File(projectDirectory, fullname);
-		File s = new File(source);
 		if (d.getParent().equals(s.getParent())) {
 			return s.toString();
 		}
@@ -143,18 +143,22 @@ public class JavaxJavazoomTrack implements Track {
 	}
 
 	private String filenameWithExtension(String fullname, String projectDirectory) {
+		String baseName = FilenameUtils.getBaseName(fullname);
+		int indexOfFileFormat = fullname.lastIndexOf(".");
+		String fileFormat = fullname.substring(indexOfFileFormat);
+
 		File dir = new File(projectDirectory);
 		File[] files = dir.listFiles();
 		List<String> existingNames = new ArrayList<String>();
 		for (File file : files) {
-			existingNames.add(file.getName());
+			existingNames.add(FilenameUtils.getBaseName(file.getName()));
 		}
 		int j = 2;
-		while (existingNames.contains(fullname)) {
-			fullname = String.format("%s(%d).wav", name, j);
+		while (existingNames.contains(baseName)) {
+			baseName = String.format("%s(%d)", name, j);
 			j++;
 		}
-
+		fullname = baseName + fileFormat;
 		return fullname;
 	}
 
