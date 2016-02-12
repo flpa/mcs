@@ -55,7 +55,7 @@ public class JavaxJavazoomTrack implements Track {
 	 * @throws UnsupportedFormatException
 	 *             In case the format of the track is not supported.
 	 */
-	public JavaxJavazoomTrack(FormatDetection formatDetection, String path) {
+	public JavaxJavazoomTrack(FormatDetection formatDetection, String path, String projectDirectory) {
 		Format format = formatDetection.detectFormat(path);
 		name = FilenameUtils.getBaseName(path);
 		String pathToLoad;
@@ -66,7 +66,7 @@ public class JavaxJavazoomTrack implements Track {
 				pathToLoad = path;
 				break;
 			case MP3:
-				pathToLoad = convertMp3ToWav(path);
+				pathToLoad = convertMp3ToWav(path, projectDirectory);
 				break;
 			default:
 				throw new UnsupportedFormatException(format);
@@ -124,14 +124,16 @@ public class JavaxJavazoomTrack implements Track {
 		return middledStartIndex;
 	}
 
-	private String convertMp3ToWav(String path) {
+	private String convertMp3ToWav(String path, String projectDirectory) {
 		// TODO uppercase, e.g. MP3
 		// TODO test: josh.new.mp3.mp3
 		String newPath;
 		Converter converter = new Converter();
 
 		int positionOfMp3 = path.lastIndexOf(".mp3");
-		newPath = path.substring(0, positionOfMp3) + ".wav";
+		int startOfFilename = path.lastIndexOf("/");
+		// newPath = path.substring(0, positionOfMp3) + ".wav";
+		newPath = projectDirectory + path.substring(startOfFilename, positionOfMp3) + ".wav";
 		try {
 			converter.convert(path, newPath);
 		} catch (JavaLayerException e) {

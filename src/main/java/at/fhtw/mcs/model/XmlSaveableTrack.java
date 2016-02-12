@@ -34,7 +34,7 @@ public class XmlSaveableTrack {
 
 		public Track unmarshal(XmlSaveableTrack xmlTrack) {
 			File file = findFileInDirectory(xmlTrack.name);
-			Track track = TrackFactory.loadTrack(file.getAbsolutePath());
+			Track track = TrackFactory.loadTrack(file.getAbsolutePath(), directory.toString());
 
 			track.setComment(xmlTrack.comment);
 			return track;
