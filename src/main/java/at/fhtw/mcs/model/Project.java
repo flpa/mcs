@@ -9,14 +9,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -29,6 +21,14 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.io.FilenameUtils;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 
 @XmlRootElement
 public class Project {
@@ -88,7 +88,8 @@ public class Project {
 		} catch (JAXBException e) {
 			throw new IllegalStateException(
 					"Error while creating the project XML file. This is most likely a bug and means that "
-							+ "the data model of the application can no longer be converted to XML.", e);
+							+ "the data model of the application can no longer be converted to XML.",
+					e);
 		}
 	}
 

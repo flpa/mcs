@@ -6,11 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
-
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
+import java.util.List;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -20,14 +18,17 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import javazoom.jl.converter.Converter;
-import javazoom.jl.decoder.JavaLayerException;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javazoom.jl.converter.Converter;
+import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
 	private static final int BUFFER_LENGTH = 1024;
@@ -63,7 +64,7 @@ public class JavaxJavazoomTrack implements Track {
 		switch (format) {
 			case AIFF:
 			case WAV:
-				pathToLoad = path;
+				pathToLoad = copyFile(path, projectDirectory);
 				break;
 			case MP3:
 				pathToLoad = convertMp3ToWav(path, projectDirectory);
@@ -83,6 +84,23 @@ public class JavaxJavazoomTrack implements Track {
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
+	}
+
+	private String copyFile(String source, String projectDirectory) {
+		String fullname = name + ".wav";
+		fullname = filenameWithExtension(fullname, projectDirectory);
+		File d = new File(projectDirectory, fullname);
+		File s = new File(source);
+		if (d.getParent().equals(s.getParent())) {
+			return s.toString();
+		}
+
+		try {
+			FileUtils.copyFile(s, d);
+		} catch (IOException e) {
+			throw new RuntimeException("File could not be copied to project directory", e);
+		}
+		return d.toString();
 	}
 
 	public void applyStartPointOffset() {
@@ -124,11 +142,31 @@ public class JavaxJavazoomTrack implements Track {
 		return middledStartIndex;
 	}
 
+	private String filenameWithExtension(String fullname, String projectDirectory) {
+		File dir = new File(projectDirectory);
+		File[] files = dir.listFiles();
+		List<String> existingNames = new ArrayList<String>();
+		for (File file : files) {
+			existingNames.add(file.getName());
+		}
+		int j = 2;
+		while (existingNames.contains(fullname)) {
+			fullname = String.format("%s(%d).wav", name, j);
+			j++;
+		}
+
+		return fullname;
+	}
+
 	private String convertMp3ToWav(String path, String projectDirectory) {
 		// TODO uppercase, e.g. MP3
 		// TODO test: josh.new.mp3.mp3
 		Converter converter = new Converter();
-		File f = new File(projectDirectory, name + ".wav");
+		String fullname = name + ".wav";
+
+		fullname = filenameWithExtension(fullname, projectDirectory);
+
+		File f = new File(projectDirectory, fullname);
 		try {
 			converter.convert(path, f.getAbsolutePath());
 		} catch (JavaLayerException e) {
