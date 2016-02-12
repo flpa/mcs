@@ -1,13 +1,15 @@
+import org.apache.tools.ant.filters.*
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'eclipse'
+apply plugin: "org.sonarqube"
+//for creating DMG file
+apply plugin: "edu.sc.seis.macAppBundle"
 
-sourceCompatibility = 1.8
-version = 'v0.6.1'
-
-mainClassName = "at.fhtw.mcs.Main"
-
-applicationDefaultJvmArgs = ["-Xmx2g"]
+mainClassName="at.fhtw.mcs.Main"
+sourceCompatibility=1.8
+applicationDefaultJvmArgs=["-Xmx2g"]
 
 repositories {
     mavenCentral()
@@ -20,20 +22,22 @@ dependencies {
 	testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
+//Replace @version@ in resources
+processResources {
+    //never skip resources to ensure the latest version number is inserted
+    outputs.upToDateWhen { false } 
+
+    filter ReplaceTokens, tokens: [
+        "version": project.property("version")
+    ]
+}
+
 // To get more test output from Travis
 test {
     testLogging {
         exceptionFormat "full" // default is "short"
     }
 }
-
-//
-// Sonarqube plugin for static code analysis.
-// Requires a running local instance of Sonarqube. Download:
-//   http://www.sonarqube.org/downloads/
-// Extract, run (e.g. bin/linux-x86-64/sonar.sh start)
-//
-apply plugin: "org.sonarqube"
 
 buildscript {
   repositories {
@@ -43,25 +47,12 @@ buildscript {
   }
   dependencies {
     classpath "org.sonarqube.gradle:gradle-sonarqube-plugin:1.1"
-  }
-}
-
-//for creating DMG file
-apply plugin: "edu.sc.seis.macAppBundle"
-
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
     classpath "gradle.plugin.edu.sc.seis:macAppBundle:2.1.5"
   }
 }
 
 macAppBundle {
-    mainClassName = "at.fhtw.mcs.Main"
+    mainClassName = project.property("version")
 }
 
 // include license and README in distribution package
