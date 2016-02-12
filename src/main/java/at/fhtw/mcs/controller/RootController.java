@@ -458,7 +458,8 @@ public class RootController implements Initializable {
 	}
 
 	private void closeProject() {
-		newProject();
+		startOfProject = true;
+		startUpDialog();
 	}
 
 	private void updateApplicationTitle() {
