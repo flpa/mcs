@@ -41,13 +41,9 @@ public class VersionCompare implements Runnable {
 		newestVersion = versions.get(0).text();
 		String version = bundle.getString("project.version");
 		// TODO: delete the following Variable, it's just for testing
-		version = "bla";
+		// version = "bla";
 
-		if (!version.equals(newestVersion)) {
-			return false;
-		} else {
-			return true;
-		}
+		return version.equals(newestVersion);
 	}
 
 	public void showAlert() {
