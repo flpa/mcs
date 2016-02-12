@@ -42,8 +42,6 @@ public class VersionCompare implements Runnable {
 		newestVersion = versions.get(0).text();
 		String version = bundle.getString("project.version");
 
-		version = "v0.5.1";
-
 		Version newVersion = new Version(newestVersion);
 		Version thisVersion = new Version(version);
 
