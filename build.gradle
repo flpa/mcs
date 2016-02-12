@@ -24,6 +24,9 @@ dependencies {
 
 //Replace @version@ in resources
 processResources {
+    //never skip resources to ensure the latest version number is inserted
+    outputs.upToDateWhen { false } 
+
     filter ReplaceTokens, tokens: [
         "version": project.property("version")
     ]
