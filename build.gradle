@@ -20,6 +20,14 @@ dependencies {
 	testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
+import org.apache.tools.ant.filters.*
+
+processResources {
+    filter ReplaceTokens, tokens: [
+        "version": project.property("version")
+    ]
+}
+
 // To get more test output from Travis
 test {
     testLogging {
