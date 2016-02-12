@@ -8,10 +8,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -20,14 +16,16 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import javazoom.jl.converter.Converter;
-import javazoom.jl.decoder.JavaLayerException;
-
 import org.apache.commons.io.FilenameUtils;
 
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javazoom.jl.converter.Converter;
+import javazoom.jl.decoder.JavaLayerException;
 
 public class JavaxJavazoomTrack implements Track {
 	private static final int BUFFER_LENGTH = 1024;
@@ -473,10 +471,6 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void setVolume(float lowest) {
-		if (this.loudness == lowest) {
-			return;
-		}
-
 		FloatControl gainController = getGainControl(this.clip);
 		float deltaDBValue = this.loudness - lowest;
 		this.deltaVolume = deltaDBValue * 1.05f;
