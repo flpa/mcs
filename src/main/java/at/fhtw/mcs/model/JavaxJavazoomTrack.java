@@ -124,27 +124,22 @@ public class JavaxJavazoomTrack implements Track {
 	private String convertMp3ToWav(String path, String projectDirectory) {
 		// TODO uppercase, e.g. MP3
 		// TODO test: josh.new.mp3.mp3
-		String newPath;
 		Converter converter = new Converter();
-
-		int positionOfMp3 = path.lastIndexOf(".mp3");
-		int startOfFilename = path.lastIndexOf("/");
-		// newPath = path.substring(0, positionOfMp3) + ".wav";
-		newPath = projectDirectory + path.substring(startOfFilename, positionOfMp3) + ".wav";
+		File f = new File(projectDirectory, name + ".wav");
 		try {
-			converter.convert(path, newPath);
+			converter.convert(path, f.getAbsolutePath());
 		} catch (JavaLayerException e) {
 			throw new UnsupportedFormatException(Format.MP3,
 					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
 		}
 
 		// throw exception if converted file does not exist
-		if (!Files.exists(Paths.get(newPath))) {
+		if (!Files.exists(Paths.get(f.getAbsolutePath()))) {
 			throw new UnsupportedFormatException(Format.MP3,
 					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.");
 		}
 
-		return newPath;
+		return f.getAbsolutePath();
 	}
 
 	private void storeAudioData() throws UnsupportedAudioFileException, IOException, UnsupportedFormatException {
