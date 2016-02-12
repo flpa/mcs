@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import at.fhtw.mcs.model.Version;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -26,7 +27,7 @@ public class VersionCompare implements Runnable {
 	@Override
 	public void run() {
 		try {
-			if (!newestVersion()) {
+			if (newestVersion() < 0) {
 				Platform.runLater(() -> showAlert());
 			}
 		} catch (IOException e) {
@@ -34,26 +35,19 @@ public class VersionCompare implements Runnable {
 		}
 	}
 
-	private Boolean newestVersion() throws IOException {
+	private int newestVersion() throws IOException {
 		doc = Jsoup.connect("https://github.com/flpa/mcs/releases").get();
 		Elements versions = doc.getElementsByClass("css-truncate-target");
 
 		newestVersion = versions.get(0).text();
 		String version = bundle.getString("project.version");
-		// TODO: delete the following Variable, it's just for testing
-		// version = "bla";
-		int newVersion = parseVersion(newestVersion);
-		int thisVersion = parseVersion(version);
 
-		System.out.println("NV: " + newVersion + ": TV: " + thisVersion);
+		version = "v0.5.1";
 
-		return newVersion <= thisVersion;
-	}
+		Version newVersion = new Version(newestVersion);
+		Version thisVersion = new Version(version);
 
-	private int parseVersion(String version) {
-		version = version.replaceAll("[^0-9]", "");
-		int newVers = Integer.parseInt(version);
-		return newVers;
+		return thisVersion.compareTo(newVersion);
 	}
 
 	public void showAlert() {
