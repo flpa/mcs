@@ -45,6 +45,7 @@ public class JavaxJavazoomTrack implements Track {
 	private float dynamicRange;
 	private float deltaVolume = 0;
 	private float[] audioData;
+	private int frameLength;
 	private int numberOfChannels = 0;
 	private int startOffsetFrames;
 	private long startOffsetMicroseconds;
@@ -72,9 +73,7 @@ public class JavaxJavazoomTrack implements Track {
 				throw new UnsupportedFormatException(format);
 		}
 		file = new File(pathToLoad);
-
-		numberOfChannels = this.setNumberOfChannels();
-		clip = AudioOuput.openClip(file);
+		this.readAudioFormatData();
 
 		try {
 			storeAudioData();
@@ -83,6 +82,7 @@ public class JavaxJavazoomTrack implements Track {
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
+		clip = AudioOuput.openClip(file);
 	}
 
 	public void applyStartPointOffset() {
@@ -358,12 +358,12 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public int getLength() {
-		return (clip.getFrameLength() - startOffsetFrames);
+		return this.frameLength - this.startOffsetFrames;
 	}
 
 	@Override
 	public int getLengthWeighted() {
-		return (int) ((clip.getFrameLength() - startOffsetFrames) * (44100 / clip.getFormat().getSampleRate()));
+		return (int) (getLength() * (44100 / clip.getFormat().getSampleRate()));
 	}
 
 	/**
@@ -398,8 +398,6 @@ public class JavaxJavazoomTrack implements Track {
 
 	private void calculateLoudness() {
 		float loudnessFloat = 0;
-		AudioFormat audioFormat = clip.getFormat();
-		int channels = audioFormat.getChannels();
 		int audioFileLength = this.getLength();
 
 		int x = 0;
@@ -407,10 +405,10 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * RMS (Root mean square) loudness calculation
 		 */
-		for (int j = 0; j < audioFileLength * channels; j += channels) {
+		for (int j = 0; j < audioFileLength * this.numberOfChannels; j += this.numberOfChannels) {
 			float mean = 0;
 			float leftChannel = audioData[j];
-			if (channels == 2) {
+			if (this.numberOfChannels == 2) {
 				float rightChannel = audioData[j + 1];
 				mean = (leftChannel + rightChannel) / 2;
 
@@ -424,7 +422,7 @@ public class JavaxJavazoomTrack implements Track {
 		loudness = floatToDecibel(loudnessFloat);
 	}
 
-	private int setNumberOfChannels() {
+	private void readAudioFormatData() {
 		AudioFileFormat fileFormat;
 		try {
 			fileFormat = AudioSystem.getAudioFileFormat(file);
@@ -432,7 +430,8 @@ public class JavaxJavazoomTrack implements Track {
 			throw new UnsupportedFormatException(Format.WAV);
 		}
 		AudioFormat audioFormat = fileFormat.getFormat();
-		return audioFormat.getChannels();
+		this.numberOfChannels = audioFormat.getChannels();
+		this.frameLength = fileFormat.getFrameLength();
 	}
 
 	@Override
