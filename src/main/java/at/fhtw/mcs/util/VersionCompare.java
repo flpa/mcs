@@ -42,11 +42,22 @@ public class VersionCompare implements Runnable {
 		String version = bundle.getString("project.version");
 		// TODO: delete the following Variable, it's just for testing
 		// version = "bla";
+		int newVersion = parseVersion(newestVersion);
+		int thisVersion = parseVersion(version);
 
-		return version.equals(newestVersion);
+		System.out.println("NV: " + newVersion + ": TV: " + thisVersion);
+
+		return newVersion <= thisVersion;
+	}
+
+	private int parseVersion(String version) {
+		version = version.replaceAll("[^0-9]", "");
+		int newVers = Integer.parseInt(version);
+		return newVers;
 	}
 
 	public void showAlert() {
+
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle(bundle.getString("alert.newVersionAvailable.title"));
 		alert.setHeaderText(bundle.getString("alert.newVersionAvailable.header"));

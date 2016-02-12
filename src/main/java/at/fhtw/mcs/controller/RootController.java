@@ -22,6 +22,22 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
+import javax.xml.bind.JAXBException;
+
+import at.fhtw.mcs.model.Format;
+import at.fhtw.mcs.model.Project;
+import at.fhtw.mcs.model.Track;
+import at.fhtw.mcs.ui.LocalizedAlertBuilder;
+import at.fhtw.mcs.ui.ProgressOverlay;
+import at.fhtw.mcs.util.AudioOuput;
+import at.fhtw.mcs.util.TrackFactory;
+import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import at.fhtw.mcs.util.VersionCompare;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -59,23 +75,6 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.Mixer;
-import javax.xml.bind.JAXBException;
-
-import at.fhtw.mcs.model.Format;
-import at.fhtw.mcs.model.Project;
-import at.fhtw.mcs.model.Track;
-import at.fhtw.mcs.ui.LocalizedAlertBuilder;
-import at.fhtw.mcs.ui.ProgressOverlay;
-import at.fhtw.mcs.util.AudioOuput;
-import at.fhtw.mcs.util.TrackFactory;
-import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
-import at.fhtw.mcs.util.VersionCompare;
 
 /**
  * Controller class for Root.fxml
@@ -175,6 +174,9 @@ public class RootController implements Initializable {
 				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
 		fileChooser.getExtensionFilters().add(filter);
 
+		VersionCompare versionCompare = new VersionCompare(bundle);
+		(new Thread(versionCompare)).start();
+
 		startUpDialog();
 
 		startOfProject = false;
@@ -207,8 +209,8 @@ public class RootController implements Initializable {
 
 		// TODO: check if Volume changes if you alter the value with clicking
 		// instead of dragging
-		sliderMasterVolume.valueProperty().addListener(
-				(observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
+		sliderMasterVolume.valueProperty()
+				.addListener((observable, oldValue, newValue) -> project.setMasterLevel((double) newValue));
 
 		checkMenuItemSyncronizeStartPoints.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -234,7 +236,8 @@ public class RootController implements Initializable {
 		// @formatter:on
 
 		toggleGroupOutputDevice.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection, Toggle newSelection) {
+			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
+					Toggle newSelection) {
 				/*
 				 * When modifying grouped RadioMenuItems, this is invoked twice:
 				 * 1) oldValue and null 2) null and newValue
@@ -247,7 +250,8 @@ public class RootController implements Initializable {
 		});
 
 		toggleGroupActiveTrack.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection, Toggle newSelection) {
+			public void changed(ObservableValue<? extends Toggle> value, Toggle previousSelection,
+					Toggle newSelection) {
 
 				long currentMs = 0;
 				boolean wasPlaying = false;
@@ -300,9 +304,6 @@ public class RootController implements Initializable {
 		});
 
 		progressOverlay = new ProgressOverlay(this.stackPaneRoot, bundle.getString("label.addTracks.progress"));
-
-		VersionCompare versionCompare = new VersionCompare(bundle);
-		(new Thread(versionCompare)).start();
 	}
 
 	private void startUpDialog() {
@@ -646,9 +647,9 @@ public class RootController implements Initializable {
 				long elapsedMs = System.currentTimeMillis() - prevMillis;
 
 				if (elapsedMs >= updateFrequencyMs) {
-					System.err.println(String.format(
-							"Warning: Time update (%dms) took longer than the update frequency (%dms).", elapsedMs,
-							updateFrequencyMs));
+					System.err.println(
+							String.format("Warning: Time update (%dms) took longer than the update frequency (%dms).",
+									elapsedMs, updateFrequencyMs));
 				}
 			}
 		}, 0, updateFrequencyMs);
@@ -804,18 +805,13 @@ public class RootController implements Initializable {
 	private void setLineChartEventHandler() {
 		for (int i = 0; i < lineChartList.size(); i++) {
 			final int trackNumber = i;
-			lineChartList.get(i).setOnMouseClicked(
-					e -> {
-						trackControllers.get(trackNumber).setRadioButtonActive();
-						if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
-							trackControllers
-									.get(trackNumber)
-									.getChart()
-									.getStylesheets()
-									.add(getClass().getClassLoader().getResource("css/ActiveTrack.css")
-											.toExternalForm());
-						}
-					});
+			lineChartList.get(i).setOnMouseClicked(e -> {
+				trackControllers.get(trackNumber).setRadioButtonActive();
+				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
+					trackControllers.get(trackNumber).getChart().getStylesheets()
+							.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
+				}
+			});
 		}
 	}
 
