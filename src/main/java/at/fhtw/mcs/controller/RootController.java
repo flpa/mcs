@@ -35,6 +35,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
@@ -307,10 +308,18 @@ public class RootController implements Initializable {
 	private void startUpDialog() {
 		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.OpenOrNew.", AlertType.CONFIRMATION);
 		ButtonType newProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.new"), ButtonData.YES);
-		ButtonType openProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.open"), ButtonData.NO);
-		builder.setButtons(newProject, openProject);
+		ButtonType openProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.open"), ButtonData.OTHER);
+		ButtonType closeProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.cancel"), ButtonData.NO);
+		builder.setButtons(closeProject, openProject, newProject);
 
-		Optional<ButtonType> result = builder.build().showAndWait();
+		Alert alertOpenOrNew = builder.build();
+		for (Node node : alertOpenOrNew.getDialogPane().getChildren()) {
+			if (node instanceof ButtonBar) {
+				((ButtonBar) node).setButtonOrder("NYU");
+			}
+		}
+
+		Optional<ButtonType> result = alertOpenOrNew.showAndWait();
 
 		if (!result.isPresent()) {
 			Platform.exit();
@@ -449,7 +458,8 @@ public class RootController implements Initializable {
 	}
 
 	private void closeProject() {
-		newProject();
+		startOfProject = true;
+		startUpDialog();
 	}
 
 	private void updateApplicationTitle() {
