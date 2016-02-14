@@ -74,6 +74,9 @@ This product uses the following software from other open source projects:
 - jsoup, Copyright (c) Jonathan Hedley
   license: The MIT License
   sources: http://jsoup.org/download
+- controlsfx 8.40.10, Copyright (c) Jasper Potts, Richard Bair & Jonathan Giles 
+  license: other
+  sources: https://bitbucket.org/controlsfx/controlsfx/downloads
 
 Copies of all licenses can be found in this file's directory.  
 Icons used in the online version of this file are part of the free Logo's pack collection by Maxim Smirnov:

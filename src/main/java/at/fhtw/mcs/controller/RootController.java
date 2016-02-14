@@ -29,6 +29,8 @@ import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
 import javax.xml.bind.JAXBException;
 
+import org.controlsfx.control.RangeSlider;
+
 import at.fhtw.mcs.model.Format;
 import at.fhtw.mcs.model.Project;
 import at.fhtw.mcs.model.Track;
@@ -95,6 +97,8 @@ public class RootController implements Initializable {
 	@FXML
 	private CheckMenuItem checkMenuItemSyncronizeStartPoints;
 	@FXML
+	private CheckMenuItem checkMenuItemLoopPlayback;
+	@FXML
 	private Menu menuOutputDevices;
 	@FXML
 	private MenuItem menuItemQuit;
@@ -134,6 +138,8 @@ public class RootController implements Initializable {
 	private Rectangle rectangleSpacer;
 	@FXML
 	private Slider sliderMasterVolume;
+	@FXML
+	private RangeSlider rangesliderLoop;
 
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
@@ -152,8 +158,8 @@ public class RootController implements Initializable {
 	private long longestTrackMicrosecondsLength;
 	private Project project;
 	private Boolean startOfProject = true;
+	private Boolean loopActive = false;
 
-	// debug variables
 	Boolean trackChanged = false;
 	int trackChangedChecker = 0;
 
@@ -219,6 +225,13 @@ public class RootController implements Initializable {
 				for (TrackController trackController : trackControllers) {
 					trackController.drawTrack();
 				}
+			}
+		});
+
+		checkMenuItemLoopPlayback.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				toggleLoopActive();
 			}
 		});
 
@@ -304,6 +317,14 @@ public class RootController implements Initializable {
 		});
 
 		progressOverlay = new ProgressOverlay(this.stackPaneRoot, bundle.getString("label.addTracks.progress"));
+
+		/*
+		 * Loopslider and Line initialisation
+		 */
+		rangesliderLoop.setLowValue(rangesliderLoop.getMin());
+		rangesliderLoop.setHighValue(rangesliderLoop.getMax());
+		rangesliderLoop.setDisable(true);
+
 	}
 
 	private void startUpDialog() {
@@ -518,6 +539,14 @@ public class RootController implements Initializable {
 			progressBarTime.setProgress(progress);
 			sliderProgressBarTime.setValue(currentMicroseconds - 250000);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
+			if (loopActive) {
+				if (sliderProgressBarTime.getValue() > rangesliderLoop.getHighValue()) {
+					sliderProgressBarTime.setValue(rangesliderLoop.getLowValue());
+				}
+				if (sliderProgressBarTime.getValue() < rangesliderLoop.getLowValue()) {
+					sliderProgressBarTime.setValue(rangesliderLoop.getLowValue());
+				}
+			}
 			if (currentTrackHasEnded) {
 				buttonPlayPause.setText(ICON_PLAY);
 			}
@@ -616,6 +645,9 @@ public class RootController implements Initializable {
 		// Set the Slider to the same length as the Progressbar
 		sliderProgressBarTime.setMin(0);
 		sliderProgressBarTime.setMax(longestTrackMicrosecondsLength - 250000);
+		rangesliderLoop.setMin(0);
+		rangesliderLoop.setMax(longestTrackMicrosecondsLength - 250000);
+		rangesliderLoop.setHighValue(rangesliderLoop.getMax());
 	}
 
 	private void loadTrackUi(Track track) {
@@ -960,5 +992,15 @@ public class RootController implements Initializable {
 
 		// To unfocus the comment text field
 		scene.setOnMouseClicked(event -> scene.getRoot().requestFocus());
+	}
+
+	private void toggleLoopActive() {
+		loopActive = !loopActive;
+
+		if (loopActive) {
+			rangesliderLoop.setDisable(false);
+		} else {
+			rangesliderLoop.setDisable(true);
+		}
 	}
 }
