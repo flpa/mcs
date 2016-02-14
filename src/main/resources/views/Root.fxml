@@ -94,6 +94,7 @@
    	                                 </children>
    	                              </AnchorPane>
    	                              	 <RangeSlider fx:id="rangesliderLoop" GridPane.columnIndex="1" GridPane.rowIndex="1" />   
+   	                              	 <Text text="%label.loop" GridPane.rowIndex="1" GridPane.columnIndex="0"></Text>
                                </children>
    	                        </GridPane>
    	                     </center>

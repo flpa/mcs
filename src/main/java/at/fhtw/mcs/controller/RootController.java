@@ -232,6 +232,7 @@ public class RootController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
 				toggleLoopActive();
+				project.setLoopActivated(newValue);
 			}
 		});
 
@@ -323,8 +324,12 @@ public class RootController implements Initializable {
 		 */
 		rangesliderLoop.setLowValue(rangesliderLoop.getMin());
 		rangesliderLoop.setHighValue(rangesliderLoop.getMax());
-		rangesliderLoop.setDisable(true);
+		toggleLoopActive();
 
+		rangesliderLoop.lowValueProperty()
+				.addListener((observable, oldValue, newValue) -> project.setLoopLowValue((double) newValue));
+		rangesliderLoop.highValueProperty()
+				.addListener((observable, oldValue, newValue) -> project.setLoopHighValue((double) newValue));
 	}
 
 	private void startUpDialog() {
@@ -444,6 +449,11 @@ public class RootController implements Initializable {
 		loadTrackUis(project.getTracks());
 		sliderMasterVolume.setValue(project.getMasterLevel());
 		checkMenuItemSyncronizeStartPoints.setSelected(project.isSynchronizeStartPoints());
+		rangesliderLoop.setLowValue(project.getLoopLowValue());
+		rangesliderLoop.setHighValue(project.getLoopHighValue());
+		rangesliderLoop.setMax(project.getLoopMaxValue());
+		rangesliderLoop.setMin(project.getLoopMinValue());
+		checkMenuItemLoopPlayback.setSelected(project.isLoopActivated());
 		project.unsavedChangesProperty().addListener((observable, oldValue, newValue) -> this.updateApplicationTitle());
 	}
 
@@ -647,7 +657,14 @@ public class RootController implements Initializable {
 		sliderProgressBarTime.setMax(longestTrackMicrosecondsLength - 250000);
 		rangesliderLoop.setMin(0);
 		rangesliderLoop.setMax(longestTrackMicrosecondsLength - 250000);
-		rangesliderLoop.setHighValue(rangesliderLoop.getMax());
+		project.setLoopMinValue(0);
+		project.setLoopMaxValue(longestTrackMicrosecondsLength - 250000);
+		rangesliderLoop.setLowValue(project.getLoopLowValue());
+		if (project.getLoopHighValue() == 0) {
+			rangesliderLoop.setHighValue(longestTrackMicrosecondsLength - 250000);
+		} else {
+			rangesliderLoop.setHighValue(project.getLoopHighValue());
+		}
 	}
 
 	private void loadTrackUi(Track track) {
@@ -995,7 +1012,7 @@ public class RootController implements Initializable {
 	}
 
 	private void toggleLoopActive() {
-		loopActive = !loopActive;
+		loopActive = checkMenuItemLoopPlayback.isSelected();
 
 		if (loopActive) {
 			rangesliderLoop.setDisable(false);
