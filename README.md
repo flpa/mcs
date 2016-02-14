@@ -71,6 +71,9 @@ This product uses the following software from other open source projects:
 - JLayer 1.0.1, Copyright (c) JavaZOOM  
   license: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1  
   sources: http://www.javazoom.net/javalayer/sources/jlayer1.0.1.zip
+- jsoup, Copyright (c) Jonathan Hedley
+  license: The MIT License
+  sources: http://jsoup.org/download
 
 Copies of all licenses can be found in this file's directory.  
 Icons used in the online version of this file are part of the free Logo's pack collection by Maxim Smirnov:
