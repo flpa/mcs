@@ -7,6 +7,10 @@ apply plugin: "org.sonarqube"
 //for creating DMG file
 apply plugin: "edu.sc.seis.macAppBundle"
 
+tasks.withType(Compile) {
+	options.encoding = 'UTF-8'
+}
+
 mainClassName="at.fhtw.mcs.Main"
 sourceCompatibility=1.8
 applicationDefaultJvmArgs=["-Xmx2g"]
@@ -52,7 +56,7 @@ buildscript {
 }
 
 macAppBundle {
-    mainClassName = project.property("version")
+    mainClassName = "at.fhtw.mcs.Main"
 }
 
 // include license and README in distribution package

@@ -42,6 +42,13 @@ public class VersionCompare implements Runnable {
 		newestVersion = versions.get(0).text();
 		String version = bundle.getString("project.version");
 
+		// while devolping the newest version is not in the bundle (because
+		// gradle updates the bundle) and because we don't want to see the
+		// Exception all the time we dismiss the Version Compare in this case
+		if (version.equals("@version@")) {
+			return 0;
+		}
+
 		Version newVersion = new Version(newestVersion);
 		Version thisVersion = new Version(version);
 
