@@ -80,3 +80,12 @@ distZip {
     	}
     }
 }
+
+//set shorter automated release commit msgs
+release {
+    preCommitText = '[Gradle]'
+    preTagCommitMessage = 'pre tag commit:'
+    tagCommitMessage = 'creating tag:'
+    newVersionCommitMessage = 'new version commit:'
+}
+
