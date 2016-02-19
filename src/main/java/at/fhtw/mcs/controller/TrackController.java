@@ -1,11 +1,9 @@
 package at.fhtw.mcs.controller;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import at.fhtw.mcs.model.Track;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
@@ -16,6 +14,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.text.Text;
+import at.fhtw.mcs.model.Track;
 
 /**
  * Controller class for Track.fxml
@@ -57,17 +56,12 @@ public class TrackController implements Initializable {
 		drawTrack();
 
 		radioButtonActiveTrack.setToggleGroup(toggleGroup);
-		radioButtonActiveTrack.setUserData(track);
+		radioButtonActiveTrack.setUserData(new WeakReference<>(track));
 		if (toggleGroup.getSelectedToggle() == null) {
 			radioButtonActiveTrack.setSelected(true);
 		}
 
-		textAreaComment.setText(track.getComment());
-		textAreaComment.textProperty().addListener(new ChangeListener<String>() {
-			public void changed(ObservableValue<? extends String> value, String previousComment, String newComment) {
-				track.setComment(newComment);
-			}
-		});
+		textAreaComment.textProperty().bindBidirectional(track.commentProperty());
 	}
 
 	public void drawTrack() {

@@ -36,6 +36,11 @@ public class Project {
 
 	private BooleanProperty synchronizeStartPoints = new SimpleBooleanProperty(true);
 	private DoubleProperty masterLevel = new SimpleDoubleProperty(1.0);
+	private BooleanProperty loopActivated = new SimpleBooleanProperty(false);
+	private DoubleProperty loopMaxValue = new SimpleDoubleProperty(0);
+	private DoubleProperty loopMinValue = new SimpleDoubleProperty(0);
+	private DoubleProperty loopLowValue = new SimpleDoubleProperty(0);
+	private DoubleProperty loopHighValue = new SimpleDoubleProperty(0);
 	private File directory;
 	@XmlJavaTypeAdapter(XmlSaveableTrack.Adapter.class)
 	@XmlElement(name = "track")
@@ -47,7 +52,13 @@ public class Project {
 		// Those listeners are only called when values have actually changed
 		// TODO: tried a generic listener-lambda-function but that didn't work
 		synchronizeStartPoints.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
+		loopActivated.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
 		masterLevel.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
+		loopHighValue.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
+		loopLowValue.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
+		loopMaxValue.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
+		loopMinValue.addListener((observable, oldVal, newVal) -> unsavedChanges.set(true));
+
 		tracks.addListener(this::handleTrackListChange);
 	}
 
@@ -184,6 +195,51 @@ public class Project {
 		}
 	}
 
+	@XmlAttribute
+	public boolean isLoopActivated() {
+		return loopActivated.get();
+	}
+
+	public void setLoopActivated(boolean loopActivated) {
+		this.loopActivated.set(loopActivated);
+	}
+
+	@XmlAttribute
+	public double getLoopHighValue() {
+		return loopHighValue.get();
+	}
+
+	public void setLoopHighValue(double highValue) {
+		this.loopHighValue.set(highValue);
+	}
+
+	@XmlAttribute
+	public double getLoopLowValue() {
+		return loopLowValue.get();
+	}
+
+	public void setLoopLowValue(double lowValue) {
+		this.loopLowValue.set(lowValue);
+	}
+
+	@XmlAttribute
+	public double getLoopMinValue() {
+		return loopMinValue.get();
+	}
+
+	public void setLoopMinValue(double minValue) {
+		this.loopMinValue.set(minValue);
+	}
+
+	@XmlAttribute
+	public double getLoopMaxValue() {
+		return loopMaxValue.get();
+	}
+
+	public void setLoopMaxValue(double maxValue) {
+		this.loopMaxValue.set(maxValue);
+	}
+
 	@XmlTransient
 	public File getDirectory() {
 		return directory;
@@ -201,7 +257,7 @@ public class Project {
 		String name = originalName;
 
 		while (existingNames.contains(name)) {
-			name = String.format("%s(%d)", name, i);
+			name = String.format("%s(%d)", originalName, i);
 			i++;
 		}
 

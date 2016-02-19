@@ -3,9 +3,13 @@ package at.fhtw.mcs.controller;
 import static at.fhtw.mcs.util.NullSafety.emptyListIfNull;
 import static java.util.Comparator.comparing;
 
+import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -25,13 +29,17 @@ import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
 import javax.xml.bind.JAXBException;
 
+import org.controlsfx.control.RangeSlider;
+
 import at.fhtw.mcs.model.Format;
 import at.fhtw.mcs.model.Project;
 import at.fhtw.mcs.model.Track;
 import at.fhtw.mcs.ui.LocalizedAlertBuilder;
+import at.fhtw.mcs.ui.ProgressOverlay;
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import at.fhtw.mcs.util.VersionCompare;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -45,6 +53,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
@@ -61,6 +70,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -81,9 +91,13 @@ public class RootController implements Initializable {
 	private static final String URL_MANUAL = "https://github.com/flpa/mcs/wiki";
 
 	@FXML
+	private StackPane stackPaneRoot;
+	@FXML
 	private VBox vboxTracks;
 	@FXML
 	private CheckMenuItem checkMenuItemSyncronizeStartPoints;
+	@FXML
+	private CheckMenuItem checkMenuItemLoopPlayback;
 	@FXML
 	private Menu menuOutputDevices;
 	@FXML
@@ -124,10 +138,14 @@ public class RootController implements Initializable {
 	private Rectangle rectangleSpacer;
 	@FXML
 	private Slider sliderMasterVolume;
+	@FXML
+	private RangeSlider rangesliderLoop;
 
 	private ToggleGroup toggleGroupActiveTrack = new ToggleGroup();
 	private ResourceBundle bundle;
 	private Stage stage;
+	private FileChooser fileChooser = new FileChooser();
+	private ProgressOverlay progressOverlay;
 
 	private List<TrackController> trackControllers = new ArrayList<>();
 	private List<List<Button>> moveButtonList = new ArrayList<>();
@@ -139,19 +157,35 @@ public class RootController implements Initializable {
 	private int longestTrackFrameLength;
 	private long longestTrackMicrosecondsLength;
 	private Project project;
+	private Boolean startOfProject = true;
+	private Boolean loopActive = false;
 
-	// debug variables
 	Boolean trackChanged = false;
 	int trackChangedChecker = 0;
 
 	public RootController(Stage stage) {
 		this.stage = stage;
+
+		stage.setOnCloseRequest(event -> {
+			if (handleUnsavedChanges() == false) {
+				event.consume();
+			}
+		});
 	}
 
 	@Override
 	public void initialize(URL viewSource, ResourceBundle translations) {
 		this.bundle = translations;
-		newProject();
+		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
+				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
+		fileChooser.getExtensionFilters().add(filter);
+
+		VersionCompare versionCompare = new VersionCompare(bundle);
+		(new Thread(versionCompare)).start();
+
+		startUpDialog();
+
+		startOfProject = false;
 
 		menuItemQuit.setOnAction(e -> afterUnsavedChangesAreHandledDo(Platform::exit));
 		menuItemNewProject.setOnAction(e -> afterUnsavedChangesAreHandledDo(this::newProject));
@@ -194,6 +228,14 @@ public class RootController implements Initializable {
 			}
 		});
 
+		checkMenuItemLoopPlayback.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				toggleLoopActive();
+				project.setLoopActivated(newValue);
+			}
+		});
+
 		ToggleGroup toggleGroupOutputDevice = new ToggleGroup();
 
 		// @formatter:off
@@ -230,7 +272,7 @@ public class RootController implements Initializable {
 				trackChanged = true;
 
 				if (previousSelection != null) {
-					Track prevTrack = (Track) previousSelection.getUserData();
+					Track prevTrack = getToggleTrack(previousSelection);
 					wasPlaying = prevTrack.isPlaying();
 
 					prevTrack.pause();
@@ -238,7 +280,7 @@ public class RootController implements Initializable {
 				}
 
 				if (newSelection != null) {
-					Track newTrack = (Track) newSelection.getUserData();
+					Track newTrack = getToggleTrack(newSelection);
 					newTrack.setCurrentMicroseconds(currentMs);
 					if (wasPlaying) {
 						newTrack.play();
@@ -274,12 +316,59 @@ public class RootController implements Initializable {
 				}
 			}
 		});
+
+		progressOverlay = new ProgressOverlay(this.stackPaneRoot, bundle.getString("label.addTracks.progress"));
+
+		/*
+		 * Loopslider and Line initialisation
+		 */
+		rangesliderLoop.setLowValue(rangesliderLoop.getMin());
+		rangesliderLoop.setHighValue(rangesliderLoop.getMax());
+		toggleLoopActive();
+
+		rangesliderLoop.lowValueProperty()
+				.addListener((observable, oldValue, newValue) -> project.setLoopLowValue((double) newValue));
+		rangesliderLoop.highValueProperty()
+				.addListener((observable, oldValue, newValue) -> project.setLoopHighValue((double) newValue));
+	}
+
+	private void startUpDialog() {
+		LocalizedAlertBuilder builder = new LocalizedAlertBuilder(bundle, "alert.OpenOrNew.", AlertType.CONFIRMATION);
+		ButtonType newProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.new"), ButtonData.YES);
+		ButtonType openProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.open"), ButtonData.OTHER);
+		ButtonType closeProject = new ButtonType(bundle.getString("alert.OpenOrNew.button.cancel"), ButtonData.NO);
+		builder.setButtons(closeProject, openProject, newProject);
+
+		Alert alertOpenOrNew = builder.build();
+		for (Node node : alertOpenOrNew.getDialogPane().getChildren()) {
+			if (node instanceof ButtonBar) {
+				((ButtonBar) node).setButtonOrder("NYU");
+			}
+		}
+
+		Optional<ButtonType> result = alertOpenOrNew.showAndWait();
+
+		if (!result.isPresent()) {
+			Platform.exit();
+		} else {
+			if (result.get().equals(newProject)) {
+				newProject();
+			} else if (result.get().equals(openProject)) {
+				openProject();
+			} else {
+				Platform.exit();
+			}
+		}
 	}
 
 	private void afterUnsavedChangesAreHandledDo(Runnable callback) {
-		if (project.hasUnsavedChanges() == false || letUserHandleUnsavedChanges()) {
+		if (handleUnsavedChanges()) {
 			callback.run();
 		}
+	}
+
+	private boolean handleUnsavedChanges() {
+		return project.hasUnsavedChanges() == false || letUserHandleUnsavedChanges();
 	}
 
 	private boolean letUserHandleUnsavedChanges() {
@@ -343,6 +432,14 @@ public class RootController implements Initializable {
 
 	private void newProject() {
 		setProject(new Project());
+		FileChooser fileChooser = new FileChooser();
+		File f = fileChooser.showSaveDialog(stage);
+		if (f != null) {
+			project.setDirectory(f);
+			save();
+		} else if (startOfProject) {
+			startUpDialog();
+		}
 	}
 
 	private void setProject(Project project) {
@@ -352,6 +449,11 @@ public class RootController implements Initializable {
 		loadTrackUis(project.getTracks());
 		sliderMasterVolume.setValue(project.getMasterLevel());
 		checkMenuItemSyncronizeStartPoints.setSelected(project.isSynchronizeStartPoints());
+		rangesliderLoop.setLowValue(project.getLoopLowValue());
+		rangesliderLoop.setHighValue(project.getLoopHighValue());
+		rangesliderLoop.setMax(project.getLoopMaxValue());
+		rangesliderLoop.setMin(project.getLoopMinValue());
+		checkMenuItemLoopPlayback.setSelected(project.isLoopActivated());
 		project.unsavedChangesProperty().addListener((observable, oldValue, newValue) -> this.updateApplicationTitle());
 	}
 
@@ -372,7 +474,10 @@ public class RootController implements Initializable {
 				setProject(Project.load(chosenDirectory.get()));
 			} catch (FileNotFoundException | JAXBException e) {
 				handleOpenError(e);
+				openProject();
 			}
+		} else if (startOfProject) {
+			startUpDialog();
 		}
 	}
 
@@ -385,15 +490,14 @@ public class RootController implements Initializable {
 	}
 
 	private void closeProject() {
-		newProject();
+		startOfProject = true;
+		startUpDialog();
 	}
 
 	private void updateApplicationTitle() {
-		String format = MessageFormat.format(bundle.getString("app.title"), getProjectName());
-		if (project.hasUnsavedChanges()) {
-			format += "*";
-		}
-		stage.setTitle(format);
+		String format = MessageFormat.format(bundle.getString("app.title") + "{1}", getProjectName(),
+				project.hasUnsavedChanges() ? "*" : "");
+		Platform.runLater(() -> stage.setTitle(format));
 	}
 
 	private static boolean isOutputMixerInfo(Mixer.Info info) {
@@ -405,7 +509,7 @@ public class RootController implements Initializable {
 		if (selectedToggle == null) {
 			return Optional.empty();
 		}
-		return Optional.of((Track) selectedToggle.getUserData());
+		return Optional.of(getToggleTrack(selectedToggle));
 	}
 
 	private void updateTime() {
@@ -432,7 +536,7 @@ public class RootController implements Initializable {
 		 */
 		for (Toggle toggle : toggleGroupActiveTrack.getToggles()) {
 			RadioButton radio = (RadioButton) toggle;
-			Track track = (Track) radio.getUserData();
+			Track track = getToggleTrack(toggle);
 			radio.setDisable(track != currentTrack && currentMicroseconds > track.getTotalMicroseconds());
 		}
 
@@ -445,6 +549,14 @@ public class RootController implements Initializable {
 			progressBarTime.setProgress(progress);
 			sliderProgressBarTime.setValue(currentMicroseconds - 250000);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
+			if (loopActive) {
+				if (sliderProgressBarTime.getValue() > rangesliderLoop.getHighValue()) {
+					sliderProgressBarTime.setValue(rangesliderLoop.getLowValue());
+				}
+				if (sliderProgressBarTime.getValue() < rangesliderLoop.getLowValue()) {
+					sliderProgressBarTime.setValue(rangesliderLoop.getLowValue());
+				}
+			}
 			if (currentTrackHasEnded) {
 				buttonPlayPause.setText(ICON_PLAY);
 			}
@@ -452,31 +564,44 @@ public class RootController implements Initializable {
 	}
 
 	private void handleAddTracks(ActionEvent event) {
-		FileChooser chooser = new FileChooser();
-
-		/*
-		 * TODO: change filter from hardcoded to a responsible class
-		 */
-		FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter(
-				bundle.getString("fileChooser.addTrack.filterText"), "*.mp3", "*.wav", "*.wave", "*.aif", "*.aiff");
-		chooser.getExtensionFilters().add(filter);
-
-		List<File> files = emptyListIfNull(chooser.showOpenMultipleDialog(stage));
-		for (File file : files) {
-			addFile(file);
+		List<File> files = emptyListIfNull(fileChooser.showOpenMultipleDialog(stage));
+		addFiles(files);
+		if (files.isEmpty() == false) {
+			fileChooser.setInitialDirectory(files.get(files.size() - 1).getParentFile());
 		}
-
 	}
 
-	public void addFile(File file) {
+	public void addFiles(File... files) {
+		addFiles(Arrays.asList(files));
+	}
+
+	public void addFiles(List<File> files) {
+		if (files.isEmpty()) {
+			return;
+		}
+
+		progressOverlay.show();
+
+		new Thread(() -> {
+			try {
+				files.forEach(this::addFile);
+			} finally {
+				Platform.runLater(progressOverlay::hide);
+			}
+		}).start();
+	}
+
+	private void addFile(File file) {
 		Track track;
 		try {
-			track = TrackFactory.loadTrack(file.getAbsolutePath());
+			track = TrackFactory.loadTrack(file.getAbsolutePath(), project.getDirectory().toString());
 		} catch (UnsupportedFormatException e) {
-			this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
+			Platform.runLater(() -> {
+				this.showErrorUnsupportedFormat(e.getFormat(), e.getAudioFormat());
+			});
 			return;
 		} catch (OutOfMemoryError e) {
-			this.showErrorOutOfMemory();
+			Platform.runLater(this::showErrorOutOfMemory);
 			return;
 		}
 
@@ -492,19 +617,21 @@ public class RootController implements Initializable {
 	}
 
 	private void loadTrackUis(List<Track> tracks) {
-		determineLongestTrackLengths();
+		Platform.runLater(() -> {
+			determineLongestTrackLengths();
 
-		for (Track track : tracks) {
-			loadTrackUi(track);
-		}
-		setPlaybackControlsDisable(tracks.isEmpty());
+			for (Track track : tracks) {
+				loadTrackUi(track);
+			}
+			setPlaybackControlsDisable(tracks.isEmpty());
 
-		addButtonsAndChart();
-		project.setLoudnessLevel();
-		// setMoveButtons();
-		setButtonsEventHandler();
-		setLineChartEventHandler();
-		setStylesheetsForTracks();
+			addButtonsAndChart();
+			project.setLoudnessLevel();
+			// setMoveButtons();
+			setButtonsEventHandler();
+			setLineChartEventHandler();
+			setStylesheetsForTracks();
+		});
 	}
 
 	public void setPlaybackControlsDisable(boolean disable) {
@@ -528,16 +655,25 @@ public class RootController implements Initializable {
 		// Set the Slider to the same length as the Progressbar
 		sliderProgressBarTime.setMin(0);
 		sliderProgressBarTime.setMax(longestTrackMicrosecondsLength - 250000);
+		rangesliderLoop.setMin(0);
+		rangesliderLoop.setMax(longestTrackMicrosecondsLength - 250000);
+		project.setLoopMinValue(0);
+		project.setLoopMaxValue(longestTrackMicrosecondsLength - 250000);
+		rangesliderLoop.setLowValue(project.getLoopLowValue());
+		if (project.getLoopHighValue() == 0) {
+			rangesliderLoop.setHighValue(longestTrackMicrosecondsLength - 250000);
+		} else {
+			rangesliderLoop.setHighValue(project.getLoopHighValue());
+		}
 	}
 
 	private void loadTrackUi(Track track) {
+		FXMLLoader loader = new FXMLLoader();
+		loader.setController(new TrackController(track, toggleGroupActiveTrack, longestTrackFrameLength));
+		loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
+		loader.setResources(bundle);
+		trackControllers.add(loader.getController());
 		try {
-			FXMLLoader loader = new FXMLLoader();
-			loader.setController(new TrackController(track, toggleGroupActiveTrack, longestTrackFrameLength));
-			loader.setLocation(getClass().getClassLoader().getResource("views/Track.fxml"));
-			loader.setResources(bundle);
-			trackControllers.add(loader.getController());
-
 			vboxTracks.getChildren().add(loader.load());
 		} catch (IOException e) {
 			throw new RuntimeException("Error while loading track UI.", e);
@@ -592,10 +728,10 @@ public class RootController implements Initializable {
 	}
 
 	private void handleManual(ActionEvent event) {
-		if (java.awt.Desktop.isDesktopSupported()) {
+		if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE)) {
 			new Thread(() -> {
 				try {
-					java.awt.Desktop.getDesktop().browse(new java.net.URI(URL_MANUAL));
+					Desktop.getDesktop().browse(new URI(URL_MANUAL));
 				} catch (IOException | URISyntaxException e) {
 					System.err.println("Error while opening manual webpage.");
 					e.printStackTrace();
@@ -748,7 +884,7 @@ public class RootController implements Initializable {
 		vboxTracks.getChildren().remove(number);
 
 		Track removed = tracks.remove(number);
-		toggleGroupActiveTrack.getToggles().removeIf(toggle -> toggle.getUserData().equals(removed));
+		toggleGroupActiveTrack.getToggles().removeIf(toggle -> removed.equals(getToggleTrack(toggle)));
 
 		trackControllers.remove(number);
 		moveButtonList.remove(number);
@@ -765,6 +901,11 @@ public class RootController implements Initializable {
 		} else {
 			setPlaybackControlsDisable(true);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Track getToggleTrack(Toggle toggle) {
+		return ((WeakReference<Track>) toggle.getUserData()).get();
 	}
 
 	private void moveUp(int number) {
@@ -868,5 +1009,15 @@ public class RootController implements Initializable {
 
 		// To unfocus the comment text field
 		scene.setOnMouseClicked(event -> scene.getRoot().requestFocus());
+	}
+
+	private void toggleLoopActive() {
+		loopActive = checkMenuItemLoopPlayback.isSelected();
+
+		if (loopActive) {
+			rangesliderLoop.setDisable(false);
+		} else {
+			rangesliderLoop.setDisable(true);
+		}
 	}
 }

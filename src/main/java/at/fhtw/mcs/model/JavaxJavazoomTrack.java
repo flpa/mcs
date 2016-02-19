@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -16,11 +18,13 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.FormatDetection;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javazoom.jl.converter.Converter;
@@ -36,7 +40,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	private String name;
 	private File file;
-	private SimpleObjectProperty<String> comment = new SimpleObjectProperty<String>("");
+	private Property<String> comment = new SimpleObjectProperty<String>("");
 	private Clip clip;
 	private float loudness;
 	private float dynamicRange;
@@ -52,7 +56,7 @@ public class JavaxJavazoomTrack implements Track {
 	 * @throws UnsupportedFormatException
 	 *             In case the format of the track is not supported.
 	 */
-	public JavaxJavazoomTrack(FormatDetection formatDetection, String path) {
+	public JavaxJavazoomTrack(FormatDetection formatDetection, String path, String projectDirectory) {
 		Format format = formatDetection.detectFormat(path);
 		name = FilenameUtils.getBaseName(path);
 		String pathToLoad;
@@ -60,18 +64,16 @@ public class JavaxJavazoomTrack implements Track {
 		switch (format) {
 			case AIFF:
 			case WAV:
-				pathToLoad = path;
+				pathToLoad = copyFile(path, projectDirectory);
 				break;
 			case MP3:
-				pathToLoad = convertMp3ToWav(path);
+				pathToLoad = convertMp3ToWav(path, projectDirectory);
 				break;
 			default:
 				throw new UnsupportedFormatException(format);
 		}
 		file = new File(pathToLoad);
-
-		numberOfChannels = this.setNumberOfChannels();
-		clip = AudioOuput.openClip(file);
+		this.readAudioFormatData();
 
 		try {
 			storeAudioData();
@@ -80,6 +82,26 @@ public class JavaxJavazoomTrack implements Track {
 		} catch (UnsupportedAudioFileException | IOException e) {
 			throw new RuntimeException("Unexpected error during audio analysis", e);
 		}
+
+		clip = AudioOuput.openClip(file);
+
+	}
+
+	private String copyFile(String source, String projectDirectory) {
+		File s = new File(source);
+		String fullname = s.getName();
+		fullname = filenameWithExtension(fullname, projectDirectory);
+		File d = new File(projectDirectory, fullname);
+		if (d.getParent().equals(s.getParent())) {
+			return s.toString();
+		}
+
+		try {
+			FileUtils.copyFile(s, d);
+		} catch (IOException e) {
+			throw new RuntimeException("File could not be copied to project directory", e);
+		}
+		return d.toString();
 	}
 
 	public void applyStartPointOffset() {
@@ -121,34 +143,60 @@ public class JavaxJavazoomTrack implements Track {
 		return middledStartIndex;
 	}
 
-	private String convertMp3ToWav(String path) {
+	private String filenameWithExtension(String fullname, String projectDirectory) {
+		String baseName = FilenameUtils.getBaseName(fullname);
+		int indexOfFileFormat = fullname.lastIndexOf(".");
+		String fileFormat = fullname.substring(indexOfFileFormat);
+
+		File dir = new File(projectDirectory);
+		File[] files = dir.listFiles();
+		List<String> existingNames = new ArrayList<String>();
+		for (File file : files) {
+			existingNames.add(FilenameUtils.getBaseName(file.getName()));
+		}
+		int j = 2;
+		while (existingNames.contains(baseName)) {
+			baseName = String.format("%s(%d)", name, j);
+			j++;
+		}
+		fullname = baseName + fileFormat;
+		return fullname;
+	}
+
+	private String convertMp3ToWav(String path, String projectDirectory) {
 		// TODO uppercase, e.g. MP3
 		// TODO test: josh.new.mp3.mp3
-		String newPath;
 		Converter converter = new Converter();
+		String fullname = name + ".wav";
 
-		int positionOfMp3 = path.lastIndexOf(".mp3");
-		newPath = path.substring(0, positionOfMp3) + ".wav";
+		fullname = filenameWithExtension(fullname, projectDirectory);
+
+		File f = new File(projectDirectory, fullname);
 		try {
-			converter.convert(path, newPath);
+			converter.convert(path, f.getAbsolutePath());
 		} catch (JavaLayerException e) {
 			throw new UnsupportedFormatException(Format.MP3,
 					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.", e);
 		}
 
 		// throw exception if converted file does not exist
-		if (!Files.exists(Paths.get(newPath))) {
+		if (!Files.exists(Paths.get(f.getAbsolutePath()))) {
 			throw new UnsupportedFormatException(Format.MP3,
 					"There was an error while converting the MP3 to WAV. Try consulting JavaZoom documentation.");
 		}
 
-		return newPath;
+		return f.getAbsolutePath();
 	}
 
 	private void storeAudioData() throws UnsupportedAudioFileException, IOException, UnsupportedFormatException {
 		AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(file);
 		AudioFormat audioFormat = fileFormat.getFormat();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+		if (audioFormat.getSampleSizeInBits() > 16) {
+			System.out.println(audioFormat.getSampleSizeInBits());
+			throw new UnsupportedFormatException(Format.WAV);
+		}
 
 		int nBufferSize = BUFFER_LENGTH * audioFormat.getFrameSize();
 		final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
@@ -164,7 +212,7 @@ public class JavaxJavazoomTrack implements Track {
 
 		byte[] byteAudioData = byteArrayOutputStream.toByteArray();
 
-		float[] samples = new float[(byteAudioData.length / normalBytes) * audioFormat.getChannels()];
+		float[] samples = new float[(byteAudioData.length / normalBytes)];
 
 		unpack(byteAudioData, samples, byteAudioData.length, audioFormat);
 		audioData = samples;
@@ -280,7 +328,6 @@ public class JavaxJavazoomTrack implements Track {
 		/*
 		 * the OR is not quite enough to convert, the signage needs to be
 		 * corrected.
-		 * 
 		 */
 
 		if (fmt.getEncoding() == AudioFormat.Encoding.PCM_SIGNED) {
@@ -308,7 +355,6 @@ public class JavaxJavazoomTrack implements Track {
 			 * and the right shift now fills with 1's:
 			 * 
 			 * 10110000 >> (8 - 4) =========== 11111011
-			 * 
 			 */
 
 			final long signShift = 64L - bitsPerSample;
@@ -323,7 +369,6 @@ public class JavaxJavazoomTrack implements Track {
 			 * to the long.
 			 * 
 			 * so just sign them: subtract 2^(bits - 1) so the center is 0.
-			 * 
 			 */
 
 			for (int i = 0; i < transfer.length; i++) {
@@ -356,12 +401,12 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public int getLength() {
-		return (clip.getFrameLength() - startOffsetFrames);
+		return clip.getFrameLength() - this.startOffsetFrames;
 	}
 
 	@Override
 	public int getLengthWeighted() {
-		return (int) ((clip.getFrameLength() - startOffsetFrames) * (44100 / clip.getFormat().getSampleRate()));
+		return (int) (getLength() * (44100 / clip.getFormat().getSampleRate()));
 	}
 
 	/**
@@ -396,19 +441,17 @@ public class JavaxJavazoomTrack implements Track {
 
 	private void calculateLoudness() {
 		float loudnessFloat = 0;
-		AudioFormat audioFormat = clip.getFormat();
-		int channels = audioFormat.getChannels();
-		int audioFileLength = this.getLength();
 
 		int x = 0;
 		float sum = 0;
 		/*
 		 * RMS (Root mean square) loudness calculation
 		 */
-		for (int j = 0; j < audioFileLength * channels; j += channels) {
+
+		for (int j = 0; j < audioData.length; j += this.numberOfChannels) {
 			float mean = 0;
 			float leftChannel = audioData[j];
-			if (channels == 2) {
+			if (this.numberOfChannels == 2) {
 				float rightChannel = audioData[j + 1];
 				mean = (leftChannel + rightChannel) / 2;
 
@@ -422,7 +465,7 @@ public class JavaxJavazoomTrack implements Track {
 		loudness = floatToDecibel(loudnessFloat);
 	}
 
-	private int setNumberOfChannels() {
+	private void readAudioFormatData() {
 		AudioFileFormat fileFormat;
 		try {
 			fileFormat = AudioSystem.getAudioFileFormat(file);
@@ -430,7 +473,7 @@ public class JavaxJavazoomTrack implements Track {
 			throw new UnsupportedFormatException(Format.WAV);
 		}
 		AudioFormat audioFormat = fileFormat.getFormat();
-		return audioFormat.getChannels();
+		this.numberOfChannels = audioFormat.getChannels();
 	}
 
 	@Override
@@ -446,6 +489,7 @@ public class JavaxJavazoomTrack implements Track {
 		boolean wasRunning = clip.isRunning();
 		clip.stop();
 		int framePosition = clip.getFramePosition();
+		float gain = getGainControl(clip).getValue();
 		clip.close();
 
 		/*
@@ -453,6 +497,7 @@ public class JavaxJavazoomTrack implements Track {
 		 */
 		Clip newClip = AudioOuput.openClip(file);
 		newClip.setFramePosition(framePosition);
+		getGainControl(newClip).setValue(gain);
 		if (wasRunning) {
 			newClip.start();
 		}
@@ -464,13 +509,13 @@ public class JavaxJavazoomTrack implements Track {
 		return this.loudness;
 	}
 
+	private FloatControl getGainControl(Clip clip) {
+		return (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+	}
+
 	@Override
 	public void setVolume(float lowest) {
-		if (this.loudness == lowest) {
-			return;
-		}
-
-		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
+		FloatControl gainController = getGainControl(this.clip);
 		float deltaDBValue = this.loudness - lowest;
 		this.deltaVolume = deltaDBValue * 1.05f;
 
@@ -489,7 +534,7 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public void changeVolume(double delta) {
-		FloatControl gainController = (FloatControl) this.clip.getControl(FloatControl.Type.MASTER_GAIN);
+		FloatControl gainController = getGainControl(this.clip);
 
 		gainController.setValue(0 - this.deltaVolume);
 
@@ -503,14 +548,13 @@ public class JavaxJavazoomTrack implements Track {
 	 */
 	private void calculateDynamicRange() {
 		int channels = this.getNumberOfChannels();
-		int audioFileLength = this.getLength();
 
 		float peak = 0;
 		float meanPrevious = 0;
 		float meanCurrent = 0;
 		float meanNext = 0;
 
-		for (int j = 0; j < audioFileLength * channels; j += channels) {
+		for (int j = 0; j < audioData.length; j += channels) {
 			// first sample
 			if (j == 0) {
 				float leftChannel = audioData[j];
@@ -524,7 +568,7 @@ public class JavaxJavazoomTrack implements Track {
 			}
 
 			// next sample
-			if (j + channels < audioFileLength * channels) {
+			if (j + channels < audioData.length) {
 				float leftChannel = audioData[j + channels];
 				if (channels == 2) {
 					float rightChannel = audioData[j + channels + 1];
@@ -563,12 +607,12 @@ public class JavaxJavazoomTrack implements Track {
 
 	@Override
 	public String getComment() {
-		return comment.get();
+		return comment.getValue();
 	}
 
 	@Override
 	public void setComment(String comment) {
-		this.comment.set(comment);
+		this.comment.setValue(comment);
 	}
 
 	@Override
@@ -598,5 +642,10 @@ public class JavaxJavazoomTrack implements Track {
 	@Override
 	public float getSampleRate() {
 		return clip.getFormat().getSampleRate();
+	}
+
+	@Override
+	public Property<String> commentProperty() {
+		return comment;
 	}
 }

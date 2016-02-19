@@ -3,9 +3,13 @@ package at.fhtw.mcs.ui;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
+import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.layout.Region;
 
 /**
  * The idea of {@link LocalizedAlertBuilder} is to simplify the creation of
@@ -18,7 +22,7 @@ import javafx.scene.control.ButtonType;
  * <h5>Example</h5>
  * 
  * <pre>
- * new LocalizedAlertBuilder(bundle, "alert.myWarning.", AlertType.WARNING).build().showAndWait();
+ * new LocalizedAlertBuilder(bundle, &quot;alert.myWarning.&quot;, AlertType.WARNING).build().showAndWait();
  * </pre>
  * 
  * This line show a modal Alert of Type WARNING. Title, headerText and
@@ -80,12 +84,21 @@ public class LocalizedAlertBuilder {
 		alert.setTitle(givenTextOrMessage(title, titleKey, titleFormatParameters));
 		alert.setHeaderText(givenTextOrMessage(headerText, headerKey, headerFormatParameters));
 
+		Platform.runLater(() -> {
+			for (Node node : alert.getDialogPane().getChildren()) {
+				if (node instanceof ButtonBar) {
+					((ButtonBar) node).setButtonMinWidth(Region.USE_PREF_SIZE);
+				}
+			}
+			alert.getDialogPane().getScene().getWindow().sizeToScene();
+		});
+
 		return alert;
 	}
 
 	private String givenTextOrMessage(String text, String messageKey, Object[] formatParameters) {
-		return text != NOT_SET ? text
-				: MessageFormat.format(translations.getString(messagePrefix + messageKey), formatParameters);
+		return text != NOT_SET ? text : MessageFormat.format(translations.getString(messagePrefix + messageKey),
+				formatParameters);
 	}
 
 	public void setButtons(ButtonType... buttons) {

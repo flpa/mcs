@@ -34,7 +34,7 @@ public class XmlSaveableTrack {
 
 		public Track unmarshal(XmlSaveableTrack xmlTrack) {
 			File file = findFileInDirectory(xmlTrack.name);
-			Track track = TrackFactory.loadTrack(file.getAbsolutePath());
+			Track track = TrackFactory.loadTrack(file.getAbsolutePath(), directory.toString());
 
 			track.setComment(xmlTrack.comment);
 			return track;
@@ -45,12 +45,12 @@ public class XmlSaveableTrack {
 					.listFiles(file -> baseName.equals(FilenameUtils.getBaseName(file.getName())));
 
 			if (matchingFiles.length == 0) {
-				throw new IllegalArgumentException(
-						String.format("No file with base name '%s' in directory '%s'!", baseName, directory));
+				throw new IllegalArgumentException(String.format("No file with base name '%s' in directory '%s'!",
+						baseName, directory));
 			}
 			if (matchingFiles.length > 1) {
-				throw new IllegalArgumentException(
-						String.format("Multiple files with base name '%s' in directory '%s'!", baseName, directory));
+				throw new IllegalArgumentException(String.format(
+						"Multiple files with base name '%s' in directory '%s'!", baseName, directory));
 			}
 
 			return matchingFiles[0];
