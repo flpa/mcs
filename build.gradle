@@ -6,6 +6,7 @@ apply plugin: 'eclipse'
 apply plugin: "org.sonarqube"
 //for creating DMG file
 apply plugin: "edu.sc.seis.macAppBundle"
+apply plugin: "net.researchgate.release"
 
 mainClassName="at.fhtw.mcs.Main"
 sourceCompatibility=1.8
@@ -49,6 +50,7 @@ buildscript {
   dependencies {
     classpath "org.sonarqube.gradle:gradle-sonarqube-plugin:1.1"
     classpath "gradle.plugin.edu.sc.seis:macAppBundle:2.1.5"
+    classpath "net.researchgate:gradle-release:2.3.5"
   }
 }
 
