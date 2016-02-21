@@ -63,7 +63,8 @@ public class TrackController implements Initializable {
 
 		drawTrack();
 
-		// TODO Canvas isn't getting smaller
+		// TODO sometimes when getting bigger Canvas doesn't fill the whole
+		// Linechart
 
 		anchorPaneTrackPane.widthProperty().addListener(new ChangeListener<Number>() {
 			@Override

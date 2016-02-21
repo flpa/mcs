@@ -335,6 +335,19 @@ public class RootController implements Initializable {
 		rangesliderLoop.highValueProperty()
 				.addListener((observable, oldValue, newValue) -> project.setLoopHighValue((double) newValue));
 
+		// TODO anchorPane should be resized when stackPane gets smaller
+		stackPaneRoot.widthProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				for (Canvas canvas : canvasList) {
+					canvas.setWidth(canvas.getWidth() - ((double) oldValue - (double) newValue));
+				}
+				for (AnchorPane anchorPane : anchorPaneTrackList) {
+					anchorPane.setPrefWidth((double) newValue - 17);
+				}
+			}
+		});
+
 	}
 
 	private void startUpDialog() {
