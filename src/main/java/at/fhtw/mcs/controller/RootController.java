@@ -71,6 +71,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -155,6 +156,7 @@ public class RootController implements Initializable {
 	private List<Button> deleteButtonList = new ArrayList<>();
 	private List<LineChart<Number, Number>> lineChartList = new ArrayList<>();
 	private List<Canvas> canvasList = new ArrayList<>();
+	private List<AnchorPane> anchorPaneTrackList = new ArrayList<>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -313,8 +315,6 @@ public class RootController implements Initializable {
 						for (Track track : project.getTracks()) {
 							long temp = Math.round((double) newValue);
 							track.setCurrentMicroseconds(temp + 250000);
-							// System.out.println("valuechange: " + newValue +
-							// ":" + oldValue);
 						}
 					}
 				}
@@ -335,7 +335,6 @@ public class RootController implements Initializable {
 		rangesliderLoop.highValueProperty()
 				.addListener((observable, oldValue, newValue) -> project.setLoopHighValue((double) newValue));
 
-		// test to handle canvas
 	}
 
 	private void startUpDialog() {
@@ -555,6 +554,9 @@ public class RootController implements Initializable {
 			progressBarTime.setProgress(progress);
 			sliderProgressBarTime.setValue(currentMicroseconds - 250000);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
+			for (Canvas canvas : canvasList) {
+				drawOnCanvas(canvas);
+			}
 			if (loopActive) {
 				if (sliderProgressBarTime.getValue() > rangesliderLoop.getHighValue()) {
 					sliderProgressBarTime.setValue(rangesliderLoop.getLowValue());
@@ -638,6 +640,9 @@ public class RootController implements Initializable {
 			setLineChartEventHandler();
 			setStylesheetsForTracks();
 			setCanvasEventHandler();
+			for (Canvas canvas : canvasList) {
+				drawOnCanvas(canvas);
+			}
 		});
 	}
 
@@ -809,6 +814,7 @@ public class RootController implements Initializable {
 		deleteButtonList.clear();
 		lineChartList.clear();
 		canvasList.clear();
+		anchorPaneTrackList.clear();
 		for (int i = 0; i < trackControllers.size(); i++) {
 			// deleteButton
 			deleteButtonList.add(trackControllers.get(i).getButtonDelete());
@@ -824,6 +830,9 @@ public class RootController implements Initializable {
 
 			// Canvas
 			canvasList.add(trackControllers.get(i).getCanvas());
+
+			// AnchorPane
+			anchorPaneTrackList.add(trackControllers.get(i).getAnchorPane());
 		}
 
 		for (Canvas canvas : canvasList) {
@@ -883,15 +892,55 @@ public class RootController implements Initializable {
 		for (int i = 0; i < canvasList.size(); i++) {
 			final int trackNumber = i;
 			canvasList.get(i).widthProperty().addListener(observable -> drawOnCanvas(canvasList.get(trackNumber)));
+			canvasList.get(i).setOnMouseClicked(e -> {
+				trackControllers.get(trackNumber).setRadioButtonActive();
+				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
+					trackControllers.get(trackNumber).getChart().getStylesheets()
+							.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
+				}
+			});
 		}
 	}
 
 	private void drawOnCanvas(Canvas canvas) {
-		System.out.println("bliblablu");
+		// TODO calculate position of Loop
+		if (loopActive) {
+			drawProgressOnCanvas(canvas);
+			double maxValueRangeSlider = rangesliderLoop.getMax();
+			double rangeSliderLowValue = rangesliderLoop.getLowValue();
+			double rangeSliderHighValue = rangesliderLoop.getHighValue();
+			double canvasWidth = canvas.getWidth();
+			double canvasDelta = maxValueRangeSlider / canvasWidth;
+			double firstRectBorder = rangeSliderLowValue / canvasDelta;
+			double secondRectBorder = rangeSliderHighValue / canvasDelta;
+
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.setFill(Color.rgb(244, 244, 244));
+			gc.setStroke(Color.rgb(244, 244, 244));
+			gc.fillRect(0, 0, firstRectBorder, canvas.getHeight());
+			gc.fillRect(secondRectBorder, 0, canvas.getWidth(), canvas.getHeight());
+		} else {
+			drawProgressOnCanvas(canvas);
+		}
+	}
+
+	private void drawProgressOnCanvas(Canvas canvas) {
+		clearCanvas(canvas);
+		double maxValueProgress = sliderProgressBarTime.getMax();
+		double progressValue = sliderProgressBarTime.getValue();
+		double canvasWidth = canvas.getWidth();
+		double canvasDelta = maxValueProgress / canvasWidth;
+		double positionOfLine = progressValue / canvasDelta;
+
 		GraphicsContext gc = canvas.getGraphicsContext2D();
-		gc.setFill(Color.GREY);
-		gc.setStroke(Color.GREY);
-		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		gc.setFill(Color.BLACK);
+		gc.setStroke(Color.BLACK);
+		gc.fillRect(positionOfLine, 0, 1, canvas.getHeight());
+	}
+
+	private void clearCanvas(Canvas canvas) {
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 
 	private void deleteTrack(int number) {
@@ -920,6 +969,7 @@ public class RootController implements Initializable {
 		moveButtonList.remove(number);
 		deleteButtonList.remove(number);
 		canvasList.remove(number);
+		anchorPaneTrackList.remove(number);
 
 		addButtonsAndChart();
 		// setMoveButtons();
@@ -1050,8 +1100,14 @@ public class RootController implements Initializable {
 
 		if (loopActive) {
 			rangesliderLoop.setDisable(false);
+			for (Canvas canvas : canvasList) {
+				drawOnCanvas(canvas);
+			}
 		} else {
 			rangesliderLoop.setDisable(true);
+			for (Canvas canvas : canvasList) {
+				clearCanvas(canvas);
+			}
 		}
 	}
 }

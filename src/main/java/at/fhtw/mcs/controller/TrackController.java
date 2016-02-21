@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import at.fhtw.mcs.model.Track;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -15,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 
 /**
@@ -40,6 +43,8 @@ public class TrackController implements Initializable {
 	private TextArea textAreaComment;
 	@FXML
 	private Canvas canvasTrack;
+	@FXML
+	private AnchorPane anchorPaneTrackPane;
 
 	private ToggleGroup toggleGroup;
 	private Track track;
@@ -57,6 +62,21 @@ public class TrackController implements Initializable {
 		textDynamicRange.setText(String.format("%.2f dB", track.getDynamicRange()));
 
 		drawTrack();
+
+		// TODO Canvas isn't getting smaller
+
+		anchorPaneTrackPane.widthProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				// System.out.println(oldValue + "->" + newValue);
+				canvasTrack.setWidth(textAreaComment.getWidth());
+				if ((double) oldValue > (double) newValue) {
+					// System.out.println(canvasTrack.getWidth());
+					canvasTrack.setWidth(canvasTrack.getWidth() - ((double) oldValue - (double) newValue));
+					// System.out.println(canvasTrack.getWidth());
+				}
+			}
+		});
 
 		radioButtonActiveTrack.setToggleGroup(toggleGroup);
 		radioButtonActiveTrack.setUserData(new WeakReference<>(track));
@@ -149,6 +169,10 @@ public class TrackController implements Initializable {
 
 	public void setRadioButtonActive() {
 		this.radioButtonActiveTrack.fire();
+	}
+
+	public AnchorPane getAnchorPane() {
+		return this.anchorPaneTrackPane;
 	}
 
 	public Canvas getCanvas() {
