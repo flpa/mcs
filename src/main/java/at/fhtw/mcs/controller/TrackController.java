@@ -4,8 +4,10 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import at.fhtw.mcs.model.Track;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -14,7 +16,6 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.text.Text;
-import at.fhtw.mcs.model.Track;
 
 /**
  * Controller class for Track.fxml
@@ -37,6 +38,8 @@ public class TrackController implements Initializable {
 	private Button buttonDelete;
 	@FXML
 	private TextArea textAreaComment;
+	@FXML
+	private Canvas canvasTrack;
 
 	private ToggleGroup toggleGroup;
 	private Track track;
@@ -146,5 +149,9 @@ public class TrackController implements Initializable {
 
 	public void setRadioButtonActive() {
 		this.radioButtonActiveTrack.fire();
+	}
+
+	public Canvas getCanvas() {
+		return this.canvasTrack;
 	}
 }

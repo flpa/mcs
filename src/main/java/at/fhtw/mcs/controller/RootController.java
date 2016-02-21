@@ -49,6 +49,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -72,6 +74,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
@@ -151,6 +154,7 @@ public class RootController implements Initializable {
 	private List<List<Button>> moveButtonList = new ArrayList<>();
 	private List<Button> deleteButtonList = new ArrayList<>();
 	private List<LineChart<Number, Number>> lineChartList = new ArrayList<>();
+	private List<Canvas> canvasList = new ArrayList<>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -330,6 +334,8 @@ public class RootController implements Initializable {
 				.addListener((observable, oldValue, newValue) -> project.setLoopLowValue((double) newValue));
 		rangesliderLoop.highValueProperty()
 				.addListener((observable, oldValue, newValue) -> project.setLoopHighValue((double) newValue));
+
+		// test to handle canvas
 	}
 
 	private void startUpDialog() {
@@ -631,6 +637,7 @@ public class RootController implements Initializable {
 			setButtonsEventHandler();
 			setLineChartEventHandler();
 			setStylesheetsForTracks();
+			setCanvasEventHandler();
 		});
 	}
 
@@ -801,6 +808,7 @@ public class RootController implements Initializable {
 		moveButtonList.clear();
 		deleteButtonList.clear();
 		lineChartList.clear();
+		canvasList.clear();
 		for (int i = 0; i < trackControllers.size(); i++) {
 			// deleteButton
 			deleteButtonList.add(trackControllers.get(i).getButtonDelete());
@@ -813,6 +821,13 @@ public class RootController implements Initializable {
 
 			// Linechart Waveform
 			lineChartList.add(trackControllers.get(i).getChart());
+
+			// Canvas
+			canvasList.add(trackControllers.get(i).getCanvas());
+		}
+
+		for (Canvas canvas : canvasList) {
+			drawOnCanvas(canvas);
 		}
 	}
 
@@ -864,6 +879,21 @@ public class RootController implements Initializable {
 		}
 	}
 
+	private void setCanvasEventHandler() {
+		for (int i = 0; i < canvasList.size(); i++) {
+			final int trackNumber = i;
+			canvasList.get(i).widthProperty().addListener(observable -> drawOnCanvas(canvasList.get(trackNumber)));
+		}
+	}
+
+	private void drawOnCanvas(Canvas canvas) {
+		System.out.println("bliblablu");
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.setFill(Color.GREY);
+		gc.setStroke(Color.GREY);
+		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+	}
+
 	private void deleteTrack(int number) {
 		List<Track> tracks = project.getTracks();
 
@@ -889,10 +919,12 @@ public class RootController implements Initializable {
 		trackControllers.remove(number);
 		moveButtonList.remove(number);
 		deleteButtonList.remove(number);
+		canvasList.remove(number);
 
 		addButtonsAndChart();
 		// setMoveButtons();
 		setButtonsEventHandler();
+		setCanvasEventHandler();
 		setLineChartEventHandler();
 		setStylesheetsForTracks();
 		project.setLoudnessLevel();
@@ -945,6 +977,7 @@ public class RootController implements Initializable {
 			// setMoveButtons();
 			setButtonsEventHandler();
 			setLineChartEventHandler();
+			setCanvasEventHandler();
 			setStylesheetsForTracks();
 		}
 	}
@@ -986,6 +1019,7 @@ public class RootController implements Initializable {
 			// setMoveButtons();
 			setButtonsEventHandler();
 			setLineChartEventHandler();
+			setCanvasEventHandler();
 			setStylesheetsForTracks();
 		}
 	}
