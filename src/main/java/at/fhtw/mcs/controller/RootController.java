@@ -9,13 +9,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Timer;
@@ -40,10 +43,13 @@ import at.fhtw.mcs.util.AudioOuput;
 import at.fhtw.mcs.util.TrackFactory;
 import at.fhtw.mcs.util.TrackFactory.UnsupportedFormatException;
 import at.fhtw.mcs.util.VersionCompare;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -66,11 +72,14 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -81,6 +90,7 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /**
  * Controller class for Root.fxml
@@ -157,6 +167,7 @@ public class RootController implements Initializable {
 	private List<LineChart<Number, Number>> lineChartList = new ArrayList<>();
 	private List<Canvas> canvasList = new ArrayList<>();
 	private List<AnchorPane> anchorPaneTrackList = new ArrayList<>();
+	private Map<Rectangle, String> trackComments = new HashMap<Rectangle, String>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -165,6 +176,7 @@ public class RootController implements Initializable {
 	private Project project;
 	private Boolean startOfProject = true;
 	private Boolean loopActive = false;
+	private Boolean cPressed = false;
 
 	Boolean trackChanged = false;
 	int trackChangedChecker = 0;
@@ -310,6 +322,9 @@ public class RootController implements Initializable {
 		sliderProgressBarTime.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				for (Canvas canvas : canvasList) {
+					drawOnCanvas(canvas);
+				}
 				if ((double) newValue - (double) oldValue > 2_500_000 || (double) newValue - (double) oldValue < 0) {
 					if (!trackChanged) {
 						for (Track track : project.getTracks()) {
@@ -330,12 +345,19 @@ public class RootController implements Initializable {
 		rangesliderLoop.setHighValue(rangesliderLoop.getMax());
 		toggleLoopActive();
 
-		rangesliderLoop.lowValueProperty()
-				.addListener((observable, oldValue, newValue) -> project.setLoopLowValue((double) newValue));
-		rangesliderLoop.highValueProperty()
-				.addListener((observable, oldValue, newValue) -> project.setLoopHighValue((double) newValue));
+		rangesliderLoop.lowValueProperty().addListener((observable, oldValue, newValue) -> {
+			project.setLoopLowValue((double) newValue);
+			for (Canvas canvas : canvasList) {
+				drawOnCanvas(canvas);
+			}
+		});
+		rangesliderLoop.highValueProperty().addListener((observable, oldValue, newValue) -> {
+			project.setLoopHighValue((double) newValue);
+			for (Canvas canvas : canvasList) {
+				drawOnCanvas(canvas);
+			}
+		});
 
-		// TODO anchorPane should be resized when stackPane gets smaller
 		stackPaneRoot.widthProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -344,6 +366,22 @@ public class RootController implements Initializable {
 				}
 				for (AnchorPane anchorPane : anchorPaneTrackList) {
 					anchorPane.setPrefWidth((double) newValue - 17);
+				}
+			}
+		});
+
+		stackPaneRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			public void handle(KeyEvent ke) {
+				if (ke.getText().equals("c")) {
+					cPressed = true;
+				}
+			}
+		});
+
+		stackPaneRoot.setOnKeyReleased(new EventHandler<KeyEvent>() {
+			public void handle(KeyEvent ke) {
+				if (ke.getText().equals("c")) {
+					cPressed = false;
 				}
 			}
 		});
@@ -567,9 +605,6 @@ public class RootController implements Initializable {
 			progressBarTime.setProgress(progress);
 			sliderProgressBarTime.setValue(currentMicroseconds - 250000);
 			textCurrentTime.setText(formatTimeString(currentMicroseconds));
-			for (Canvas canvas : canvasList) {
-				drawOnCanvas(canvas);
-			}
 			if (loopActive) {
 				if (sliderProgressBarTime.getValue() > rangesliderLoop.getHighValue()) {
 					sliderProgressBarTime.setValue(rangesliderLoop.getLowValue());
@@ -906,17 +941,65 @@ public class RootController implements Initializable {
 			final int trackNumber = i;
 			canvasList.get(i).widthProperty().addListener(observable -> drawOnCanvas(canvasList.get(trackNumber)));
 			canvasList.get(i).setOnMouseClicked(e -> {
-				trackControllers.get(trackNumber).setRadioButtonActive();
-				if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
-					trackControllers.get(trackNumber).getChart().getStylesheets()
-							.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
+				if (!cPressed) {
+					trackControllers.get(trackNumber).setRadioButtonActive();
+					if (trackControllers.get(trackNumber).getRadioButtonActiveTrack().isSelected()) {
+						trackControllers.get(trackNumber).getChart().getStylesheets()
+								.add(getClass().getClassLoader().getResource("css/ActiveTrack.css").toExternalForm());
+					}
+				} else {
+					addCommentToCanvas(canvasList.get(trackNumber), e.getX(), e.getY(),
+							anchorPaneTrackList.get(trackNumber));
 				}
 			});
 		}
 	}
 
+	private void openAddCommentDialog(Canvas canvas, double x, double y, AnchorPane pane, Rectangle rect) {
+		TextField comment = new TextField();
+		comment.relocate((x + canvas.getLayoutX()), (y + canvas.getLayoutY()));
+		pane.getChildren().add(comment);
+
+		comment.setOnAction((event) -> {
+			Tooltip t = new Tooltip(comment.getText());
+			shortenTooltipStartTiming(t);
+			Tooltip.install(rect, t);
+			pane.getChildren().remove(comment);
+
+		});
+	}
+
+	private void addCommentToCanvas(Canvas canvas, double x, double y, AnchorPane pane) {
+
+		Rectangle rect = new Rectangle(10, 10);
+		rect.relocate((x + canvas.getLayoutX()), (y + canvas.getLayoutY()));
+		pane.getChildren().add(rect);
+		trackComments.put(rect, "");
+		Tooltip t = new Tooltip(trackComments.get(rect));
+		shortenTooltipStartTiming(t);
+		Tooltip.install(rect, t);
+		openAddCommentDialog(canvas, x, y, pane, rect);
+		// TODO: add to Project
+	}
+
+	public static void shortenTooltipStartTiming(Tooltip tooltip) {
+		try {
+			Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
+			fieldBehavior.setAccessible(true);
+			Object objBehavior = fieldBehavior.get(tooltip);
+
+			Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
+			fieldTimer.setAccessible(true);
+			Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
+
+			objTimer.getKeyFrames().clear();
+			objTimer.getKeyFrames().add(new KeyFrame(new Duration(10)));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void drawOnCanvas(Canvas canvas) {
-		// TODO calculate position of Loop
 		if (loopActive) {
 			drawProgressOnCanvas(canvas);
 			double maxValueRangeSlider = rangesliderLoop.getMax();
