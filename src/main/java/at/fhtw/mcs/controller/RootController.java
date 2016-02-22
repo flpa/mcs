@@ -87,7 +87,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.RectangleBuilder;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -979,6 +978,12 @@ public class RootController implements Initializable {
 		TextField comment = new TextField();
 		comment.relocate((x + canvas.getLayoutX()), (y + canvas.getLayoutY()));
 		pane.getChildren().add(comment);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				comment.requestFocus();
+			}
+		});
 
 		comment.setOnAction((event) -> {
 			Tooltip t = new Tooltip(comment.getText());
@@ -990,10 +995,10 @@ public class RootController implements Initializable {
 		});
 	}
 
-	@SuppressWarnings("deprecation")
 	private void addCommentToCanvas(Canvas canvas, double x, double y, AnchorPane pane) {
 
-		Rectangle rect = RectangleBuilder.create().width(10).height(10).styleClass("comment").build();
+		Rectangle rect = new Rectangle(10, 10);
+		rect.getStyleClass().add("comment");
 		double xDelta = pane.getWidth();
 		double relativxPos = ((x + canvas.getLayoutX()) / pane.getWidth());
 		double yDelta = pane.getHeight();
