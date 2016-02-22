@@ -80,6 +80,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -170,6 +171,7 @@ public class RootController implements Initializable {
 	private List<AnchorPane> anchorPaneTrackList = new ArrayList<>();
 	private Map<Rectangle, String> trackComments = new HashMap<Rectangle, String>();
 	private Map<Rectangle, List<Double>> trackCommentPositions = new HashMap<Rectangle, List<Double>>();
+	private List<Rectangle> clickedComment = new ArrayList<Rectangle>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -384,6 +386,12 @@ public class RootController implements Initializable {
 			public void handle(KeyEvent ke) {
 				if (ke.getText().equals("c")) {
 					cPressed = true;
+				} else if (ke.getCode().equals(KeyCode.BACK_SPACE)) {
+					if (!clickedComment.isEmpty()) {
+						for (AnchorPane anchorPane : anchorPaneTrackList) {
+							anchorPane.getChildren().remove(clickedComment.get(0));
+						}
+					}
 				}
 			}
 		});
@@ -1001,16 +1009,47 @@ public class RootController implements Initializable {
 		openAddCommentDialog(canvas, x, y, pane, rect);
 		// TODO: add to Project
 
+		// Comment eventhandler
 		rect.hoverProperty().addListener(new ChangeListener<Boolean>() {
-
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (!clickedComment.isEmpty()) {
+					if (clickedComment.get(0).equals(rect)) {
+						return;
+					}
+				}
 				if (newValue) {
 					rect.getStyleClass().clear();
 					rect.getStyleClass().add("hoveredComment");
 				} else {
 					rect.getStyleClass().clear();
 					rect.getStyleClass().add("comment");
+				}
+			}
+		});
+
+		rect.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				if (!clickedComment.isEmpty()) {
+					if (clickedComment.get(0).equals(rect)) {
+						clickedComment.get(0).getStyleClass().clear();
+						clickedComment.get(0).getStyleClass().add("hoveredComment");
+						clickedComment.clear();
+						return;
+					} else {
+						clickedComment.get(0).getStyleClass().clear();
+						clickedComment.get(0).getStyleClass().add("comment");
+						clickedComment.clear();
+						clickedComment.add(rect);
+						rect.getStyleClass().clear();
+						rect.getStyleClass().add("clickedComment");
+					}
+				} else {
+					clickedComment.add(rect);
+					rect.getStyleClass().clear();
+					rect.getStyleClass().add("clickedComment");
 				}
 			}
 

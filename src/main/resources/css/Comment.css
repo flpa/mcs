@@ -2,6 +2,9 @@
 	-fx-effect: dropshadow(two-pass-box, rgba(5, 5, 5, 1), 3, 0.7, 0, 0);
 }
 
+.clickedComment {
+	-fx-effect: dropshadow(two-pass-box, rgba(226, 3, 3, 1), 6, 0.7, 0, 0);		
+}
 /*
 dropshadow( <blur-type> , <color> , <number> , <number> , <number> , <number> )
 
