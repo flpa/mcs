@@ -86,6 +86,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.RectangleBuilder;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -168,6 +169,7 @@ public class RootController implements Initializable {
 	private List<Canvas> canvasList = new ArrayList<>();
 	private List<AnchorPane> anchorPaneTrackList = new ArrayList<>();
 	private Map<Rectangle, String> trackComments = new HashMap<Rectangle, String>();
+	private Map<Rectangle, List<Double>> trackCommentPositions = new HashMap<Rectangle, List<Double>>();
 
 	// TODO: could be a configuration parameter?
 	private long updateFrequencyMs = 100;
@@ -361,6 +363,14 @@ public class RootController implements Initializable {
 		stackPaneRoot.widthProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				for (AnchorPane anchorPane : anchorPaneTrackList) {
+					List<Node> children = anchorPane.getChildren();
+					for (Node child : children) {
+						if (child instanceof Rectangle) {
+							repositionComments((Rectangle) child, anchorPane);
+						}
+					}
+				}
 				for (Canvas canvas : canvasList) {
 					canvas.setWidth(canvas.getWidth() - ((double) oldValue - (double) newValue));
 				}
@@ -386,6 +396,8 @@ public class RootController implements Initializable {
 			}
 		});
 
+		// adding the stylesheet for comment Rectangles
+		stackPaneRoot.getStylesheets().add(getClass().getClassLoader().getResource("css/Comment.css").toExternalForm());
 	}
 
 	private void startUpDialog() {
@@ -962,6 +974,7 @@ public class RootController implements Initializable {
 
 		comment.setOnAction((event) -> {
 			Tooltip t = new Tooltip(comment.getText());
+			trackComments.put(rect, comment.getText());
 			shortenTooltipStartTiming(t);
 			Tooltip.install(rect, t);
 			pane.getChildren().remove(comment);
@@ -969,17 +982,46 @@ public class RootController implements Initializable {
 		});
 	}
 
+	@SuppressWarnings("deprecation")
 	private void addCommentToCanvas(Canvas canvas, double x, double y, AnchorPane pane) {
 
-		Rectangle rect = new Rectangle(10, 10);
-		rect.relocate((x + canvas.getLayoutX()), (y + canvas.getLayoutY()));
+		Rectangle rect = RectangleBuilder.create().width(10).height(10).styleClass("comment").build();
+		double xDelta = pane.getWidth();
+		double relativxPos = ((x + canvas.getLayoutX()) / pane.getWidth());
+		double yDelta = pane.getHeight();
+		double relativyPos = ((y + canvas.getLayoutY()) / pane.getHeight());
+
+		rect.relocate(relativxPos * xDelta, relativyPos * yDelta);
 		pane.getChildren().add(rect);
-		trackComments.put(rect, "");
-		Tooltip t = new Tooltip(trackComments.get(rect));
-		shortenTooltipStartTiming(t);
-		Tooltip.install(rect, t);
+		List<Double> tempPos = new ArrayList<Double>();
+		tempPos.add(relativxPos);
+		tempPos.add(relativyPos);
+		trackCommentPositions.put(rect, tempPos);
+
 		openAddCommentDialog(canvas, x, y, pane, rect);
 		// TODO: add to Project
+
+		rect.hoverProperty().addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (newValue) {
+					rect.getStyleClass().clear();
+					rect.getStyleClass().add("hoveredComment");
+				} else {
+					rect.getStyleClass().clear();
+					rect.getStyleClass().add("comment");
+				}
+			}
+
+		});
+	}
+
+	private void repositionComments(Rectangle rect, AnchorPane pane) {
+		double xDelta = pane.getWidth();
+		double yDelta = pane.getHeight();
+
+		rect.relocate(trackCommentPositions.get(rect).get(0) * xDelta, trackCommentPositions.get(rect).get(1) * yDelta);
 	}
 
 	public static void shortenTooltipStartTiming(Tooltip tooltip) {

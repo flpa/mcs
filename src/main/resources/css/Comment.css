@@ -1,0 +1,37 @@
+.comment {
+	-fx-effect: dropshadow(two-pass-box, rgba(5, 5, 5, 1), 3, 0.7, 0, 0);
+}
+
+/*
+dropshadow( <blur-type> , <color> , <number> , <number> , <number> , <number> )
+
+<blur-type> = [ gaussian | one-pass-box | three-pass-box | two-pass-box ]
+<color> The shadow Color.
+<number> The radius of the shadow blur kernel. In the range [0.0 ... 127.0], typical value 10.
+<number> The spread of the shadow. The spread is the portion of the radius where the contribution of the source material 
+	will be 100%. The remaining portion of the radius will have a contribution controlled by the blur kernel. 
+	A spread of 0.0 will result in a distribution of the shadow determined entirely by the blur algorithm. 
+	A spread of 1.0 will result in a solid growth outward of the source material opacity to the limit of the radius 
+	with a very sharp cutoff to transparency at the radius. Values should be in the range [0.0 ... 1.0].
+<number> The shadow offset in the x direction, in pixels. 
+<number> The shadow offset in the y direction, in pixels.
+*/
+
+.hoveredComment {
+	-fx-effect: innershadow(one-pass-box , rgba(5, 5, 5, 0.5) , 1 , 1 , 0 , 0)
+}
+
+/*
+innershadow( <blur-type> , <color> , <number> , <number> , <number> , <number> )
+
+<blur-type> = [ gaussian | one-pass-box | three-pass-box | two-pass-box ]
+<color> The shadow Color.
+<number> The radius of the shadow blur kernel. In the range [0.0 ... 127.0], typical value 10.
+<number> The choke of the shadow. The choke is the portion of the radius where the contribution of the source material 
+	will be 100%. The remaining portion of the radius will have a contribution controlled by the blur kernel. 
+	A choke of 0.0 will result in a distribution of the shadow determined entirely by the blur algorithm. 
+	A choke of 1.0 will result in a solid growth inward of the shadow from the edges to the limit of the radius 
+	with a very sharp cutoff to transparency inside the radius. Values should be in the range [0.0 ... 1.0].
+<number> The shadow offset in the x direction, in pixels. 
+<number> The shadow offset in the y direction, in pixels.
+*/
