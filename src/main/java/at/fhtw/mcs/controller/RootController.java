@@ -397,7 +397,7 @@ public class RootController implements Initializable {
 
 		stackPaneRoot.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent ke) {
-				if (ke.getText().equals("c")) {
+				if (ke.getCode().equals(KeyCode.SHIFT)) {
 					cPressed = false;
 				}
 			}
