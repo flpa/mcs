@@ -383,7 +383,7 @@ public class RootController implements Initializable {
 
 		stackPaneRoot.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent ke) {
-				if (ke.getText().equals("c")) {
+				if (ke.getCode().equals(KeyCode.SHIFT)) {
 					cPressed = true;
 				} else if (ke.getCode().equals(KeyCode.BACK_SPACE)) {
 					if (!clickedComment.isEmpty()) {
@@ -1079,7 +1079,7 @@ public class RootController implements Initializable {
 			Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
 
 			objTimer.getKeyFrames().clear();
-			objTimer.getKeyFrames().add(new KeyFrame(new Duration(10)));
+			objTimer.getKeyFrames().add(new KeyFrame(new Duration(70)));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
