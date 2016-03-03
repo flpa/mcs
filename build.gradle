@@ -25,13 +25,15 @@ dependencies {
 }
 
 //Replace @version@ in resources
-processResources {
-    //never skip resources to ensure the latest version number is inserted
-    outputs.upToDateWhen { false } 
-
-    filter ReplaceTokens, tokens: [
-        "version": project.property("version")
-    ]
+processResources.doLast{
+    ant.copy(todir: 'build/resources/main/bundles', encoding: 'iso-8859-1', outputencoding: 'iso-8859-1', overwrite: true) {
+        fileset(dir: 'src/main/resources/bundles')
+        filterchain {
+            replacetokens {
+                token(key: 'version', value: project.property("version"))
+            }
+        }
+    }
 }
 
 // To get more test output from Travis
@@ -88,4 +90,3 @@ release {
     tagCommitMessage = 'creating tag:'
     newVersionCommitMessage = 'new version commit:'
 }
-
